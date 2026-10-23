@@ -44,6 +44,12 @@ const paymentsLib = require("./lib/payments");
 const addressesLib = require("./lib/addresses");
 const geocodeLib = require("./lib/geocode");
 const pickupLocations = require("./lib/pickup-location");
+const securityRbac = require("./lib/security-rbac");
+const orderLifecycle = require("./lib/order-lifecycle");
+const zonesPricing = require("./lib/service-zones-pricing");
+const financeWallet = require("./lib/finance-wallet");
+const excModReports = require("./lib/exceptions-moderation-reports");
+const { registerPlatformRoutes } = require("./lib/platform-routes");
 let pkgVersion = "";
 try {
   // eslint-disable-next-line import/no-dynamic-require
@@ -705,11 +711,17 @@ function safeJsonKeys(obj) {
 function appendAuditLog(entry) {
   try {
     const data = loadAuditLogs();
-    const rec = {
+    data.logs = Array.isArray(data.logs) ? data.logs : [];
+    const baseRec = {
       id: genId(),
       at: new Date().toISOString(),
       ...entry,
     };
+    const rec = securityRbac.createTamperEvidentAuditEntry(
+      baseRec,
+      data.logs[0] || null,
+      process.env.JWT_SECRET || "siymon-audit-chain"
+    );
     data.logs.unshift(rec);
     // Keep last N logs to avoid infinite growth on JSON storage
     const max = Number(process.env.AUDIT_LOG_MAX || 5000);
@@ -3011,11 +3023,11 @@ app.post(
     body("subtotal").optional().toFloat(),
     body("paymentMethod").optional().isString().isLength({ max: 40 }),
   ]),
-  (req, res) => {
+  async (req, res) => {
     const cfg = loadConfig();
     const body = req.body || {};
 
-    // السماح للزوار بإنشاء طلب بدون تسجيل دخول
+    // Allow guest or authenticated customer order creation
     const token = getCustomerTokenFromReq(req);
     const customerId = getCustomerIdFromToken(token) || null;
 
@@ -3040,16 +3052,26 @@ app.post(
     }
     const items = Array.isArray(body.items) ? body.items : [];
 
-    if (!customer.name || !customer.phone || !customer.addr) {
+    if (!customer.name || !customer.phone || !String(customer.addr || "").trim()) {
       return res.status(400).json({ error: "Missing customer fields" });
+    }
+    // Section 8: Validate pin coordinates when supplied or required at checkout
+    const hasLatInput = customer.lat !== undefined && customer.lat !== null && customer.lat !== "";
+    const hasLngInput = customer.lng !== undefined && customer.lng !== null && customer.lng !== "";
+    if (hasLatInput || hasLngInput || cfg.requirePinCoordinatesAtCheckout === true) {
+      if (!geocodeLib.validCoords(Number(customer.lat), Number(customer.lng))) {
+        return res.status(400).json({ error: "Valid map pin coordinates are required", code: "INVALID_PIN_COORDINATES" });
+      }
     }
     if (items.length === 0) {
       return res.status(400).json({ error: "Empty items" });
     }
 
-    // Payment policy: only Cash on Delivery is enabled (see lib/payments.js).
-    // Online methods (card/visa/mastercard/paypal) are rejected server-side.
-    const pay = paymentsLib.resolvePaymentMethod(body.paymentMethod);
+    // Payment policy: supports COD, SIYMON customer wallet, and electronic payment when enabled
+    const pay = paymentsLib.resolvePaymentMethod(body.paymentMethod, {
+      allowWallet: true,
+      allowElectronic: cfg.electronicPaymentEnabled === true,
+    });
     if (!pay.ok) {
       return res
         .status(400)
@@ -3062,17 +3084,24 @@ app.post(
       String(body.restaurantId || "").trim() || getDefaultRestaurantId();
     if (!restaurantId)
       return res.status(400).json({ error: "Missing restaurantId" });
+
+    // Section 5: Restrict each cart/order to one business only
+    if (items.some((it) => it && it.restaurantId && String(it.restaurantId) !== String(restaurantId))) {
+      return res.status(400).json({
+        error: "Cart items must belong to a single business only",
+        code: "MULTI_STORE_CART_NOT_ALLOWED",
+      });
+    }
+
     const check = enforceRestaurantCanReceiveOrders(restaurantId);
     if (!check.ok) {
       const msg = check.error || "Not allowed";
       if (msg === "Invalid restaurantId") return res.status(400).json(check);
       if (msg === "Restaurant disabled") return res.status(403).json(check);
-      // Subscription-related
       return res.status(402).json(check);
     }
 
-    // ✅ Server-side pricing (anti-tampering)
-    // Never trust price/subtotal/total from the client.
+    // Server-side pricing (anti-tampering)
     const orderLang = String(body.lang || "ar");
     const menu = loadMenu();
     const byId = new Map(
@@ -3098,7 +3127,12 @@ app.post(
       .map((it) => {
         const id = String(it.id || "").trim();
         const qty = Number(it.qty || 0);
-        return { id, qty };
+        return {
+          id,
+          qty,
+          ...(it.size ? { size: it.size } : {}),
+          ...(Array.isArray(it.extras) ? { extras: it.extras } : {}),
+        };
       })
       .filter((x) => x.id && Number.isFinite(x.qty) && x.qty > 0);
 
@@ -3113,8 +3147,7 @@ app.post(
         .json({ error: "Item not sold online", code: "regulated_item" });
     }
 
-    // Server decides price (incl. sale price), delivery fee, minimum order,
-    // opening hours and stock. Item name/price are snapshotted in the order.
+    // Server decides price (incl. sale price, sizes, extras), minimum order, opening hours and stock.
     const pricing = catalogLib.computePricing({
       store: check.restaurant,
       lines: cleanedItems,
@@ -3127,18 +3160,164 @@ app.post(
     }
     const computedItems = pricing.items;
     const subtotal = pricing.subtotal;
-    const deliveryFee = pricing.deliveryFee;
-    const total = pricing.total;
+    let deliveryFee = pricing.deliveryFee;
+    let pricingSnapshot = null;
+    let driverEarningsSnapshot = null;
+
+    // Sections 10 & 18: Service Zone & Road-Distance Delivery Pricing
+    const dropCoords = geocodeLib.validCoords(Number(customer.lat), Number(customer.lng))
+      ? { lat: Number(customer.lat), lng: Number(customer.lng) }
+      : null;
+    if (dropCoords) {
+      const activeZones = readJson(path.join(DATA_DIR, "service_zones.json"), {
+        zones: [zonesPricing.DEFAULT_BERRECHID_ZONE],
+      }).zones;
+      const restaurantsList = loadRestaurants().restaurants || [];
+      const pickupPt = pickupLocations.resolvePickup(
+        { restaurantId },
+        restaurantsList,
+        cfg.pickupLocation,
+      );
+      const zoneElig = zonesPricing.checkServiceZoneEligibility({
+        pickup: pickupPt,
+        dropoff: dropCoords,
+        zones: activeZones,
+      });
+      if (!zoneElig.ok) {
+        return res.status(zoneElig.status || 422).json(zoneElig);
+      }
+      if (pickupPt && typeof routeService !== "undefined" && routeService) {
+        const roadCalc = await zonesPricing.calculateRoadDeliveryPricing({
+          pickup: pickupPt,
+          dropoff: dropCoords,
+          routeService,
+          zones: activeZones,
+          pricingOverride: cfg.deliveryPricing || null,
+        });
+        if (roadCalc.ok) {
+          pricingSnapshot = roadCalc.pricingSnapshot;
+          driverEarningsSnapshot = roadCalc.driverEarningsSnapshot;
+          deliveryFee = roadCalc.deliveryFee;
+          if (
+            check.restaurant?.freeDeliveryOver !== undefined &&
+            check.restaurant?.freeDeliveryOver !== null &&
+            subtotal >= Number(check.restaurant.freeDeliveryOver)
+          ) {
+            deliveryFee = 0;
+          }
+        } else if (roadCalc.error === "exceeds_max_road_distance") {
+          return res.status(422).json(roadCalc);
+        } else if (cfg.requireLiveRoadRouting === true) {
+          return res.status(roadCalc.status || 502).json(roadCalc);
+        }
+      }
+    }
+
+    // Section 12: Promotions, Coupons & First-Order Discounts
+    const data = loadOrders();
+    const priorOrdersCount = customerId
+      ? (data.orders || []).filter(
+          (o) => String(o.customerId) === String(customerId) && o.status !== "canceled",
+        ).length
+      : 0;
+    const promosFile = path.join(DATA_DIR, "promotions.json");
+    const promosState = readJson(promosFile, { coupons: [] });
+    const promoResult = financeWallet.evaluatePromotion({
+      couponCode: body.couponCode,
+      coupons: promosState.coupons || [],
+      subtotal,
+      deliveryFee,
+      storeId: restaurantId,
+      customerId,
+      customerPriorOrdersCount: priorOrdersCount,
+      firstOrderPromo: cfg.firstOrderPromo || null,
+    });
+    if (!promoResult.ok) {
+      return res.status(promoResult.status || 400).json(promoResult);
+    }
+
+    const netSubtotal = financeWallet.roundMoney(Math.max(0, subtotal - promoResult.itemDiscount));
+    const netDeliveryFee = financeWallet.roundMoney(Math.max(0, deliveryFee - promoResult.deliveryDiscount));
+    const total = financeWallet.roundMoney(netSubtotal + netDeliveryFee);
+
+    // Section 11: SIYMON Wallet, Split Payment & Payment Method Resolution
+    const walletFile = path.join(DATA_DIR, "wallets.json");
+    const walletState = financeWallet.ensureWalletState(readJson(walletFile, {}));
+    const availWallet = customerId
+      ? financeWallet.getCustomerWalletBalance(walletState, customerId)
+      : 0;
+    if ((pay.method === "wallet" || body.useWallet === true) && !customerId) {
+      return res.status(401).json({ error: "Authentication required for wallet payment" });
+    }
+    const paymentPlan = financeWallet.planOrderPayment({
+      total,
+      walletBalance: availWallet,
+      useWallet: body.useWallet === true || pay.method === "wallet",
+      requestedWalletAmount: body.walletAmount !== undefined ? Number(body.walletAmount) : null,
+      paymentMethod: pay.method,
+      electronicEnabled: cfg.electronicPaymentEnabled === true,
+    });
+    if (!paymentPlan.ok) {
+      return res.status(paymentPlan.status || 400).json(paymentPlan);
+    }
+
+    const orderId = makeId();
+    const nowIso = new Date().toISOString();
+
+    if (paymentPlan.walletUsed > 0 && customerId) {
+      const wDebit = financeWallet.recordWalletTransaction(walletState, {
+        customerId,
+        type: "order_payment",
+        direction: "debit",
+        amount: paymentPlan.walletUsed,
+        referenceId: orderId,
+        idempotencyKey: `order_pay:${orderId}`,
+        actorType: "customer",
+        actorId: customerId,
+        reason: `Order #${orderId} payment`,
+        now: nowIso,
+      });
+      if (!wDebit.ok) {
+        return res.status(wDebit.status || 402).json(wDebit);
+      }
+      writeJson(walletFile, walletState);
+    }
+
+    // Increment coupon usage when applied
+    if (promoResult.applied && promoResult.promoType === "coupon" && promoResult.code) {
+      const cIdx = (promosState.coupons || []).findIndex(
+        (c) => String(c.code || "").toUpperCase() === String(promoResult.code).toUpperCase(),
+      );
+      if (cIdx >= 0) {
+        promosState.coupons[cIdx].usedCount = Number(promosState.coupons[cIdx].usedCount || 0) + 1;
+        if (customerId) {
+          promosState.coupons[cIdx].usedBy = promosState.coupons[cIdx].usedBy || {};
+          promosState.coupons[cIdx].usedBy[customerId] =
+            Number(promosState.coupons[cIdx].usedBy[customerId] || 0) + 1;
+        }
+        writeJson(promosFile, promosState);
+      }
+    }
+
+    const financialSnapshot = financeWallet.computeOrderFinancialSnapshot({
+      subtotal,
+      deliveryFee,
+      promoResult,
+      store: check.restaurant,
+      defaultCommissionPct: Number(cfg.defaultStoreCommissionPct ?? 10),
+      defaultCommissionFixed: Number(cfg.defaultStoreCommissionFixed ?? 0),
+      driverEarningsSnapshot,
+      paymentPlan,
+    });
 
     // Store type decides the flow: restaurants keep admin review first;
     // other activities go straight to the store (admin still sees the order).
     const storeType = storesLib.getType(loadStoreTypes(), check.restaurant?.type);
     const orderStatus = storesLib.initialOrderStatus(storeType);
     const autoAccepted = orderStatus === "admin_accepted";
-    const nowIso = new Date().toISOString();
 
     const order = {
-      id: makeId(),
+      id: orderId,
       createdAt: nowIso,
       status: orderStatus,
       storeType: storeType ? storeType.id : "restaurant",
@@ -3159,19 +3338,36 @@ app.post(
         phone: String(customer.phone),
         addr: String(customer.addr),
         notes: String(customer.notes || ""),
-        // Validated delivery coordinates (used for the live tracking map only).
-        ...(geocodeLib.validCoords(Number(customer.lat), Number(customer.lng))
-          ? { lat: Number(customer.lat), lng: Number(customer.lng) }
-          : {}),
+        ...(customer.recipientName ? { recipientName: String(customer.recipientName).slice(0, 80) } : {}),
+        ...(customer.recipientPhone ? { recipientPhone: String(customer.recipientPhone).slice(0, 25) } : {}),
+        ...(customer.instructions ? { instructions: String(customer.instructions).slice(0, 300) } : {}),
+        ...(dropCoords ? { lat: dropCoords.lat, lng: dropCoords.lng } : {}),
       },
       items: computedItems,
       subtotal,
-      deliveryFee,
+      discountAmount: promoResult.totalDiscount,
+      promoCode: promoResult.code || null,
+      deliveryFee: netDeliveryFee,
       total,
-      paymentMethod: pay.method,
+      paymentMethod: paymentPlan.primaryMethod,
+      walletPaid: paymentPlan.walletUsed,
+      codCollectable: paymentPlan.codCollectable,
+      pricingSnapshot,
+      driverEarningsSnapshot,
+      financialSnapshot,
     };
 
-    const data = loadOrders();
+    // Section 9: Generate independent pickup and delivery verification codes
+    const vCodes = orderLifecycle.initOrderVerification(order);
+    orderLifecycle.appendOrderEvent(order, {
+      type: "order_created",
+      fromStatus: null,
+      toStatus: orderStatus,
+      actorType: customerId ? "customer" : "guest",
+      actorId: customerId,
+      now: nowIso,
+    });
+
     data.orders.unshift(order); // newest first
     saveOrders(data);
 
@@ -3187,7 +3383,18 @@ app.post(
       } catch (_e) {}
     }
 
-    res.json({ ok: true, id: order.id });
+    res.json({
+      ok: true,
+      id: order.id,
+      deliveryCode: vCodes.deliveryCode,
+      subtotal,
+      discountAmount: promoResult.totalDiscount,
+      deliveryFee: netDeliveryFee,
+      total,
+      walletPaid: paymentPlan.walletUsed,
+      codCollectable: paymentPlan.codCollectable,
+      paymentMethod: paymentPlan.primaryMethod,
+    });
   },
 );
 
@@ -3553,37 +3760,6 @@ app.put("/api/customer/addresses", requireCustomer, (req, res) => {
 });
 
 app.get("/api/customer/me", requireCustomer, (req, res) => {
-  app.delete("/api/customer/me", requireCustomer, (req, res) => {
-    const data = loadCustomers();
-    const idx = data.customers.findIndex(
-      (c) => String(c.id) === String(req.customerId),
-    );
-    if (idx < 0) return res.status(404).json({ error: "Not found" });
-
-    // 1. مسح العميل من قاعدة البيانات
-    data.customers.splice(idx, 1);
-    saveCustomers(data);
-
-    // 2. إبطال توكنات تسجيل الدخول الخاصة به
-    const rtData = loadRefreshTokens();
-    rtData.tokens = (rtData.tokens || []).filter(
-      (t) =>
-        !(
-          t.userType === "customer" &&
-          String(t.userId) === String(req.customerId)
-        ),
-    );
-    saveRefreshTokens(rtData);
-
-    // 3. مسح اشتراكات الإشعارات الخاصة به (Web Push)
-    const pushData = loadPushSubscriptions();
-    pushData.subscriptions = (pushData.subscriptions || []).filter(
-      (s) => String(s.customerId) !== String(req.customerId),
-    );
-    savePushSubscriptions(pushData);
-
-    res.json({ ok: true, deleted: true });
-  });
   const data = loadCustomers();
   const found = data.customers.find(
     (c) => String(c.id) === String(req.customerId),
@@ -3592,14 +3768,44 @@ app.get("/api/customer/me", requireCustomer, (req, res) => {
   res.json({ ok: true, customer: safeCustomer(found) });
 });
 
+app.delete("/api/customer/me", requireCustomer, (req, res) => {
+  const data = loadCustomers();
+  const idx = data.customers.findIndex(
+    (c) => String(c.id) === String(req.customerId),
+  );
+  if (idx < 0) return res.status(404).json({ error: "Not found" });
+
+  // 1. Remove customer from database
+  data.customers.splice(idx, 1);
+  saveCustomers(data);
+
+  // 2. Revoke refresh tokens for this customer
+  const rtData = loadRefreshTokens();
+  rtData.tokens = (rtData.tokens || []).filter(
+    (t) =>
+      !(
+        t.userType === "customer" &&
+        String(t.userId) === String(req.customerId)
+      ),
+  );
+  saveRefreshTokens(rtData);
+
+  // 3. Remove Web Push subscriptions for this customer
+  const pushData = loadPushSubscriptions();
+  pushData.subscriptions = (pushData.subscriptions || []).filter(
+    (s) => String(s.customerId) !== String(req.customerId),
+  );
+  savePushSubscriptions(pushData);
+
+  res.json({ ok: true, deleted: true });
+});
+
 app.get("/api/customer/orders", requireCustomer, (req, res) => {
   const customers = loadCustomers();
   const me = customers.customers.find(
     (c) => String(c.id) === String(req.customerId),
   );
   if (!me) return res.status(401).json({ error: "Unauthorized" });
-
-  const myPhone = String(me.phone || "").replace(/\D/g, "");
 
   // Build driver info map to allow "Contact about order" on customer side
   const driversData = loadDrivers();
@@ -3610,22 +3816,18 @@ app.get("/api/customer/orders", requireCustomer, (req, res) => {
     ]),
   );
 
+  // Section 15: Phone number alone must NEVER grant access to private orders; match authenticated customerId only.
   const data = loadOrders();
-  const mine = data.orders.filter((o) => {
-    if (String(o.customerId || "") === String(req.customerId)) return true;
-    if (myPhone) {
-      const op = String(o.customer?.phone || "").replace(/\D/g, "");
-      if (op && op === myPhone) return true;
-    }
-    return false;
-  });
+  const mine = data.orders.filter(
+    (o) => String(o.customerId || "") === String(req.customerId),
+  );
 
   const chatByOrder = new Map(
     (loadOrderChats().chats || []).map((c) => [String(c.orderId), c]),
   );
   const nowMs = Date.now();
   const enhanced = mine.map((o) => {
-    const out = { ...o };
+    const out = orderLifecycle.sanitizeOrderVerificationForRole(o, "customer");
     out.chatUnread = driverFeedback.unreadFor(
       chatByOrder.get(String(o.id)),
       "customer",
@@ -3635,7 +3837,7 @@ app.get("/api/customer/orders", requireCustomer, (req, res) => {
     out.canRateDriver = cr.ok;
     out.rateDriverUntil = cr.ok ? cr.expiresAt : null;
     const did = String(o.driverId || "");
-    if (did) {
+    if (did && ["accepted", "picked_up", "on_the_way"].includes(String(o.status || ""))) {
       const info = driverInfoById.get(did) || null;
       if (info?.phone) out.driverPhone = info.phone;
       if (info?.name) out.driverName = info.name;
@@ -3655,32 +3857,71 @@ app.post("/api/customer/orders/:id/cancel", requireCustomer, (req, res) => {
   );
   if (!me) return res.status(401).json({ error: "Unauthorized" });
 
-  const myPhone = String(me.phone || "").replace(/\D/g, "");
-
   const data = loadOrders();
   const idx = data.orders.findIndex((o) => String(o.id) === id);
   if (idx < 0) return res.status(404).json({ error: "Not found" });
 
   const order = data.orders[idx];
 
-  const belongs =
-    String(order.customerId || "") === String(req.customerId) ||
-    (myPhone &&
-      String(order.customer?.phone || "").replace(/\D/g, "") === myPhone);
-
+  // Strict customerId ownership check (Section 15)
+  const belongs = String(order.customerId || "") === String(req.customerId);
   if (!belongs) return res.status(403).json({ error: "Not your order" });
 
-  const st = String(order.status || "new").toLowerCase();
-  if (["delivered", "done", "canceled"].includes(st)) {
-    return res.status(409).json({ error: "Order cannot be canceled" });
+  // Section 5: Customers can cancel ONLY before business acceptance
+  const cancelCheck = orderLifecycle.canCustomerCancel(order);
+  if (!cancelCheck.ok) {
+    return res.status(cancelCheck.status || 409).json({
+      error: cancelCheck.error,
+      code: cancelCheck.code,
+    });
   }
 
+  const nowIso = new Date().toISOString();
+  const prevStatus = order.status;
   order.status = "canceled";
-  order.canceledAt = order.canceledAt || new Date().toISOString();
-  order.updatedAt = new Date().toISOString();
+  order.canceledBy = "customer";
+  order.canceledAt = order.canceledAt || nowIso;
+  order.updatedAt = nowIso;
+  orderLifecycle.appendOrderEvent(order, {
+    type: "customer_canceled_order",
+    fromStatus: prevStatus,
+    toStatus: "canceled",
+    actorType: "customer",
+    actorId: req.customerId,
+    now: nowIso,
+  });
+
+  // Restore tracked item stock on customer cancellation
+  const menu = loadMenu();
+  let stockRestored = false;
+  for (const it of order.items || []) {
+    const mIt = (menu.items || []).find((x) => String(x.id) === String(it.id));
+    if (mIt && mIt.stock !== undefined && mIt.stock !== null) {
+      mIt.stock = Number(mIt.stock) + Number(it.qty || 0);
+      stockRestored = true;
+    }
+  }
+  if (stockRestored) saveMenu(menu);
+
+  // If customer paid with SIYMON wallet, automatically refund wallet balance
+  if (Number(order.walletPaid || 0) > 0 && !order.refundedAmount) {
+    const walletFile = path.join(DATA_DIR, "wallets.json");
+    const wState = financeWallet.ensureWalletState(readJson(walletFile, {}));
+    financeWallet.processAuthorizedRefund(wState, {
+      order,
+      amount: Number(order.walletPaid),
+      destination: "wallet",
+      reason: "Automatic refund on pre-acceptance customer cancellation",
+      actorId: req.customerId,
+      actorRole: "customer",
+      now: nowIso,
+    });
+    order.status = "canceled"; // keep status as canceled while recording wallet refund
+    writeJson(walletFile, wState);
+  }
 
   saveOrders(data);
-  res.json({ ok: true, order });
+  res.json({ ok: true, order: orderLifecycle.sanitizeOrderVerificationForRole(order, "customer") });
 });
 
 app.post("/api/customer/orders/:id/rate", requireCustomer, (req, res) => {
@@ -3692,19 +3933,13 @@ app.post("/api/customer/orders/:id/rate", requireCustomer, (req, res) => {
   );
   if (!me) return res.status(401).json({ error: "Unauthorized" });
 
-  const myPhone = String(me.phone || "").replace(/\D/g, "");
-
   const data = loadOrders();
   const idx = data.orders.findIndex((o) => String(o.id) === id);
   if (idx < 0) return res.status(404).json({ error: "Not found" });
 
   const order = data.orders[idx];
 
-  const belongs =
-    String(order.customerId || "") === String(req.customerId) ||
-    (myPhone &&
-      String(order.customer?.phone || "").replace(/\D/g, "") === myPhone);
-
+  const belongs = String(order.customerId || "") === String(req.customerId);
   if (!belongs) return res.status(403).json({ error: "Not your order" });
 
   const st = String(order.status || "new").toLowerCase();
@@ -3718,20 +3953,23 @@ app.post("/api/customer/orders/:id/rate", requireCustomer, (req, res) => {
   }
   const commentRaw = String(req.body?.comment || "");
   const comment = commentRaw.trim().slice(0, 500);
+  // Section 16: Written comments require supervisor moderation before public display
+  const moderationStatus = comment ? "pending" : "approved";
 
   const now = new Date().toISOString();
-  if (!order.customerRating || typeof order.customerRating !== "object") {
-    order.customerRating = { stars, comment, createdAt: now, updatedAt: now };
-  } else {
-    order.customerRating.stars = stars;
-    order.customerRating.comment = comment;
-    order.customerRating.updatedAt = now;
-    if (!order.customerRating.createdAt) order.customerRating.createdAt = now;
-  }
+  const ratingObj = {
+    stars,
+    comment,
+    moderationStatus,
+    createdAt: order.customerRating?.createdAt || now,
+    updatedAt: now,
+  };
+  order.customerRating = ratingObj;
+  order.rating = ratingObj;
   order.updatedAt = now;
 
   saveOrders(data);
-  res.json({ ok: true, order, rating: order.customerRating });
+  res.json({ ok: true, order: orderLifecycle.sanitizeOrderVerificationForRole(order, "customer"), rating: order.customerRating });
 });
 
 // Public: latest customer ratings (testimonials)
@@ -3774,9 +4012,16 @@ app.get("/api/ratings", (req, res) => {
     .map((o) => {
       const rating = o.customerRating || {};
       const stars = Number(rating.stars || 0);
-      const comment = String(stripDangerous(String(rating.comment || "")))
+      const rawComment = String(stripDangerous(String(rating.comment || "")))
         .trim()
         .slice(0, 500);
+      // Section 16: Only display written comments publicly after supervisor approval
+      const comment =
+        rating.moderationStatus === "approved" || !rating.moderationStatus
+          ? rating.moderationStatus === "approved"
+            ? rawComment
+            : ""
+          : "";
       const sortKey = String(
         rating.updatedAt ||
           rating.createdAt ||
@@ -5451,7 +5696,12 @@ app.get("/api/driver/orders", requireDriver, (req, res) => {
   const mine = data.orders
     .filter((o) => String(o.driverId || "") === String(req.driverId))
     .map((o) => ({
-      ...pickupLocations.orderForDriver(o, req.driverId, restaurants, cfg.pickupLocation),
+      ...pickupLocations.orderForDriver(
+        orderLifecycle.sanitizeOrderVerificationForRole(o, "driver"),
+        req.driverId,
+        restaurants,
+        cfg.pickupLocation,
+      ),
       chatUnread: driverFeedback.unreadFor(chatByOrder.get(String(o.id)), "driver"),
       chatOpen: driverFeedback.isChatOpen(o),
     }));
@@ -5635,9 +5885,71 @@ app.patch(
       ];
       if (!allowed.includes(st))
         return res.status(400).json({ error: "Invalid status" });
+
+      // Section 9: Require server-side pickup code verification before confirming collection from business
+      if (
+        st === "picked_up" &&
+        order.verification &&
+        order.verification.pickup &&
+        !order.verification.pickup.verifiedAt
+      ) {
+        const code = patch.verificationCode || patch.pickupCode || patch.code;
+        if (!code) {
+          return res.status(403).json({
+            error: "Pickup verification code from business is required",
+            code: "PICKUP_VERIFICATION_REQUIRED",
+          });
+        }
+        const vRes = orderLifecycle.verifyStageCode(order, {
+          stage: "pickup",
+          code,
+          driverId: req.driverId,
+        });
+        if (!vRes.ok) {
+          saveOrders(data);
+          return res.status(vRes.status || 401).json(vRes);
+        }
+      }
+
+      // Section 9: Require server-side delivery code verification from customer before confirming delivery
+      if (
+        (st === "delivered" || st === "done") &&
+        order.verification &&
+        order.verification.delivery &&
+        !order.verification.delivery.verifiedAt
+      ) {
+        const code = patch.verificationCode || patch.deliveryCode || patch.code;
+        if (!code) {
+          return res.status(403).json({
+            error: "Customer delivery verification code is required",
+            code: "DELIVERY_VERIFICATION_REQUIRED",
+          });
+        }
+        const vRes = orderLifecycle.verifyStageCode(order, {
+          stage: "delivery",
+          code,
+          driverId: req.driverId,
+        });
+        if (!vRes.ok) {
+          saveOrders(data);
+          return res.status(vRes.status || 401).json(vRes);
+        }
+      }
+
       order.status = st;
+      if (st === "delivered" || st === "done" || st === "canceled") {
+        order.customerLiveLocation = null; // End customer live location sharing on completion/cancellation
+      }
       if (st === "delivered" || st === "done") {
         order.deliveredAt = order.deliveredAt || new Date().toISOString();
+
+        // Award loyalty points to customer on delivery
+        if (order.customerId) {
+          const walletFile = path.join(DATA_DIR, "wallets.json");
+          const wState = financeWallet.ensureWalletState(readJson(walletFile, {}));
+          financeWallet.awardLoyaltyForDeliveredOrder(wState, { order, now: order.deliveredAt });
+          writeJson(walletFile, wState);
+        }
 
         // wallet charge (charged once per order)
         // Default: subtract order.subtotal (does NOT include deliveryFee)
@@ -5870,12 +6182,12 @@ app.get("/api/admin/drivers", requireAdmin, (req, res) => {
   res.json({ ok: true, drivers });
 });
 
-// Admin: secure access to driver ID images (stored privately on disk)
+// Admin: secure access to driver ID/licence images (stored privately on disk + audited)
 app.get("/api/admin/drivers/:id/image/:kind", requireAdmin, (req, res) => {
   const id = String(req.params.id || "");
   const kind = String(req.params.kind || "");
   if (!id) return res.status(400).json({ error: "Missing id" });
-  if (!["faceWithBikeCard", "idFront", "idBack"].includes(kind)) {
+  if (!["faceWithBikeCard", "idFront", "idBack", "drivingLicence"].includes(kind)) {
     return res.status(400).json({ error: "Invalid kind" });
   }
   const data = loadDrivers();
@@ -5891,6 +6203,16 @@ app.get("/api/admin/drivers/:id/image/:kind", requireAdmin, (req, res) => {
   const abs = path.join(PRIVATE_DRIVER_ID_DIR, safe);
   if (!fs.existsSync(abs))
     return res.status(404).json({ error: "Missing file" });
+
+  // Section 4: Log every authorized access to private driver identity documents
+  appendAuditLog({
+    actorType: "admin",
+    actorId: String(req.adminId || "admin"),
+    action: "driver_document_accessed",
+    targetType: "driver_document",
+    targetId: `${id}:${kind}`,
+    ip: req.ip || "",
+  });
 
   const ext = safe.split(".").pop()?.toLowerCase();
   const mime =
@@ -7718,7 +8040,6 @@ function loadSocial() {
       website: "",
       profileImg: "",
       bgImg: "",
-      password: "123", // الرقم السري الافتراضي للوحة التحكم
     };
     fs.writeFileSync(SOCIAL_FILE, JSON.stringify(def, null, 2));
     return def;
@@ -7733,17 +8054,14 @@ function saveSocial(data) {
 // جلب البيانات للزوار
 app.get("/api/social", (req, res) => {
   const data = loadSocial();
-  const { password, ...publicData } = data; // بنخفي الرقم السري عن الزوار
+  const { password, ...publicData } = data;
   res.json(publicData);
 });
 
-// حفظ البيانات (بواسطة المشرف)
-// زودنا الحجم لـ 10 ميجا عشان يقبل رفع الصور
-app.post("/api/social", express.json({ limit: "10mb" }), (req, res) => {
+// حفظ البيانات (بواسطة المشرف الموثق فقط — بدون كلمة سر افتراضية ثابتة)
+app.post("/api/social", requireAdmin, express.json({ limit: "10mb" }), (req, res) => {
   const data = loadSocial();
-  if (req.body.adminPass !== data.password) {
-    return res.status(401).json({ error: "الرقم السري غير صحيح!" });
-  }
+  delete data.password;
 
   const fields = [
     "name",
@@ -7762,16 +8080,18 @@ app.post("/api/social", express.json({ limit: "10mb" }), (req, res) => {
     if (req.body[f] !== undefined) data[f] = req.body[f];
   });
 
-  if (req.body.newPassword) {
-    data.password = req.body.newPassword;
-  }
-
   saveSocial(data);
   res.json({ ok: true });
 });
 
 app.get("/", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
 app.get("/admin", (req, res) => res.redirect("/admin/index.html"));
+
+const EXCEPTIONS_FILE = path.join(DATA_DIR, "exceptions.json");
+const WALLET_FILE = path.join(DATA_DIR, "wallets.json");
+const PROMOS_FILE = path.join(DATA_DIR, "promotions.json");
+const OTP_FILE = path.join(DATA_DIR, "otp_security.json");
+const ZONES_FILE = path.join(DATA_DIR, "service_zones.json");
 
 // ---- Smart dispatch (offers mode is opt-in via config.dispatchMode) ----
 const dispatchCore = require("./lib/dispatch-core");
@@ -7797,6 +8117,21 @@ const dispatchService = require("./lib/dispatch-service").createDispatchService(
       });
     }
   },
+  onSupervisorAlert: (alertObj) => {
+    try {
+      const excState = excModReports.ensureExceptionsState(readJson(EXCEPTIONS_FILE, {}));
+      excModReports.createExceptionCase(excState, {
+        category: "driver_failure",
+        severity: "high",
+        orderId: alertObj.lastOrderId || null,
+        driverId: alertObj.driverId,
+        title: `Driver ${alertObj.driverId} repeatedly rejected offers (${alertObj.rejectedCount}x)`,
+        description: `Driver rejected ${alertObj.rejectedCount} dispatch offers within 1 hour`,
+        meta: alertObj,
+      });
+      writeJson(EXCEPTIONS_FILE, excState);
+    } catch (_e) {}
+  },
 });
 require("./lib/dispatch-routes").registerDispatchRoutes(app, {
   service: dispatchService,
@@ -7811,6 +8146,37 @@ require("./lib/dispatch-routes").registerDispatchRoutes(app, {
   },
 });
 
+const notifyCustomerHelper = ({ customerId, orderId, type, title, message }) => {
+  const cid = String(customerId || "").trim();
+  if (!cid) return;
+  const rec = {
+    id: `notif_${genId()}`,
+    title: String(title || ""),
+    message: String(message || ""),
+    imageUrl: null,
+    url: "/notifications/",
+    audience: "customer",
+    customerId: cid,
+    orderId: String(orderId || ""),
+    type: String(type || "store_message"),
+    createdAt: new Date().toISOString(),
+  };
+  const data = loadNotifications();
+  data.notifications = Array.isArray(data.notifications)
+    ? data.notifications
+    : [];
+  data.notifications.unshift(rec);
+  const max = Math.max(50, Number(process.env.NOTIFICATIONS_MAX || 500));
+  if (data.notifications.length > max)
+    data.notifications = data.notifications.slice(0, max);
+  saveNotifications(data);
+  if (WEBPUSH_ENABLED) {
+    setImmediate(() => {
+      sendWebPushToCustomer(cid, rec).catch(() => {});
+    });
+  }
+};
+
 // ---- Unified store dashboard (all business types) ----
 require("./lib/store-routes").registerStoreRoutes({
   app,
@@ -7820,6 +8186,7 @@ require("./lib/store-routes").registerStoreRoutes({
   signToken,
   verifyToken,
   verifyPassword,
+  hashPassword,
   normalizeEmail,
   getRestaurantIdFromToken: (t) => getRestaurantIdFromToken(t),
   loadRestaurants,
@@ -7829,6 +8196,8 @@ require("./lib/store-routes").registerStoreRoutes({
   loadOrders,
   saveOrders,
   loadRestaurantUsers,
+  saveRestaurantUsers,
+  loadSettlements: () => (readJson(WALLET_FILE, {}).settlements || []),
   readJson,
   writeJson,
   typesFile: STORE_TYPES_FILE,
@@ -7845,36 +8214,7 @@ require("./lib/store-routes").registerStoreRoutes({
   },
   catalogLib,
   safeRestaurant,
-  notifyCustomer: ({ customerId, orderId, type, title, message }) => {
-    const cid = String(customerId || "").trim();
-    if (!cid) return;
-    const rec = {
-      id: `notif_${genId()}`,
-      title: String(title || ""),
-      message: String(message || ""),
-      imageUrl: null,
-      url: "/notifications/",
-      audience: "customer",
-      customerId: cid,
-      orderId: String(orderId || ""),
-      type: String(type || "store_message"),
-      createdAt: new Date().toISOString(),
-    };
-    const data = loadNotifications();
-    data.notifications = Array.isArray(data.notifications)
-      ? data.notifications
-      : [];
-    data.notifications.unshift(rec);
-    const max = Math.max(50, Number(process.env.NOTIFICATIONS_MAX || 500));
-    if (data.notifications.length > max)
-      data.notifications = data.notifications.slice(0, max);
-    saveNotifications(data);
-    if (WEBPUSH_ENABLED) {
-      setImmediate(() => {
-        sendWebPushToCustomer(cid, rec).catch(() => {});
-      });
-    }
-  },
+  notifyCustomer: notifyCustomerHelper,
   onOrderReady: (order) => {
     createCustomerOrderStatusNotification({
       customerId: order.customerId,
@@ -7884,6 +8224,36 @@ require("./lib/store-routes").registerStoreRoutes({
     if (!order.driverId && dispatchService.settings().auto) {
       dispatchService.dispatchOrder(order.id, { actor: "system" });
     }
+  },
+  onOrderRejected: (order, reason) => {
+    try {
+      const excState = excModReports.ensureExceptionsState(readJson(EXCEPTIONS_FILE, {}));
+      excModReports.createExceptionCase(excState, {
+        category: "rejected_order",
+        severity: "high",
+        orderId: order.id,
+        restaurantId: order.restaurantId,
+        customerId: order.customerId,
+        title: `Order #${order.id} rejected by store`,
+        description: reason || "Order rejected by business — requires supervisor review",
+      });
+      writeJson(EXCEPTIONS_FILE, excState);
+    } catch (_e) {}
+  },
+  onOrderDelayed: (order, reason) => {
+    try {
+      const excState = excModReports.ensureExceptionsState(readJson(EXCEPTIONS_FILE, {}));
+      excModReports.createExceptionCase(excState, {
+        category: "delayed_preparation",
+        severity: "medium",
+        orderId: order.id,
+        restaurantId: order.restaurantId,
+        customerId: order.customerId,
+        title: `Order #${order.id} preparation delayed`,
+        description: reason || "Preparation delayed by business",
+      });
+      writeJson(EXCEPTIONS_FILE, excState);
+    } catch (_e) {}
   },
 });
 
@@ -7914,13 +8284,58 @@ require("./lib/extras-routes").registerExtrasRoutes(app, {
   dispatchService,
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info("siymon server started", {
-    port: Number(PORT),
-    env: process.env.NODE_ENV || "",
-    uploadsDir: UPLOADS_DIR,
-    uploadsMount: UPLOADS_PUBLIC_PATH,
-    version: pkgVersion || undefined,
-  });
+// ---- Register Phase 2–8 Platform Routes ----
+registerPlatformRoutes(app, {
+  requireAdmin,
+  requireCustomer,
+  requireDriver,
+  requireApprovedDriver,
+  readJson,
+  writeJson,
+  loadConfig,
+  saveConfig: (c) => writeJson(CONFIG_FILE, c),
+  loadOrders,
+  saveOrders,
+  loadCustomers,
+  saveCustomers,
+  loadDrivers,
+  saveDrivers,
+  loadRestaurants,
+  saveRestaurants,
+  loadMenu,
+  saveMenu,
+  loadAdmins,
+  saveAdmins,
+  loadAuditLogs,
+  appendAuditLog,
+  hashPassword,
+  verifyPassword,
+  makeId,
+  catalogLib,
+  routeService,
+  dispatchService,
+  notifyCustomer: notifyCustomerHelper,
+  webpushEnabled: WEBPUSH_ENABLED,
+  dataFiles: {
+    otpFile: OTP_FILE,
+    walletFile: WALLET_FILE,
+    promosFile: PROMOS_FILE,
+    exceptionsFile: EXCEPTIONS_FILE,
+    zonesFile: ZONES_FILE,
+  },
 });
+
+const PORT = process.env.PORT || 3000;
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info("siymon server started", {
+      port: Number(PORT),
+      env: process.env.NODE_ENV || "",
+      uploadsDir: UPLOADS_DIR,
+      uploadsMount: UPLOADS_PUBLIC_PATH,
+      version: pkgVersion || undefined,
+    });
+  });
+}
+
+module.exports = { app };

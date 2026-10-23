@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data & backups (keep out of source control)
+data/
+backups/
+config.json
+
+# Logs
+logs/
+*.log
+
+# Uploaded files
+uploads/
+public/uploads/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp

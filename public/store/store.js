@@ -585,6 +585,7 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
     const rows = (o.items || []).map((i) => h("tr", {}, h("td", {}, i.name), h("td", {}, i.qty), h("td", {}, money(i.price)), h("td", {}, money(i.qty * i.price))));
     const body = h("div", {},
       h("div", { class: "row", style: "margin-bottom:8px" }, h("span", { class: "pill " + pillCls(o.stage) }, t("st_" + o.stage)), h("span", { class: "muted" }, when(o.createdAt))),
+      o.pickupCode ? h("p", { style: "padding:8px 12px;border-radius:10px;background:rgba(93,214,44,0.14);border:1px solid #5DD62C" }, h("b", {}, "🔐 Pickup Verification Code: "), h("span", { style: "color:#5DD62C;font-weight:800;font-size:16px" }, String(o.pickupCode))) : null,
       h("p", {}, h("b", {}, t("customer") + ": "), c.name || ""), c.phone ? h("p", {}, h("b", {}, t("phone") + ": "), h("span", { dir: "ltr" }, c.phone)) : null,
       c.addr ? h("p", {}, h("b", {}, t("address") + ": "), c.addr) : null, c.notes ? h("p", {}, h("b", {}, t("notes") + ": "), c.notes) : null,
       o.cancelReason ? h("p", { class: "pill bad" }, `${t("reason")}: ${o.cancelReason}`) : null,
@@ -595,8 +596,8 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
           [["58", "58 mm"], ["80", "80 mm"], ["85", "85 mm"], ["a4", "A4"]].map(([k, l]) => h("option", { value: k, selected: getPaper() === k }, l)))));
     const act = async (action, msg, danger, close) => {
       let reason;
-      if (action === "reject") { reason = await askReason(); if (!reason) return; } else if (!(await confirmBox(msg, danger))) return;
-      try { await api("/api/store/orders/" + encodeURIComponent(o.id), { method: "PATCH", body: { action, reason } }); toast(t("saved")); close(); pollStats(); reload(); }
+      if (action === "reject" || action === "delay") { reason = await askReason(); if (!reason) return; } else if (!(await confirmBox(msg, danger))) return;
+      try { await api("/api/store/orders/" + encodeURIComponent(o.id), { method: "PATCH", body: { action, reason, delayReason: reason } }); toast(t("saved")); close(); pollStats(); reload(); }
       catch (e) { toast(errText(e), true); }
     };
     const btns = [];
@@ -604,6 +605,7 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
       if (o.stage === "new") btns.push({ label: t("accept"), cls: "primary", run: (c2) => act("accept", t("confirmAccept"), false, c2) });
       if (o.stage === "new" || o.stage === "preparing") {
         btns.push({ label: t("ready"), cls: "primary", run: (c2) => act("ready", t("confirmReady"), false, c2) });
+        btns.push({ label: "⏳ Delay", run: (c2) => act("delay", "", false, c2) });
         btns.push({ label: t("reject"), cls: "danger", run: (c2) => act("reject", "", true, c2) });
       }
     }
@@ -885,6 +887,7 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
     const nameAr = h("input", { class: "input", value: (s.name && s.name.ar) || "", maxlength: "80" }), nameFr = h("input", { class: "input", value: (s.name && s.name.fr) || "", maxlength: "80" });
     const phone = h("input", { class: "input", value: s.phone || "", maxlength: "25", inputmode: "tel" }), addr = h("input", { class: "input", value: s.address || "", maxlength: "200" });
     const desc = h("textarea", { class: "input", maxlength: "500" }); desc.value = nm(s.description);
+    const showPickupChk = h("input", { type: "checkbox", checked: s.showPickupOnDriverMap !== false });
     const status = String(s.status || (s.isActive === false ? "unpublished" : "active"));
     const canPause = status === "active" || status === "paused";
     clear(root).appendChild(h("div", { class: "card", style: "max-width:640px" },
@@ -893,8 +896,9 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
       h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("nameAr")), nameAr), h("div", { class: "field" }, h("label", { class: "f" }, t("nameFr")), nameFr)),
       h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("phone")), phone), h("div", { class: "field" }, h("label", { class: "f" }, t("address")), addr)),
       h("div", { class: "field" }, h("label", { class: "f" }, t("desc")), desc),
+      h("div", { class: "field" }, h("label", { class: "row", style: "gap:8px;cursor:pointer" }, showPickupChk, h("span", {}, "إظهار موقع المتجر على خريطة السائق / Show pickup location on driver map"))),
       h("button", { class: "btn primary", type: "button", onclick: async () => { const ar = nameAr.value.trim(), fr = nameFr.value.trim(); if (!ar && !fr) return toast(t("nameAr"), true);
-        await saveSettings({ name: { ar: ar || fr, fr: fr || ar }, phone: phone.value.trim(), address: addr.value.trim(), description: desc.value.trim() }); } }, t("save"))));
+        await saveSettings({ name: { ar: ar || fr, fr: fr || ar }, phone: phone.value.trim(), address: addr.value.trim(), description: desc.value.trim(), showPickupOnDriverMap: showPickupChk.checked }); } }, t("save"))));
   };
 
   const DAYS = [[1, "mon"], [2, "tue"], [3, "wed"], [4, "thu"], [5, "fri"], [6, "sat"], [0, "sun"]];
