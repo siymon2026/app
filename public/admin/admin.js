@@ -2558,6 +2558,12 @@ async function saveRestEdit() {
     return;
   }
 
+  const locationError = window.storesValidateRest ? window.storesValidateRest() : "";
+  if (locationError) {
+    el("restEditHint").textContent = locationError;
+    return;
+  }
+
   const payload = {
     name,
     phone: el("restEditPhone").value.trim(),
@@ -2817,6 +2823,7 @@ function renderRestaurantsAdmin() {
         <div class="row-actions">
           <button class="btn ghost small" data-action="edit-rest" data-id="${escapeHtml(r.id)}">${(I18N[lang] || I18N.en).edit || "Edit"}</button>
           <button class="btn ghost small" data-action="store-profile" data-id="${escapeHtml(r.id)}">${lang === "ar" ? "ملف المتجر" : lang === "fr" ? "Profil" : "Profile"}</button>
+          <button class="btn ghost small" data-action="locate-rest" data-id="${escapeHtml(r.id)}">${lang === "ar" ? "عرض الموقع" : lang === "fr" ? "Afficher le lieu" : "Show Location"}</button>
           <button class="btn ghost small" data-action="auth-rest" data-id="${escapeHtml(r.id)}">${lang === "ar" ? "دخول" : "Auth"}</button>
           ${archived ? "" : `<button class="btn ghost small" data-action="toggle-rest" data-id="${escapeHtml(r.id)}">${r.status === "unpublished" || r.isActive === false ? L3("نشر", "Publish") : L3("إخفاء", "Hide")}</button>`}
           <button class="btn ghost small" data-action="${archived ? "restore-rest" : "archive-rest"}" data-id="${escapeHtml(r.id)}">${archived ? L3("استعادة", "Restore") : L3("أرشفة", "Archive")}</button>
@@ -3732,6 +3739,17 @@ function showDetails(order) {
   </div>
 `;
 
+  let orderStore = (adminRestaurants || []).find((r) => String(r.id) === String(order.restaurantId || ""));
+  const orderStoreName = orderStore ? asText(orderStore.name) || String(orderStore.id) : String(order.restaurantId || "—");
+  const orderStoreAddress = orderStore ? [orderStore.address, orderStore.area, orderStore.city].filter(Boolean).join(", ") : "";
+  const storeLocationBox = `
+    <div class="panel-like">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div><b>${lang === "ar" ? "موقع الاستلام من المتجر" : lang === "fr" ? "Lieu de retrait" : "Store pickup location"}</b><div class="muted" style="margin-top:4px">${escapeHtml(orderStoreName)}${orderStoreAddress ? " · " + escapeHtml(orderStoreAddress) : ""}</div></div>
+        <button class="btn ghost small" id="detailStoreLocationBtn" type="button">${lang === "ar" ? "عرض الموقع" : lang === "fr" ? "Afficher le lieu" : "Show Location"}</button>
+      </div>
+    </div>`;
+
   el("detailsBox").innerHTML = `
     <div style="display:grid; gap:12px">
       <div class="ticket-preview">
@@ -3739,6 +3757,8 @@ function showDetails(order) {
         <pre class="ticket-pre" dir="ltr">${escapeHtml(receiptText)}</pre>
         <div class="ticket-help">80mm / ESC-POS</div>
       </div>
+
+      ${storeLocationBox}
 
       ${driverInfoBox}
 
@@ -3797,6 +3817,13 @@ function showDetails(order) {
   el("detailWifiBtn")?.addEventListener("click", () => printWifi(order));
   el("detailBtBtn")?.addEventListener("click", () => printBluetooth(order));
   el("detailDoneBtn")?.addEventListener("click", () => markDone(order.id));
+  el("detailStoreLocationBtn")?.addEventListener("click", async () => {
+    if (!orderStore && typeof refreshMenuData === "function") {
+      try { await refreshMenuData(); } catch (_e) {}
+      orderStore = (adminRestaurants || []).find((r) => String(r.id) === String(order.restaurantId || ""));
+    }
+    if (window.SiyDispatch) window.SiyDispatch.showStoreLocation(orderStore || { id: order.restaurantId, name: orderStoreName });
+  });
 
   // order chat
   el("openOrderChatBtn")?.addEventListener("click", () =>
@@ -4775,6 +4802,11 @@ function bindEvents() {
     }
     if (action === "edit-rest") {
       openRestEdit(id);
+      return;
+    }
+    if (action === "locate-rest") {
+      const store = (adminRestaurants || []).find((x) => String(x.id) === id);
+      if (window.SiyDispatch) window.SiyDispatch.showStoreLocation(store || { id });
       return;
     }
     if (action === "toggle-rest") {

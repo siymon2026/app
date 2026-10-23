@@ -11,6 +11,7 @@
       none: "لا شيء حالياً", all: "الكل", state_available: "متاح", state_offer_pending: "لديه عرض", state_assigned: "مكلّف", state_delivering: "في التوصيل", state_paused: "متوقف مؤقتاً", state_offline: "غير متصل",
       fresh_live: "مباشر", fresh_stale: "قديم", fresh_lost: "مفقود", autoOffer: "عرض تلقائي", assign: "تعيين", reset: "إعادة", pick: "اختر سائقاً",
       offeredTo: "معروض على", left: "ث", waiting: "ينتظر", nocand: "لا يوجد سائق مؤهل", nopickup: "لا توجد إحداثيات للمطعم",
+      showLocation: "عرض الموقع", showAll: "عرض الكل", noStoreCoords: "لا توجد إحداثيات صالحة لهذا المتجر", storeLocation: "موقع استلام المتجر",
       settings: "الإعدادات", mode: "نظام الطلبات", pull: "سحب (السائق يقبل بنفسه)", offers: "عروض (توزيع ذكي)", auto: "تعيين تلقائي", ttl: "مهلة العرض (ثانية)",
       pickup: "نقطة الاستلام الافتراضية", save: "حفظ", saved: "تم الحفظ", events: "آخر الأحداث", warnPickup: "لا توجد إحداثيات للمطعم؛ حدّد نقطة الاستلام في الإعدادات حتى يعمل التوزيع.",
       warnPull: "الوضع الحالي: سحب. العروض معطّلة والسائقون يقبلون الطلبات بأنفسهم.", err: "تعذّر التحميل", cell: "خلية", noloc: "بلا موقع", fail: "فشل",
@@ -20,6 +21,7 @@
       none: "Nothing right now", all: "All", state_available: "Available", state_offer_pending: "Has offer", state_assigned: "Assigned", state_delivering: "Delivering", state_paused: "Paused", state_offline: "Offline",
       fresh_live: "live", fresh_stale: "stale", fresh_lost: "lost", autoOffer: "Auto offer", assign: "Assign", reset: "Reset", pick: "Pick a driver",
       offeredTo: "Offered to", left: "s", waiting: "waiting", nocand: "No eligible driver", nopickup: "No restaurant coordinates",
+      showLocation: "Show Location", showAll: "Show all", noStoreCoords: "This store has no valid pickup coordinates", storeLocation: "Store pickup location",
       settings: "Settings", mode: "Order system", pull: "Pull (drivers accept themselves)", offers: "Offers (smart dispatch)", auto: "Automatic assignment", ttl: "Offer timeout (seconds)",
       pickup: "Default pickup point", save: "Save", saved: "Saved", events: "Recent events", warnPickup: "No restaurant coordinates. Set a default pickup point in Settings so dispatch can work.",
       warnPull: "Current mode: pull. Offers are off; drivers accept orders themselves.", err: "Failed to load", cell: "cell", noloc: "no location", fail: "Failed",
@@ -29,6 +31,7 @@
       none: "Rien pour le moment", all: "Tous", state_available: "Disponible", state_offer_pending: "Offre en cours", state_assigned: "Assigné", state_delivering: "En livraison", state_paused: "En pause", state_offline: "Hors ligne",
       fresh_live: "direct", fresh_stale: "ancien", fresh_lost: "perdu", autoOffer: "Offre auto", assign: "Assigner", reset: "Réinitialiser", pick: "Choisir un livreur",
       offeredTo: "Proposée à", left: "s", waiting: "attend", nocand: "Aucun livreur éligible", nopickup: "Pas de coordonnées du restaurant",
+      showLocation: "Afficher le lieu", showAll: "Tout afficher", noStoreCoords: "Cette boutique n'a pas de coordonnées de retrait valides", storeLocation: "Lieu de retrait de la boutique",
       settings: "Réglages", mode: "Système de commandes", pull: "Pull (le livreur accepte)", offers: "Offres (dispatch intelligent)", auto: "Assignation automatique", ttl: "Délai de l'offre (secondes)",
       pickup: "Point de retrait par défaut", save: "Enregistrer", saved: "Enregistré", events: "Derniers événements", warnPickup: "Pas de coordonnées de restaurant. Définissez un point de retrait dans les réglages.",
       warnPull: "Mode actuel: pull. Les offres sont désactivées.", err: "Échec du chargement", cell: "cellule", noloc: "sans position", fail: "Échec",
@@ -42,6 +45,7 @@
   const STATES = ["available", "offer_pending", "assigned", "delivering", "paused", "offline"];
 
   let timer = null, busy = false, st = null, filter = "all", selected = null, settingsDirty = false;
+  let focusedStore = null, locationError = "";
 
   function mk(tag, attrs, text) {
     const n = document.createElement(tag);
@@ -55,6 +59,21 @@
     if (text != null) n.textContent = text;
     return n;
   }
+  function nameOf(v) {
+    if (v && typeof v === "object") return String(v[typeof lang !== "undefined" ? lang : "ar"] || v.ar || v.en || v.fr || "");
+    return String(v || "");
+  }
+  function validLL(lat, lng) {
+    if (lat == null || lng == null || (typeof lat === "string" && !lat.trim()) || (typeof lng === "string" && !lng.trim())) return false;
+    const a = Number(lat), b = Number(lng);
+    return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180 && !(a === 0 && b === 0);
+  }
+  function storeInfo(input) {
+    const base = input || {}, loc = base.location && typeof base.location === "object" ? { ...base, ...base.location } : base;
+    const address = String(loc.address || [base.address, base.area, base.city].filter(Boolean).join(", ") || "");
+    return { id: String(loc.id || base.id || ""), name: nameOf(loc.name || base.name), address,
+      lat: validLL(loc.lat, loc.lng) ? Number(loc.lat) : null, lng: validLL(loc.lat, loc.lng) ? Number(loc.lng) : null };
+  }
 
   /* ---------- labels ---------- */
   function labels() {
@@ -62,7 +81,7 @@
     const set = (id, v) => { const n = $(id); if (n) n.textContent = v; };
     set("dspTitle", t.title); set("dspSub", t.sub); set("dspPendingTitle", t.pending); set("dspDriversTitle", t.drivers);
     set("dspSettingsTitle", t.settings); set("dspLblMode", t.mode); set("dspLblAuto", t.auto); set("dspLblTtl", t.ttl);
-    set("dspLblPickup", t.pickup); set("dspSave", t.save); set("dspEventsTitle", t.events);
+    set("dspLblPickup", t.pickup); set("dspSave", t.save); set("dspEventsTitle", t.events); set("dspLocationClear", t.showAll);
     const m = $("dspMode"); if (m) { m.options[0].textContent = t.pull; m.options[1].textContent = t.offers; }
     set("dispatchText", t.nav);
   }
@@ -71,13 +90,18 @@
   let dmap = null;
   function renderMap() {
     const box = $("dspMap"); if (!box || !st || !window.SiyMap) return;
-    if (!dmap) dmap = window.SiyMap.create(box, { height: 440, dark: "auto", pad: 40, interactive: true });
+    if (!dmap) {
+      dmap = window.SiyMap.create(box, { height: 440, dark: "auto", pad: 40, interactive: true });
+      if (focusedStore) dmap.focus(focusedStore.lat, focusedStore.lng, 16);
+    }
     const items = [];
     (st.cells || []).forEach((c) => items.push({ kind: "poly", pts: c.boundary, fill: c.available ? "rgba(63,174,28,.18)" : "rgba(120,120,120,.10)", stroke: c.available ? "rgba(63,174,28,.7)" : "rgba(120,120,120,.45)", title: `${T().cell}: ${c.drivers} / ${c.available}` }));
     (st.pending || []).forEach((o) => {
       if (Number.isFinite(+o.customerLat) && Number.isFinite(+o.customerLng)) items.push({ kind: "sq", lat: +o.customerLat, lng: +o.customerLng, color: "#ef4444", title: `${T().kOrder} #${o.id}` });
     });
     if (st.pickup) items.push({ kind: "tri", lat: st.pickup.lat, lng: st.pickup.lng, title: `${T().kPickup}: ${st.pickup.name || ""}` });
+    if (focusedStore) items.push({ kind: "tri", lat: focusedStore.lat, lng: focusedStore.lng, color: "#7c3aed",
+      title: `${T().storeLocation}: ${focusedStore.name}${focusedStore.address ? " — " + focusedStore.address : ""}` });
     (st.drivers || []).forEach((d) => {
       if (!d.location) return;
       const sel = selected === d.id;
@@ -86,6 +110,20 @@
         onClick: () => { selected = sel ? null : d.id; render(); } });
     });
     dmap.draw(items);
+  }
+
+  function renderLocation() {
+    const box = $("dspLocation"); if (!box) return;
+    const name = $("dspLocationName"), address = $("dspLocationAddress");
+    box.classList.toggle("error", !!locationError);
+    if (locationError) {
+      box.hidden = false; name.textContent = locationError; address.textContent = "";
+    } else if (focusedStore) {
+      box.hidden = false; name.textContent = focusedStore.name || T().storeLocation;
+      address.textContent = focusedStore.address || `${focusedStore.lat}, ${focusedStore.lng}`;
+    } else {
+      box.hidden = true; name.textContent = ""; address.textContent = "";
+    }
   }
 
   function renderLegend() {
@@ -129,7 +167,7 @@
     list.forEach((o) => {
       const row = mk("div", { class: "dsp-row" });
       const head = mk("div", { class: "dsp-row-h" });
-      head.appendChild(mk("b", null, "#" + o.id));
+      head.appendChild(mk("b", null, "#" + o.id + (o.store && nameOf(o.store.name) ? " · " + nameOf(o.store.name) : "")));
       if (o.readyAt) head.appendChild(mk("span", { class: "muted" }, T().waiting + " " + Math.max(0, Math.round((Date.now() - Date.parse(o.readyAt)) / 60000)) + "m"));
       row.appendChild(head);
       let info = "";
@@ -140,6 +178,8 @@
       else if (o.exhausted === "no_candidates") info = T().nocand;
       if (info) row.appendChild(mk("div", { class: "dsp-info" }, info));
       const act = mk("div", { class: "dsp-act" });
+      const locate = mk("button", { type: "button", class: "btn small ghost" }, T().showLocation);
+      locate.addEventListener("click", () => showStoreLocation(o.store || { id: o.restaurantId }));
       const auto = mk("button", { type: "button", class: "btn small" }, T().autoOffer);
       auto.disabled = st.mode !== "offers";
       auto.addEventListener("click", () => run(post("/api/admin/dispatch/orders/" + encodeURIComponent(o.id) + "/offer")));
@@ -151,7 +191,7 @@
       asg.addEventListener("click", () => { if (sel.value) run(post("/api/admin/dispatch/orders/" + encodeURIComponent(o.id) + "/offer", { driverId: sel.value })); });
       const rst = mk("button", { type: "button", class: "btn small ghost" }, T().reset);
       rst.addEventListener("click", () => run(post("/api/admin/dispatch/orders/" + encodeURIComponent(o.id) + "/reset")));
-      act.append(auto, sel, asg, rst);
+      act.append(locate, auto, sel, asg, rst);
       row.appendChild(act);
       box.appendChild(row);
     });
@@ -199,7 +239,28 @@
 
   function render() {
     if (!st) return;
-    labels(); renderWarn(); renderCounts(); renderMap(); renderLegend(); renderPending(); renderFilters(); renderDrivers(); renderEvents(); fillSettings();
+    labels(); renderWarn(); renderCounts(); renderMap(); renderLocation(); renderLegend(); renderPending(); renderFilters(); renderDrivers(); renderEvents(); fillSettings();
+  }
+
+  function showStoreLocation(input) {
+    const store = storeInfo(input);
+    const valid = store.lat !== null && store.lng !== null;
+    focusedStore = valid ? store : null;
+    locationError = valid ? "" : T().noStoreCoords + (store.name ? " — " + store.name : "");
+    if (!valid && dmap && dmap.clearFocus) dmap.clearFocus();
+    if (window.adminNav && typeof window.adminNav.go === "function") window.adminNav.go("dispatch");
+    else window.showDispatch(true);
+    if (st) {
+      render();
+      if (valid && dmap) dmap.focus(store.lat, store.lng, 16);
+    } else renderLocation();
+    if (!valid && typeof toast === "function") toast(locationError);
+  }
+
+  function clearStoreLocation() {
+    focusedStore = null; locationError = "";
+    if (dmap && dmap.clearFocus) dmap.clearFocus();
+    if (st) render(); else renderLocation();
   }
 
   /* ---------- data ---------- */
@@ -238,6 +299,7 @@
   };
 
   /* ---------- page open/close (same contract as other admin pages) ---------- */
+  window.SiyDispatch = { showStoreLocation };
   window.showDispatch = function (show) {
     $("dispatchModal")?.classList.toggle("show", !!show);
     clearInterval(timer); timer = null;
@@ -248,6 +310,7 @@
     $("dispatchBtn")?.addEventListener("click", () => { if (typeof token !== "undefined" && !token) return; window.showDispatch(true); });
     $("dspClose")?.addEventListener("click", () => window.showDispatch(false));
     $("dspSave")?.addEventListener("click", save);
+    $("dspLocationClear")?.addEventListener("click", clearStoreLocation);
     ["dspMode", "dspAuto", "dspTtl", "dspPkLat", "dspPkLng", "dspPkName"].forEach((id) => $(id)?.addEventListener("input", () => { settingsDirty = true; }));
     new MutationObserver(labels).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   });

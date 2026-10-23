@@ -10,6 +10,7 @@ function setup(cfgOver = {}) {
   let t = 1_000_000;
   const orders = { orders: [{ id: "O1", status: "restaurant_ready", restaurantId: "R1", subtotal: 50, deliveryFee: 10, total: 60, customerId: "C1" }] };
   const drivers = { drivers: ["A", "B", "C"].map((id) => ({ id, status: "approved", name: id, walletBalance: 1000 })) };
+  const restaurants = { restaurants: [{ id: "R1", name: "Rest", address: "Store address", lat: 33.265, lng: -7.585 }] };
   const cfg = { dispatchMode: "offers", driverWalletEnabled: true, ...cfgOver };
   const accepted = [];
   const svc = createDispatchService({
@@ -17,14 +18,14 @@ function setup(cfgOver = {}) {
     readJson: (f, fb) => (files[f] ? JSON.parse(JSON.stringify(files[f])) : fb),
     writeJson: (f, d) => { files[f] = JSON.parse(JSON.stringify(d)); },
     loadOrders: () => orders, saveOrders: () => {}, loadDrivers: () => drivers,
-    loadRestaurants: () => ({ restaurants: [{ id: "R1", name: "Rest", lat: 33.265, lng: -7.585 }] }),
+    loadRestaurants: () => restaurants,
     loadConfig: () => cfg, onAccepted: (o) => accepted.push(o.id),
   });
   const online = (id, dLat) => {
     assert.ok(svc.updateLocation(id, { lat: 33.265 + dLat, lng: -7.585, accuracy: 20 }).ok);
     assert.ok(svc.setStatus(id, "online").ok);
   };
-  return { svc, orders, drivers, cfg, accepted, tick: (ms) => { t += ms; }, online };
+  return { svc, orders, drivers, restaurants, cfg, accepted, tick: (ms) => { t += ms; }, online };
 }
 
 test("status online requires a fresh valid location", () => {
@@ -114,4 +115,65 @@ test("admin state reports pickup readiness and no driver phone/PII", () => {
   const s = svc.adminState();
   assert.equal(s.pickupOk, true); // restaurant R1 has coordinates
   assert.ok(!JSON.stringify(s).includes("walletBalance"));
+});
+
+test("each order dispatches from its own store and accepted response carries that pickup", () => {
+  const { svc, orders, restaurants, online } = setup({ dispatchRings: 5 });
+  restaurants.restaurants.push({ id: "R2", name: "Second", address: "Second address", lat: 34.02, lng: -6.84 });
+  orders.orders.push({ id: "O2", status: "restaurant_ready", restaurantId: "R2", subtotal: 20, deliveryFee: 5, total: 25 });
+  online("A", 0.001); online("C", 0.002);
+  assert.ok(svc.updateLocation("B", { lat: 34.02, lng: -6.84, accuracy: 20 }).ok);
+  assert.ok(svc.setStatus("B", "online").ok);
+  assert.equal(svc.dispatchOrder("O1").offer.driverId, "A");
+  const second = svc.dispatchOrder("O2");
+  assert.equal(second.offer.driverId, "B"); // not the other available driver near R1
+  const offer = svc.driverOffers("B")[0];
+  assert.equal(offer.pickup.storeId, "R2");
+  assert.equal(offer.pickup.lat, 34.02);
+  assert.equal(offer.pickup.source, "store");
+  const pending = svc.adminState().pending;
+  assert.equal(pending.find((o) => o.id === "O1").store.lat, 33.265);
+  assert.equal(pending.find((o) => o.id === "O2").store.lat, 34.02);
+  const accepted = svc.acceptOffer("B", second.offer.id);
+  assert.ok(accepted.ok);
+  assert.equal(accepted.order.pickup.storeId, "R2");
+  assert.equal(accepted.order.pickup.address, "Second address");
+});
+
+test("missing store coordinates report no_pickup; configured fallback remains explicit", () => {
+  const missing = setup();
+  missing.restaurants.restaurants[0].lat = null;
+  missing.online("A", 0.001);
+  assert.equal(missing.svc.dispatchOrder("O1").error, "no_pickup_location");
+  assert.equal(missing.svc.adminState().pending[0].store.lat, null);
+
+  const fallback = setup({ pickupLocation: { lat: 33.265, lng: -7.585, name: "Default" } });
+  fallback.restaurants.restaurants[0].lat = "";
+  fallback.online("A", 0.001);
+  const offer = fallback.svc.dispatchOrder("O1").offer;
+  const pickup = fallback.svc.driverOffers(offer.driverId)[0].pickup;
+  assert.equal(pickup.source, "fallback");
+  assert.equal(pickup.storeId, "R1");
+});
+
+test("candidate search stops at the first successive ring with eligible drivers", () => {
+  const now = 100000;
+  const driver = (id, lat) => ({ id, status: "approved", dispatchState: "available",
+    location: { lat, lng: 10, accuracy: 20, at: now } });
+  const args = {
+    pickup: { lat: 10, lng: 10 }, now, maxRings: 2,
+    cellOf: (lat) => String(lat),
+    ringOf: (_cell, k) => Array.from({ length: k + 1 }, (_, i) => String(10 + i)),
+  };
+  const ringOne = core.rankCandidates({ ...args, drivers: [driver("A", 11), driver("B", 12)] });
+  assert.deepEqual(ringOne.map((d) => d.driverId), ["A"]);
+  const storeCell = core.rankCandidates({ ...args, drivers: [driver("A", 11), driver("C", 10)] });
+  assert.deepEqual(storeCell.map((d) => d.driverId), ["C"]);
+  assert.deepEqual(core.rankCandidates({ ...args, drivers: [driver("B", 13)] }), []);
+});
+
+test("settings reject partial/blank fallback coordinates", () => {
+  const { svc } = setup();
+  assert.equal(svc.settingsPatch({ pickup: { lat: "", lng: -7.58 } }).error, "invalid_pickup");
+  assert.equal(svc.settingsPatch({ pickup: { lat: null, lng: -7.58 } }).error, "invalid_pickup");
 });

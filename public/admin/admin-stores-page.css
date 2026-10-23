@@ -85,6 +85,7 @@ html[dir="rtl"] .sp-ico.flip{ transform:scaleX(-1); }
 .sp-fv.ok{ color:var(--sp-green); } .sp-fv.mid{ color:var(--sp-blue); } .sp-fv.warn{ color:var(--sp-orange); } .sp-fv.bad{ color:var(--sp-red); } .sp-fv.muted{ color:var(--muted); }
 .sp-fv.ltr{ unicode-bidi:plaintext; text-align:start; }
 .sp-sfoot{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px; border-top:1px solid var(--sp-line); }
+.sp-sfoot .sp-location{ grid-column:1/-1; }
 
 /* list layout */
 @container sp (min-width:760px){

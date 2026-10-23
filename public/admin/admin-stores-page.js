@@ -139,6 +139,7 @@
         field(L("العنوان", "Address", "Adresse"), addressOf(s), "addr"),
         field(L("الهاتف", "Phone", "Téléphone"), s.phone || "—", "ltr")),
       h("footer", { class: "sp-sfoot" },
+        h("button", { class: "sp-btn sp-location", type: "button", onclick: function () { showStoreLocation(s); } }, L("عرض الموقع", "Show Location", "Afficher le lieu")),
         h("button", { class: "sp-btn", type: "button", onclick: function () { viewStore(s); } }, L("عرض المتجر", "View Store", "Voir")),
         h("button", { class: "sp-btn green", type: "button", onclick: function (e) { editStore(s, e.currentTarget); } }, L("تعديل معلومات المتجر", "Edit Store Info", "Modifier"))));
   }
@@ -244,6 +245,14 @@
     doc.body.appendChild(ov);
     var f0 = box.querySelector("input,select,textarea,button.sp-btn"); if (f0) f0.focus();
     return { close: close, box: box };
+  }
+
+  function showStoreLocation(s) {
+    if (window.SiyDispatch && typeof window.SiyDispatch.showStoreLocation === "function") {
+      window.SiyDispatch.showStoreLocation(s);
+      return;
+    }
+    say(L("تعذّر فتح خريطة التوزيع", "Couldn't open the dispatch map", "Impossible d'ouvrir la carte"));
   }
 
   function viewStore(s) {

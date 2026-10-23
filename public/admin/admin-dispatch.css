@@ -12,6 +12,12 @@
 .dsp-grid .dsp-panel { margin-bottom: 0; }
 .dsp-panel h4 { margin: 4px 0 8px; }
 .dsp-map { width: 100%; }
+.dsp-location { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 9px 10px; border: 1px solid rgba(124,58,237,.3); border-radius: 10px; background: rgba(124,58,237,.07); }
+.dsp-location[hidden] { display: none; }
+.dsp-location-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dsp-location-text b, .dsp-location-text span { overflow-wrap: anywhere; }
+.dsp-location.error { border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.08); color: #b91c1c; }
+@media (max-width: 520px) { .dsp-location { align-items: stretch; flex-direction: column; } .dsp-location .btn { align-self: flex-start; } }
 .dsp-cell { fill: rgba(120,120,120,.10); stroke: rgba(120,120,120,.45); stroke-width: 1; }
 .dsp-cell.has-av { fill: rgba(63,174,28,.18); stroke: rgba(63,174,28,.7); }
 .dsp-driver circle { stroke: #fff; stroke-width: 2; cursor: pointer; }
