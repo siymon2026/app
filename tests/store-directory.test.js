@@ -11,11 +11,11 @@ const order = (restaurantId, total, stars, daysAgo, status = "delivered") => ({
   restaurantId, total, status, createdAt: day(daysAgo), ...(stars ? { customerRating: { stars } } : {}),
 });
 const restaurants = [
-  store("a", { channel: "online", phone: "+212600000001", website: "a.example.com" }),
-  store("b", { channel: "offline", address: "12 Rue X", city: "Fes" }),
+  store("a", { channel: "online", phone: "+212600000001", website: "a.example.com", lat: 33.5731, lng: -7.5898 }),
+  store("b", { channel: "offline", address: "12 Rue X", city: "Fes", lat: 34.0181, lng: -5.0078 }),
   store("c", { status: "unpublished" }), // closed, channel defaults to online
   store("d", { status: "archived" }),    // excluded
-  store("e", { channel: "offline" }),
+  store("e", { channel: "offline", lat: null, lng: -7.5 }), // partial/missing point is not valid
 ];
 const orders = [
   order("a", 100, 5, 5), order("a", 50, 4, 10), order("a", 40, 5, 40), order("a", 999, 5, 3, "canceled"),
@@ -84,6 +84,17 @@ test("pagination never loses or duplicates records", () => {
   assert.equal(q({ pageSize: 6, page: 99 }).page, 4); // clamped
   assert.equal(q({ pageSize: "all" }).stores.length, 23);
   assert.equal(q({ pageSize: 6, page: 2, q: "s1" }).total, 10); // search + pagination
+});
+
+test("directory exposes distinct real store locations and null for missing coordinates", () => {
+  const cards = run({ pageSize: "all" }).stores;
+  const a = cards.find((s) => s.id === "a"), b = cards.find((s) => s.id === "b");
+  assert.deepEqual([a.location.lat, a.location.lng], [33.5731, -7.5898]);
+  assert.deepEqual([b.location.lat, b.location.lng], [34.0181, -5.0078]);
+  assert.notDeepEqual(a.location, b.location);
+  assert.equal(b.location.address, "12 Rue X, Fes");
+  assert.equal(cards.find((s) => s.id === "c").location.lat, null);
+  assert.equal(cards.find((s) => s.id === "e").location.lat, null);
 });
 
 test("channel/website are accepted by the store meta picker", () => {

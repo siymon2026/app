@@ -92,7 +92,7 @@
     const ov = sv("svg", { class: "sm-ov", role: "img" });
     const attr = document.createElement("div"); attr.className = "sm-attr";
     root.append(tiles, ov, attr); container.appendChild(root);
-    const imgs = new Map(); let last = null, tileUrl = DEFAULT_TILE;
+    const imgs = new Map(); let last = null, tileUrl = DEFAULT_TILE, focused = null;
     if (isDark(opt.dark === undefined ? "auto" : opt.dark)) root.classList.add("sm-dark");
 
     loadConfig().then((c) => { tileUrl = c.tileUrl; attr.textContent = c.attribution; if (last) draw(last); });
@@ -105,7 +105,11 @@
       items.forEach((i) => { if (i.kind === "poly") i.pts.forEach((p) => pts.push(p)); else if (i.kind === "line") { pts.push([i.from.lat, i.from.lng], [i.to.lat, i.to.lng]); } else if (Number.isFinite(i.lat)) pts.push([i.lat, i.lng]); });
       ov.setAttribute("viewBox", `0 0 ${W} ${H}`); ov.textContent = "";
       if (!pts.length) return;
-      const v = viewFor(boundsOf(pts, opt.minSpan), W, H, opt.pad == null ? 34 : opt.pad, opt.maxZoom || 17);
+      const v = focused ? {
+        z: focused.z,
+        ox: lngX(focused.lng, focused.z) - W / 2,
+        oy: latY(focused.lat, focused.z) - H / 2,
+      } : viewFor(boundsOf(pts, opt.minSpan), W, H, opt.pad == null ? 34 : opt.pad, opt.maxZoom || 17);
       const P = (lat, lng) => [lngX(lng, v.z) - v.ox, latY(lat, v.z) - v.oy];
 
       // tiles (reuse <img> nodes to avoid flicker)
@@ -149,8 +153,16 @@
         ov.appendChild(g);
       });
     }
+    function focus(lat, lng, zoom) {
+      if (lat == null || lng == null || (typeof lat === "string" && !lat.trim()) || (typeof lng === "string" && !lng.trim())) return;
+      const a = Number(lat), b = Number(lng);
+      if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) > 90 || Math.abs(b) > 180 || (a === 0 && b === 0)) return;
+      focused = { lat: a, lng: b, z: Math.max(MINZ, Math.min(MAXZ, Number(zoom) || 16)) };
+      if (last) draw(last);
+    }
+    function clearFocus() { focused = null; if (last) draw(last); }
     if (window.ResizeObserver) { let w = 0; new ResizeObserver(() => { const nw = root.clientWidth; if (nw && nw !== w) { w = nw; if (last) draw(last); } }).observe(root); }
-    return { draw, el: root };
+    return { draw, focus, clearFocus, el: root };
   }
 
 
@@ -215,7 +227,7 @@
     }).setView([33.2655, -7.5875], 13);
     const ov = L.layerGroup().addTo(map), rt = L.layerGroup().addTo(map);
     const routes = new Map(); // key -> {cas, line, last, lastAt, busy}
-    let fitted = false, errs = 0, lastItems = null;
+    let fitted = false, errs = 0, lastItems = null, focused = null;
 
     loadConfig().then((c) => {
       const layer = L.tileLayer(c.tileUrl, { maxZoom: 19, attribution: c.attribution });
@@ -224,7 +236,7 @@
       layer.addTo(map);
     });
     const fitTo = (pts) => {
-      if (!pts.length) return;
+      if (focused || !pts.length) return;
       const b = L.latLngBounds(pts), pad = opt.pad == null ? 34 : opt.pad;
       if (fitted && map.getBounds().pad(-0.05).contains(b)) return; // everything still in view: don't jump around
       map.fitBounds(b, { padding: [pad, pad], maxZoom: opt.maxZoom || 17, animate: false }); fitted = true;
@@ -275,7 +287,18 @@
       routes.forEach((r, k) => { if (!keep.has(k)) { rt.removeLayer(r.cas); rt.removeLayer(r.line); routes.delete(k); } });
       fitTo(pts);
     }
-    return { draw, el: box, map, engine: "leaflet" };
+    function focus(lat, lng, zoom) {
+      if (lat == null || lng == null || (typeof lat === "string" && !lat.trim()) || (typeof lng === "string" && !lng.trim())) return;
+      const a = Number(lat), b = Number(lng);
+      if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) > 90 || Math.abs(b) > 180 || (a === 0 && b === 0)) return;
+      focused = { lat: a, lng: b };
+      map.setView([a, b], Math.max(MINZ, Math.min(MAXZ, Number(zoom) || 16)), { animate: false });
+    }
+    function clearFocus() {
+      focused = null; fitted = false;
+      if (lastItems) draw(lastItems);
+    }
+    return { draw, focus, clearFocus, el: box, map, engine: "leaflet" };
   }
 
   function create(container, opt) {

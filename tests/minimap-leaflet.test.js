@@ -6,14 +6,14 @@ const fs = require("node:fs");
 
 // Minimal fakes so createLeaflet()/draw()/route logic runs without a browser.
 function makeEnv(routeOk) {
-  const log = { markers: 0, polylines: [], fits: 0, fetches: [] };
+  const log = { markers: 0, polylines: [], fits: 0, fetches: [], views: [] };
   const routeFetches = () => log.fetches.filter((u) => u.startsWith("/api/route"));
   log.routeFetches = routeFetches;
   const el = () => ({ style: {}, classList: { add() {} }, appendChild() {}, append() {}, setAttribute() {}, set textContent(v) {}, set className(v) {}, set innerHTML(v) {}, clientWidth: 300 });
   const layer = () => ({ addTo() { return this; }, on() { return this; }, bindTooltip() { return this; }, clearLayers() {}, removeLayer() {}, setLatLngs(p) { this.pts = p; } });
   const L = {
     Browser: { mobile: true },
-    map: () => ({ setView() { return this; }, getBounds: () => ({ pad: () => ({ contains: () => false }) }), fitBounds() { log.fits++; }, invalidateSize() {} }),
+    map: () => ({ setView(...args) { log.views.push(args); return this; }, getBounds: () => ({ pad: () => ({ contains: () => false }) }), fitBounds() { log.fits++; }, invalidateSize() {} }),
     layerGroup: layer, tileLayer: layer, divIcon: (o) => o, latLngBounds: (p) => p,
     marker: () => { log.markers++; return layer(); },
     polyline: (pts) => { const l = layer(); l.pts = pts; log.polylines.push(l); return l; },
@@ -51,6 +51,24 @@ test("leaflet engine: route service down -> straight line stays, fallback report
   m.draw(items({ onInfo: (i) => infos.push(i) }));
   await new Promise((r) => setImmediate(r)); await new Promise((r) => setImmediate(r));
   assert.ok(infos.every((i) => i.fallback === true));
+});
+
+test("leaflet focus centers one store, survives redraws, and clearFocus refits all", () => {
+  const { ctx, log } = makeEnv(true);
+  const m = ctx.SiyMap.create({ textContent: "", appendChild() {} }, { height: 200 });
+  const store = [{ kind: "tri", lat: 33.2655, lng: -7.5875, title: "Store" }];
+  m.draw(store);
+  assert.equal(log.fits, 1);
+  m.focus(33.2655, -7.5875, 16);
+  assert.deepEqual(log.views[log.views.length - 1][0], [33.2655, -7.5875]);
+  assert.equal(log.views[log.views.length - 1][1], 16);
+  m.draw(store);
+  assert.equal(log.fits, 1); // live redraw does not undo the selected store view
+  const views = log.views.length;
+  m.focus(null, -7.5875, 16); // invalid partial coordinates are ignored
+  assert.equal(log.views.length, views);
+  m.clearFocus();
+  assert.equal(log.fits, 2);
 });
 
 test("without Leaflet the basic tile renderer is used", () => {

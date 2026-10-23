@@ -107,6 +107,11 @@ const I18N = {
     errNeedEmailPhone: "أدخل البريد الإلكتروني أو رقم الهاتف",
     openMaps: "الموقع",
     restMap: "موقع المطعم",
+    pickupTitle: "نقطة الاستلام من المتجر",
+    pickupNavigate: "التنقّل إلى نقطة الاستلام",
+    pickupMissing: "لا توجد إحداثيات استلام صالحة لهذا المتجر. تواصل مع الإدارة.",
+    pickupFallback: "تنبيه: الإحداثيات المعروضة هي نقطة الاستلام الافتراضية، وليست إحداثيات مسجلة لهذا المتجر.",
+    noMapPoints: "لا توجد إحداثيات صالحة لعرضها على الخريطة.",
     custMap: "موقع الزبون",
     call: "اتصال",
     chat: "دردشة",
@@ -235,6 +240,11 @@ const I18N = {
     errNeedEmailPhone: "Enter Email or Phone",
     openMaps: "Map",
     restMap: "Restaurant location",
+    pickupTitle: "Store pickup point",
+    pickupNavigate: "Navigate to pickup",
+    pickupMissing: "This store has no valid pickup coordinates. Contact the administrator.",
+    pickupFallback: "Note: these are the configured default pickup coordinates, not coordinates recorded for this store.",
+    noMapPoints: "No valid coordinates are available for this map.",
     custMap: "Customer location",
     call: "Call",
     chat: "Chat",
@@ -363,6 +373,11 @@ const I18N = {
     errNeedEmailPhone: "Entrez Email ou Téléphone",
     openMaps: "Carte",
     restMap: "Position du restaurant",
+    pickupTitle: "Point de retrait de la boutique",
+    pickupNavigate: "Aller au point de retrait",
+    pickupMissing: "Cette boutique n'a pas de coordonnées de retrait valides. Contactez l'administrateur.",
+    pickupFallback: "Attention : ce sont les coordonnées de retrait par défaut, pas celles enregistrées pour cette boutique.",
+    noMapPoints: "Aucune coordonnée valide à afficher sur la carte.",
     custMap: "Position du client",
     call: "Appeler",
     chat: "Chat",
@@ -1439,6 +1454,7 @@ function setPage(page) {
    ========================= */
 const ACTIVE_STATUSES = ["new", "restaurant_ready", "accepted", "picked_up", "on_the_way"];
 const CLOSED_STATUSES = ["delivered", "done", "canceled"];
+const PICKUP_STATUSES = ["accepted", "picked_up", "on_the_way"];
 const FLOW = ["accepted", "picked_up", "on_the_way", "delivered"];
 
 function skeletonTickets(n) {
@@ -1541,6 +1557,9 @@ function mineCardHtml(o) {
   const st = String(o.status || "new");
   const next = nextStepFor(o);
   const id = escapeHtml(o.id);
+  const pickupMeta = PICKUP_STATUSES.includes(st) ? (o.pickupStore || o.pickup) : null;
+  const pickupName = pickupMeta ? localizedText(pickupMeta.name) || tr.restaurant : "";
+  const pickupAddress = pickupMeta ? String(pickupMeta.address || "") : "";
   return `
   <article class="o-card" data-oid="${id}">
     <div class="o-head">
@@ -1553,6 +1572,7 @@ function mineCardHtml(o) {
     <div class="o-amount"><span class="money">${escapeHtml(money(o.total))}</span>${feeChip(o)}</div>
     ${stepsHtml(o)}
     <div class="o-line">${icon("pin")}<span class="addr">${escapeHtml(o.customer?.addr || "—")}</span></div>
+    ${pickupMeta ? `<div class="o-line">${icon("store")}<span class="addr"><b>${escapeHtml(pickupName)}</b>${pickupAddress ? `<br><span class="muted">${escapeHtml(pickupAddress)}</span>` : ""}</span></div>` : ""}
     ${
       next
         ? `<div class="o-actions"><button class="btn primary lg" type="button" data-action="advance" data-id="${id}" data-to="${next.to}">${icon("check")}${escapeHtml(next.label)}</button></div>`
@@ -1794,20 +1814,22 @@ async function startSheetMap(order, next) {
   stopSheetMap();
   const box = el("sheetMap");
   if (!box || !window.SiyMap) return;
-  if (!MAP_CFG) MAP_CFG = await window.SiyMap.loadConfig();
-  if (!el("sheetMap")) return;
   const map = window.SiyMap.create(box, { height: 220, dark: true });
   window.SiymonDispatch?.ensureFix?.();
   const cust = customerCoords(order);
-  const rest = restaurantCoords();
+  const rest = orderPickup(order);
   const tr = t();
+  const info = el("sheetMapInfo");
+  if (info) info.textContent = rest || cust ? "" : tr.noMapPoints;
   const draw = () => {
     if (!el("sheetMap")) return stopSheetMap();
     const fix = window.SiymonDispatch?.lastFix?.();
-    const items = [{ kind: "tri", lat: rest.lat, lng: rest.lng, title: tr.restMap }];
+    const items = [];
+    if (rest) items.push({ kind: "tri", lat: rest.lat, lng: rest.lng, color: "#7c3aed",
+      title: `${localizedText(rest.name) || tr.restaurant}${rest.address ? " — " + rest.address : ""}` });
     if (cust) items.push({ kind: "pin", lat: cust.lat, lng: cust.lng, title: tr.custMap });
     if (fix) {
-      // line to the next stop: restaurant until picked up, then the customer
+      // Route to this order's store until pickup, then to its customer.
       const target = ["picked_up", "on_the_way"].includes(String(order.status)) ? cust : rest;
       if (target) items.push({ kind: "route", key: "nav", from: fix, to: target, color: "#3fae1c", onInfo: showRouteInfo });
       items.push({ kind: "dot", lat: fix.lat, lng: fix.lng, r: 9, color: "#3fae1c", inner: true });
@@ -1830,9 +1852,23 @@ function openUrl(url) {
 }
 
 function validLL(lat, lng) {
+  if (lat == null || lng == null || (typeof lat === "string" && !lat.trim()) || (typeof lng === "string" && !lng.trim())) return false;
   lat = Number(lat);
   lng = Number(lng);
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && !(lat === 0 && lng === 0);
+}
+
+function localizedText(value) {
+  if (value && typeof value === "object") return String(value[lang] || value.ar || value.en || value.fr || "");
+  return String(value || "");
+}
+
+/** Pickup is accepted only from the current driver's active server assignment. */
+function orderPickup(order) {
+  if (!order || String(order.driverId || "") !== String(me?.id || "") || !PICKUP_STATUSES.includes(String(order.status || ""))) return null;
+  const p = order.pickup;
+  if (!p || !validLL(p.lat, p.lng)) return null;
+  return { ...p, lat: Number(p.lat), lng: Number(p.lng), name: localizedText(p.name), address: String(p.address || "") };
 }
 
 // Delivery point: validated coordinates, else the exact-location link saved in the notes (older orders).
@@ -1841,13 +1877,6 @@ function customerCoords(order) {
   if (validLL(c.lat, c.lng)) return { lat: Number(c.lat), lng: Number(c.lng) };
   const m = String(c.notes || "").match(/[?&]q=(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/);
   return m && validLL(m[1], m[2]) ? { lat: Number(m[1]), lng: Number(m[2]) } : null;
-}
-
-let MAP_CFG = null; // from /api/map-config (pickup point + tile url)
-function restaurantCoords() {
-  const p = MAP_CFG && MAP_CFG.pickup;
-  if (p && validLL(p.lat, p.lng)) return { lat: Number(p.lat), lng: Number(p.lng) };
-  return { lat: 33.2643604, lng: -7.5717029 }; // legacy default restaurant location
 }
 
 const NAV_TX = {
@@ -2006,8 +2035,16 @@ function timelineHtml(order) {
     .join("")}</div>`;
 }
 
+let sheetOrderId = null, sheetOrderSignature = "";
+function orderSheetSignature(order) {
+  return JSON.stringify({ id: String(order.id), status: order.status, driverId: order.driverId || null,
+    pickup: order.pickup || null, pickupStore: order.pickupStore || null });
+}
+
 function openOrderDetail(order) {
   if (!order) return;
+  sheetOrderId = String(order.id);
+  sheetOrderSignature = orderSheetSignature(order);
   const tr = t();
   const backdrop = el("orderSheetBackdrop");
   const body = el("orderSheetBody");
@@ -2025,6 +2062,18 @@ function openOrderDetail(order) {
   const { canAccept } = acceptState(order);
   const next = isMine ? nextStepFor(order) : null;
   const closed = CLOSED_STATUSES.includes(String(order.status || ""));
+  const pickupStage = isMine && PICKUP_STATUSES.includes(String(order.status || ""));
+  const pickup = orderPickup(order);
+  const pickupMeta = pickupStage ? (order.pickupStore || pickup) : null;
+  const pickupName = pickupMeta ? localizedText(pickupMeta.name) || tr.restaurant : tr.restaurant;
+  const pickupAddress = pickupMeta ? String(pickupMeta.address || "") : "";
+  const pickupBlock = pickupStage ? `
+    <div class="sheet-section">${escapeHtml(tr.pickupTitle)}</div>
+    <div class="card flat" style="margin-bottom:12px">
+      <div class="o-line">${icon("store")}<span class="addr"><b>${escapeHtml(pickupName)}</b>${pickupAddress ? `<br><span class="muted">${escapeHtml(pickupAddress)}</span>` : ""}</span></div>
+      ${pickup && pickup.source === "fallback" ? `<div class="muted" style="font-size:12px">${escapeHtml(tr.pickupFallback)}</div>` : ""}
+      ${pickup ? "" : `<div class="ticket-warn">${icon("alert")}<span>${escapeHtml(tr.pickupMissing)}</span></div>`}
+    </div>` : "";
 
   body.innerHTML = `
     <div class="card flat" style="margin-bottom:12px">
@@ -2051,12 +2100,14 @@ function openOrderDetail(order) {
         : `<div class="sheet-section">${escapeHtml(tr.status)}</div><div class="card flat" style="margin-bottom:12px">${timelineHtml(order)}</div>`
     }
 
+    ${pickupBlock}
+
     <div class="sheet-section">${escapeHtml(lang === "ar" ? "الخريطة" : lang === "fr" ? "Carte" : "Map")}</div>
     <div id="sheetMap" class="sheet-map"></div>
     <div id="sheetMapInfo" class="sheet-map-info muted"></div>
 
     <div class="act-row" style="grid-template-columns:repeat(2,1fr)">
-      <button class="act" type="button" id="sheetRestMapBtn">${icon("store")}<span>${escapeHtml(tr.restMap)}</span></button>
+      ${pickupStage ? `<button class="act" type="button" id="sheetRestMapBtn">${icon("store")}<span>${escapeHtml(tr.pickupNavigate)}</span></button>` : ""}
       <button class="act" type="button" id="sheetCustMapBtn">${icon("pin")}<span>${escapeHtml(tr.custMap)}</span></button>
       ${isMine ? `<button class="act" type="button" id="sheetCallBtn">${icon("phone")}<span>${escapeHtml(tr.call)}</span></button>` : ""}
       ${isMine ? `<button class="act" type="button" id="sheetChatBtn">${Number(order.chatUnread) > 0 ? '<i class="unread-dot" aria-label="unread"></i>' : ""}${icon("chat")}<span>${escapeHtml(tr.chat)}</span></button>` : ""}
@@ -2066,7 +2117,11 @@ function openOrderDetail(order) {
   `;
 
   el("sheetRestMapBtn")?.addEventListener("click", () => {
-    const r = restaurantCoords();
+    const r = orderPickup(order);
+    if (!r) {
+      toast(tr.pickupMissing, "warn");
+      return;
+    }
     openMaps("", r.lat, r.lng);
   });
   el("sheetCustMapBtn")?.addEventListener("click", () => {
@@ -2086,7 +2141,17 @@ function openOrderDetail(order) {
 }
 function closeOrderSheet() {
   stopSheetMap();
+  sheetOrderId = null; sheetOrderSignature = "";
   el("orderSheetBackdrop")?.classList.remove("show");
+  const body = el("orderSheetBody");
+  if (body) body.textContent = "";
+}
+
+function syncOrderSheet() {
+  if (!sheetOrderId || !el("orderSheetBackdrop")?.classList.contains("show")) return;
+  const fresh = findOrderById(sheetOrderId);
+  if (!fresh) { closeOrderSheet(); return; }
+  if (orderSheetSignature(fresh) !== sheetOrderSignature) openOrderDetail(fresh);
 }
 
 /* =========================
@@ -2864,6 +2929,7 @@ async function loadOrders(isPoll = false) {
     updateWalletNumbers();
     renderOrders();
     renderHistory();
+    syncOrderSheet();
   } catch (e) {
     if (e.status === 401) {
       logout();

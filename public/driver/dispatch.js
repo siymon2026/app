@@ -241,14 +241,15 @@
     q("offerFee").textContent = money(o.deliveryFee);
     q("offerFeeLbl").textContent = T.fee;
     q("offerPickupLbl").textContent = T.pickup;
-    q("offerPickup").textContent = (o.pickup && o.pickup.name) || "—";
+    const pickup = o.pickup && validLL(o.pickup.lat, o.pickup.lng) ? o.pickup : null;
+    q("offerPickup").textContent = pickup ? (localizedText(pickup.name) || "—") : "—";
     q("offerDist").textContent = o.pickupDistM == null ? "" :
       (o.pickupDistM < 1000 ? o.pickupDistM + " " + T.m : (o.pickupDistM / 1000).toFixed(1) + " " + T.km) + " " + T.away;
     q("offerAccept").textContent = T.accept;
     q("offerReject").textContent = T.reject;
     const nav = q("offerNav");
     nav.textContent = T.navigate;
-    if (o.pickup) { nav.href = "https://www.google.com/maps/dir/?api=1&destination=" + o.pickup.lat + "," + o.pickup.lng + "&travelmode=driving"; nav.hidden = false; }
+    if (pickup) { nav.href = "https://www.google.com/maps/dir/?api=1&destination=" + Number(pickup.lat) + "," + Number(pickup.lng) + "&travelmode=driving"; nav.hidden = false; }
     else nav.hidden = true;
     box.classList.add("show");
     clearInterval(cdTimer);

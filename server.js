@@ -43,6 +43,7 @@ const storesLib = require("./lib/stores");
 const paymentsLib = require("./lib/payments");
 const addressesLib = require("./lib/addresses");
 const geocodeLib = require("./lib/geocode");
+const pickupLocations = require("./lib/pickup-location");
 let pkgVersion = "";
 try {
   // eslint-disable-next-line import/no-dynamic-require
@@ -5436,7 +5437,9 @@ app.get("/api/driver/orders", requireDriver, (req, res) => {
   }
 
   const data = loadOrders();
-  const offersMode = loadConfig().dispatchMode === "offers";
+  const cfg = loadConfig();
+  const restaurants = loadRestaurants().restaurants || [];
+  const offersMode = cfg.dispatchMode === "offers";
   const available = offersMode
     ? []
     : data.orders.filter(
@@ -5448,7 +5451,7 @@ app.get("/api/driver/orders", requireDriver, (req, res) => {
   const mine = data.orders
     .filter((o) => String(o.driverId || "") === String(req.driverId))
     .map((o) => ({
-      ...o,
+      ...pickupLocations.orderForDriver(o, req.driverId, restaurants, cfg.pickupLocation),
       chatUnread: driverFeedback.unreadFor(chatByOrder.get(String(o.id)), "driver"),
       chatOpen: driverFeedback.isChatOpen(o),
     }));
@@ -5595,7 +5598,12 @@ app.post(
     } catch (_e) {}
 
     saveOrders(data);
-    res.json({ ok: true, order });
+    res.json({
+      ok: true,
+      order: pickupLocations.orderForDriver(
+        order, req.driverId, loadRestaurants().restaurants || [], loadConfig().pickupLocation,
+      ),
+    });
   },
 );
 
@@ -5693,7 +5701,12 @@ app.patch(
     order.updatedAt = new Date().toISOString();
 
     saveOrders(data);
-    res.json({ ok: true, order });
+    res.json({
+      ok: true,
+      order: pickupLocations.orderForDriver(
+        order, req.driverId, loadRestaurants().restaurants || [], loadConfig().pickupLocation,
+      ),
+    });
   },
 );
 
@@ -6942,6 +6955,10 @@ app.post("/api/admin/restaurants", requireAdmin, storeTypeGuard, (req, res) => {
     ...catalogLib.pickStoreMeta(body, asI18nText, cleanImgUrl),
   };
 
+  const coordPatch = pickupLocations.storeCoordinatesPatch(body);
+  if (!coordPatch.ok) return res.status(400).json({ error: "Invalid store coordinates" });
+  Object.assign(rest, coordPatch.patch);
+
   // Validate plan id
   const plans = loadPlans().plans || defaultPlans();
   if (!plans[String(rest.subscriptionPlan || "")])
@@ -6967,6 +6984,8 @@ app.put("/api/admin/restaurants/:id", requireAdmin, storeTypeGuard, (req, res) =
   const idx = r.restaurants.findIndex((x) => String(x.id) === id);
   if (idx < 0) return res.status(404).json({ error: "Not found" });
   const cur = r.restaurants[idx];
+  const coordPatch = pickupLocations.storeCoordinatesPatch(body, cur);
+  if (!coordPatch.ok) return res.status(400).json({ error: "Invalid store coordinates" });
   if (body.name !== undefined)
     cur.name = asI18nText(body.name, cur.name?.ar || "");
   if (body.phone !== undefined) cur.phone = String(body.phone || "").trim();
@@ -6985,6 +7004,7 @@ app.put("/api/admin/restaurants/:id", requireAdmin, storeTypeGuard, (req, res) =
   }
   if (body.clearPassword === true) cur.password = null;
   Object.assign(cur, catalogLib.pickStoreMeta(body, asI18nText, cleanImgUrl));
+  Object.assign(cur, coordPatch.patch);
 
   // SaaS subscription fields
   if (body.ownerId !== undefined)

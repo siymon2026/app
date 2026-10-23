@@ -1,4 +1,4 @@
-const CACHE = "siymon-cache-v49";
+const CACHE = "siymon-cache-v50";
 const ASSETS = [
   "/",
   "/index.html",

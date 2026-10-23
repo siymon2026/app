@@ -162,6 +162,13 @@
     const num = (id, label, attrs = "") =>
       `<div class="input-row"><label for="${id}">${esc(label)}</label><input id="${id}" type="number" step="0.01" min="0" ${attrs} /></div>`;
     host.innerHTML = `
+      <div class="st-section"><h5>${esc(L("إحداثيات الاستلام من المتجر", "Store pickup coordinates", "Coordonnées de retrait"))}</h5>
+        <div class="st-grid">
+          <div class="input-row"><label for="stLat">${esc(L("خط العرض (Latitude)", "Latitude", "Latitude"))}</label><input id="stLat" type="number" step="any" min="-90" max="90" inputmode="decimal" /></div>
+          <div class="input-row"><label for="stLng">${esc(L("خط الطول (Longitude)", "Longitude", "Longitude"))}</label><input id="stLng" type="number" step="any" min="-180" max="180" inputmode="decimal" /></div>
+        </div>
+        <div class="st-hint" id="stLocationHint">${esc(L("اترك الحقلين فارغين إذا لم تكن الإحداثيات معروفة؛ لن يتم اختلاق موقع.", "Leave both blank if the coordinates are unknown; no location will be invented.", "Laissez vide si les coordonnées sont inconnues."))}</div>
+      </div>
       <div class="st-section"><h5>${esc(L("النشر والتصنيف", "Publishing & category", "Publication et catégorie"))}</h5>
         <div class="st-grid">
           <div class="input-row"><label for="stStatus">${esc(L("الحالة", "Status", "Statut"))}</label>
@@ -217,6 +224,9 @@
     const v = (id, x) => { const n = el(id); if (n) n.value = x ?? ""; };
     const c = (id, x) => { const n = el(id); if (n) n.checked = !!x; };
     v("stStatus", statusOf(r));
+    v("stLat", r && r.lat);
+    v("stLng", r && r.lng);
+    if (el("stLocationHint")) el("stLocationHint").textContent = L("اترك الحقلين فارغين إذا لم تكن الإحداثيات معروفة؛ لن يتم اختلاق موقع.", "Leave both blank if the coordinates are unknown; no location will be invented.", "Laissez vide si les coordonnées sont inconnues.");
     {
       const cur = (r && r.type) || "restaurant";
       const sel = el("stType");
@@ -268,6 +278,8 @@
       else if (g("stOpen" + i) && g("stClose" + i)) { days[i] = { open: g("stOpen" + i), close: g("stClose" + i) }; any = true; }
     }
     const out = {
+      lat: g("stLat") === "" ? null : Number(g("stLat")),
+      lng: g("stLng") === "" ? null : Number(g("stLng")),
       status: g("stStatus"),
       type: g("stType") || "restaurant",
       channel: g("stChannel") || "online",
@@ -290,6 +302,16 @@
       coverageAreas: g("stCoverage").split("\n").map((x) => x.trim()).filter(Boolean),
     };
     return out;
+  };
+
+  window.storesValidateRest = function () {
+    if (!REST_BUILT) return "";
+    const lat = el("stLat").value.trim(), lng = el("stLng").value.trim();
+    const a = Number(lat), b = Number(lng);
+    const valid = lat !== "" && lng !== "" && Number.isFinite(a) && Number.isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180 && !(a === 0 && b === 0);
+    const message = (lat === "" && lng === "") || valid ? "" : L("أدخل خط عرض وخط طول صالحين معاً، أو اترك الحقلين فارغين.", "Enter a valid latitude and longitude together, or leave both blank.", "Saisissez une latitude et une longitude valides, ou laissez les deux vides.");
+    if (el("stLocationHint")) el("stLocationHint").textContent = message;
+    return message;
   };
 
   /* ---------- item edit: extra fields ---------- */
