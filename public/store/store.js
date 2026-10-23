@@ -53,6 +53,19 @@
       err_generic: "حدث خطأ، حاول مرة أخرى", err_login: "بيانات الدخول غير صحيحة", err_disabled: "الحساب أو المتجر موقوف",
       err_controlled_not_allowed: "لا يُسمح بإدراج هذا الدواء المقيّد على المنصة", err_sale: "سعر التخفيض يجب أن يكون أقل من السعر",
       newOrderToast: "وصل طلب جديد", role_owner: "مالك", role_manager: "مدير", role_cashier: "كاشير", empty: "فارغ",
+      g_overview: "نظرة عامة", g_orders: "الطلبات", g_catalog: "الكتالوج", g_customers: "العملاء والتواصل", g_store: "إدارة المتجر", g_support: "الدعم",
+      d_dashboard: "ملخص أداء متجرك والمؤشرات الرئيسية.", d_orders_new: "طلبات تنتظر القبول أو الرفض.", d_orders: "تتبع كل الطلبات وحالاتها.",
+      d_products: "أضف منتجاتك وعدّلها ونظّمها.", d_categories: "نظّم المنتجات في فئات واضحة.", d_pricing: "عدّل الأسعار وأسعار التخفيض مباشرة.",
+      d_inventory: "راقب المخزون وتوفر المنتجات.", d_customers: "العملاء الذين طلبوا من متجرك.", d_chat: "تواصل مع العملاء حول طلباتهم.",
+      d_notifications: "تنبيهات تحتاج انتباهك الآن.", d_reports: "أرقام المبيعات خلال الفترة المختارة.", d_settings: "معلومات المتجر وحالة الاستقبال.",
+      d_hours: "حدد أيام وساعات العمل.", d_delivery: "رسوم التوصيل والحد الأدنى للطلب.", d_help: "إرشادات وروابط الدعم.",
+      gsearch: "ابحث في الصفحات والطلبات والمنتجات…", gs_pages: "الصفحات", gs_actions: "بحث سريع", gs_orders: "البحث في الطلبات عن", gs_products: "البحث في المنتجات عن", gs_none: "لا توجد نتائج",
+      profile: "الحساب", switchStore: "تبديل المتجر", language: "اللغة", theme: "المظهر", dark: "داكن", light: "فاتح", collapse: "طي القائمة", expand: "توسيع القائمة", menu: "القائمة",
+      home: "الرئيسية", markAllSeen: "عرض الكل", showing: "عرض {a}–{b} من {n}", prev: "السابق", next: "التالي", perPage: "لكل صفحة",
+      pipeline: "مسار الطلبات", pipelineHint: "توزيع الطلبات حسب الحالة", catalogHealth: "صحة الكتالوج", quick: "إجراءات سريعة", available_n: "متوفرة",
+      salesSummary: "ملخص المبيعات", avgOrder: "متوسط قيمة الطلب", completionRate: "نسبة الإنجاز", showPw: "إظهار كلمة المرور", welcomeBack: "مرحباً بعودتك",
+      brandPitch: "أدر طلباتك ومنتجاتك وعملاءك من مكان واحد.", required: "هذا الحقل مطلوب", orderCount: "{n} طلب", productCount: "{n} منتج", customerCount: "{n} عميل",
+      sortAsc: "ترتيب تصاعدي", sortDesc: "ترتيب تنازلي",
     },
     fr: {
       title: "Espace boutique", login: "Connexion", identifier: "E-mail ou téléphone", password: "Mot de passe",
@@ -94,6 +107,19 @@
       err_generic: "Une erreur est survenue, réessayez", err_login: "Identifiants incorrects", err_disabled: "Compte ou boutique désactivé",
       err_controlled_not_allowed: "Ce médicament contrôlé ne peut pas être listé", err_sale: "Le prix promo doit être inférieur au prix",
       newOrderToast: "Nouvelle commande", role_owner: "Propriétaire", role_manager: "Gérant", role_cashier: "Caissier", empty: "vide",
+      g_overview: "Vue d'ensemble", g_orders: "Commandes", g_catalog: "Catalogue", g_customers: "Clients & messages", g_store: "Boutique", g_support: "Support",
+      d_dashboard: "Résumé des performances et indicateurs clés.", d_orders_new: "Commandes en attente d'acceptation ou de refus.", d_orders: "Suivez toutes les commandes et leurs statuts.",
+      d_products: "Ajoutez, modifiez et organisez vos produits.", d_categories: "Organisez les produits en catégories.", d_pricing: "Modifiez prix et prix promo directement.",
+      d_inventory: "Surveillez le stock et la disponibilité.", d_customers: "Les clients qui ont commandé chez vous.", d_chat: "Échangez avec les clients sur leurs commandes.",
+      d_notifications: "Alertes qui demandent votre attention.", d_reports: "Chiffres de ventes sur la période choisie.", d_settings: "Informations et état de la boutique.",
+      d_hours: "Définissez jours et horaires d'ouverture.", d_delivery: "Frais de livraison et commande minimum.", d_help: "Conseils et liens d'assistance.",
+      gsearch: "Rechercher pages, commandes, produits…", gs_pages: "Pages", gs_actions: "Recherche rapide", gs_orders: "Chercher dans les commandes :", gs_products: "Chercher dans les produits :", gs_none: "Aucun résultat",
+      profile: "Compte", switchStore: "Changer de boutique", language: "Langue", theme: "Thème", dark: "Sombre", light: "Clair", collapse: "Réduire le menu", expand: "Agrandir le menu", menu: "Menu",
+      home: "Accueil", markAllSeen: "Tout voir", showing: "{a}–{b} sur {n}", prev: "Précédent", next: "Suivant", perPage: "par page",
+      pipeline: "Flux des commandes", pipelineHint: "Répartition des commandes par statut", catalogHealth: "Santé du catalogue", quick: "Actions rapides", available_n: "Disponibles",
+      salesSummary: "Résumé des ventes", avgOrder: "Panier moyen", completionRate: "Taux de réalisation", showPw: "Afficher le mot de passe", welcomeBack: "Bon retour",
+      brandPitch: "Gérez commandes, produits et clients depuis un seul endroit.", required: "Champ obligatoire", orderCount: "{n} commande(s)", productCount: "{n} produit(s)", customerCount: "{n} client(s)",
+      sortAsc: "Tri croissant", sortDesc: "Tri décroissant",
     },
   };
   let lang = localStorage.getItem(LANG_KEY) === "fr" ? "fr" : "ar";
@@ -201,18 +227,39 @@
   }
 
   /* ------------------------------ modal helpers ------------------------------ */
-  function modal(title, body, buttons) {
+  let modalSeq = 0;
+  function modal(title, body, buttons, opts) {
     const root = $("modalRoot");
-    const close = () => clear(root);
-    const box = h("div", { class: "modal", role: "dialog", "aria-modal": "true" }, h("h2", {}, title), body,
+    const prevFocus = document.activeElement;
+    const tid = "mdlT" + ++modalSeq;
+    const onKey = (e) => {
+      if (e.key === "Escape") { e.stopPropagation(); close(); return; }
+      if (e.key !== "Tab") return;
+      const f = box.querySelectorAll("button:not([disabled]),input:not([type=hidden]):not(.hidden),select,textarea,a[href]");
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    function close() {
+      document.removeEventListener("keydown", onKey, true);
+      clear(root);
+      if (prevFocus && prevFocus.focus && document.body.contains(prevFocus)) { try { prevFocus.focus(); } catch (_e) {} }
+    }
+    const box = h("div", { class: "modal" + (opts && opts.size ? " modal-" + opts.size : ""), role: "dialog", "aria-modal": "true", "aria-labelledby": tid },
+      h("div", { class: "modal-head" }, h("h2", { id: tid }, title),
+        h("button", { class: "icon-x", type: "button", "aria-label": t("close"), onclick: () => close() }, ico("x"))),
+      h("div", { class: "modal-body" }, body),
       h("div", { class: "foot" }, (buttons || []).map((b) => h("button", { class: "btn " + (b.cls || ""), type: "button", onclick: () => b.run(close) }, b.label))));
     const ov = h("div", { class: "overlay", onclick: (e) => { if (e.target === ov) close(); } }, box);
     clear(root).appendChild(ov);
+    document.addEventListener("keydown", onKey, true);
+    setTimeout(() => { const f0 = box.querySelector(".modal-body input:not([type=hidden]):not(.hidden),.modal-body select,.modal-body textarea") || box.querySelector(".foot .btn.primary,.foot .btn"); if (f0) f0.focus(); }, 0);
     return close;
   }
   function confirmBox(msg, danger) {
     return new Promise((res) => {
-      modal(t("confirm"), h("p", {}, msg), [
+      modal(t("confirm"), h("p", { class: "confirm-msg" }, msg), [
         { label: t("cancel"), run: (c) => { c(); res(false); } },
         { label: t("confirm"), cls: danger ? "danger" : "primary", run: (c) => { c(); res(true); } },
       ]);
@@ -233,20 +280,38 @@
     stopTimers();
     document.documentElement.setAttribute("lang", lang);
     document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
-    const id = h("input", { class: "input", id: "li", autocomplete: "username", inputmode: "email" });
-    const pw = h("input", { class: "input", id: "lp", type: "password", autocomplete: "current-password" });
-    const msg = h("p", { class: "muted", id: "lmsg", role: "alert" }, errMsg || "");
-    const btn = h("button", { class: "btn primary", type: "submit", style: "width:100%" }, t("login"));
-    const form = h("form", { class: "card", onsubmit: async (e) => {
-      e.preventDefault(); btn.disabled = true; msg.textContent = "";
-      try { await doLogin(id.value.trim(), pw.value); } catch (er) { msg.textContent = er.status === 403 ? t("err_disabled") : t("err_login"); btn.disabled = false; }
+    const id = h("input", { class: "input", id: "li", autocomplete: "username", inputmode: "email", required: true, "aria-describedby": "lmsg" });
+    const pw = h("input", { class: "input", id: "lp", type: "password", autocomplete: "current-password", required: true, "aria-describedby": "lmsg" });
+    const eye = h("button", { class: "pw-eye", type: "button", "aria-label": t("showPw"), "aria-pressed": "false", onclick: () => {
+      const show = pw.type === "password"; pw.type = show ? "text" : "password"; eye.setAttribute("aria-pressed", String(show)); clear(eye).appendChild(ico(show ? "eyeOff" : "eye"));
+    } }, ico("eye"));
+    const msg = h("p", { class: "form-msg", id: "lmsg", role: "alert" }, errMsg || "");
+    const btn = h("button", { class: "btn primary block lg", type: "submit" }, t("login"));
+    const form = h("form", { class: "auth-card", novalidate: true, onsubmit: async (e) => {
+      e.preventDefault(); msg.textContent = "";
+      id.classList.toggle("invalid", !id.value.trim()); pw.classList.toggle("invalid", !pw.value);
+      if (!id.value.trim() || !pw.value) { msg.textContent = t("required"); (id.value.trim() ? pw : id).focus(); return; }
+      btn.disabled = true; btn.classList.add("busy");
+      try { await doLogin(id.value.trim(), pw.value); } catch (er) { msg.textContent = er.status === 403 ? t("err_disabled") : t("err_login"); btn.disabled = false; btn.classList.remove("busy"); }
     } },
-      h("div", { class: "brand" }, h("img", { src: "/icons/icon-192.png", alt: "" }), h("div", {}, h("h1", {}, "siymon"), h("div", { class: "muted" }, t("loginHint")))),
-      h("div", { class: "field" }, h("label", { class: "f", for: "li" }, t("identifier")), id),
-      h("div", { class: "field" }, h("label", { class: "f", for: "lp" }, t("password")), pw), msg, btn,
-      h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn sm", type: "button", onclick: toggleLang }, lang === "ar" ? "FR" : "AR")));
-    clear($("app")).appendChild(h("div", { class: "login" }, form));
+      h("div", { class: "auth-head" }, h("img", { class: "auth-logo", src: "/icons/icon-192.png", alt: "" }),
+        h("div", {}, h("h1", {}, t("welcomeBack")), h("p", { class: "muted" }, t("loginHint")))),
+      h("div", { class: "field" }, h("label", { class: "f", for: "li" }, t("identifier")), h("div", { class: "input-ico" }, ico("user"), id)),
+      h("div", { class: "field" }, h("label", { class: "f", for: "lp" }, t("password")), h("div", { class: "input-ico" }, ico("lock"), pw, eye)), msg, btn);
+    clear($("app")).appendChild(authLayout(form));
     id.focus();
+  }
+
+  function authLayout(content) {
+    return h("div", { class: "auth" },
+      h("aside", { class: "auth-brand" },
+        h("div", { class: "auth-brand-top" }, h("img", { src: "/icons/icon-192.png", alt: "" }), h("b", {}, "siymon"), h("span", { class: "auth-chip" }, t("title"))),
+        h("div", { class: "auth-brand-copy" }, h("h2", {}, t("title")), h("p", {}, t("brandPitch"))),
+        h("ul", { class: "auth-points" }, [["receipt", t("orders")], ["package", t("products")], ["users", t("customers")], ["up", t("reports")]].map(([i, l]) => h("li", {}, iconTile(i), l)))),
+      h("main", { class: "auth-main" },
+        h("div", { class: "auth-tools" }, h("button", { class: "btn sm ghost", type: "button", onclick: toggleLang }, ico("globe"), lang === "ar" ? "FR" : "AR"),
+          h("button", { class: "btn sm ghost", type: "button", "aria-label": t("theme"), onclick: toggleTheme }, ico("moon"))),
+        content));
   }
 
   async function doLogin(identifier, password) {
@@ -272,15 +337,18 @@
   function renderPicker(list) {
     stopTimers();
     const buttons = list.map((s) => h("button", { class: "btn", type: "button", onclick: async () => { storeId = String(s.id); localStorage.setItem(STORE_KEY, storeId); await boot(); } },
-      h("div", {}, h("div", { style: "font-weight:700" }, nm(s.name)), h("div", { class: "muted" }, t("role_" + s.role)))));
-    clear($("app")).appendChild(h("div", { class: "login" }, h("div", { class: "card" }, h("h2", {}, t("chooseStore")), h("div", { class: "picker" }, buttons),
-      h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn sm", type: "button", onclick: logout }, t("logout"))))));
+      h("span", { class: "picker-av" }, safeImg(s.logo) ? h("img", { src: safeImg(s.logo), alt: "" }) : (nm(s.name).trim().charAt(0) || "S").toUpperCase()),
+      h("span", { class: "picker-txt" }, h("b", {}, nm(s.name)), h("small", { class: "muted" }, t("role_" + s.role))), ico("chev", "flip")));
+    clear($("app")).appendChild(authLayout(h("div", { class: "auth-card" },
+      h("div", { class: "auth-head" }, h("img", { class: "auth-logo", src: "/icons/icon-192.png", alt: "" }), h("div", {}, h("h1", {}, t("chooseStore")), h("p", { class: "muted" }, t("brandPitch")))),
+      h("div", { class: "picker" }, buttons),
+      h("button", { class: "btn ghost block", type: "button", onclick: logout }, ico("logout"), t("logout")))));
   }
 
   /* ------------------------------ boot + shell ------------------------------ */
   async function boot() {
     if (!token) return renderLogin();
-    clear($("app")).appendChild(h("div", { class: "login" }, h("div", { class: "muted" }, t("loading"))));
+    clear($("app")).appendChild(h("div", { class: "boot" }, h("span", { class: "spinner", "aria-hidden": "true" }), h("span", { class: "muted" }, t("loading"))));
     try {
       S.me = await api("/api/store/me");
     } catch (e) {
@@ -326,6 +394,27 @@
     printer: '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
     refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
     moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-2.93 1.41-1.41M17.66 6.34l1.41-1.41M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.8M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.4-1M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    chev: '<path d="m9 18 6-6-6-6"/>',
+    chevDown: '<path d="m6 9 6 6 6-6"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+    panel: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>',
+    store: '<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M9 22v-6h6v6M2 7h20"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    sortUp: '<path d="m7 15 5-5 5 5"/>',
+    sortDown: '<path d="m7 9 5 5 5-5"/>',
+    sort: '<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>',
+    arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    external: '<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+    wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
   };
   function ico(name, cls) {
     const svg = document.createElementNS(SVG_NS, "svg");
@@ -337,35 +426,229 @@
 
   const ICONS = { dashboard: "dashboard", orders_new: "bell", orders: "receipt", products: "package", categories: "folder", pricing: "tag", inventory: "down", customers: "users", chat: "message", notifications: "bellOff", reports: "up", settings: "settings", hours: "clock", delivery: "truck", help: "help" };
 
+  /* section groups (only sections the server allows for this role/type are shown) */
+  const GROUPS = [
+    ["g_overview", ["dashboard", "reports", "notifications"]],
+    ["g_orders", ["orders_new", "orders"]],
+    ["g_catalog", ["products", "categories", "pricing", "inventory"]],
+    ["g_customers", ["customers", "chat"]],
+    ["g_store", ["settings", "hours", "delivery"]],
+    ["g_support", ["help"]],
+  ];
+  const groupOf = (k) => (GROUPS.find(([, ks]) => ks.includes(k)) || ["g_overview"])[0];
+  const SB_KEY = "siymon_store_sb_collapsed", GRP_KEY = "siymon_store_nav_groups";
+  const prefGet = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (_e) { return d; } };
+  const prefSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_e) {} };
+  const isMobile = () => window.matchMedia("(max-width:1024px)").matches;
+  const initials = (s) => (String(s || "").trim().charAt(0) || "S").toUpperCase();
+
+  function setDrawer(open) {
+    document.body.classList.toggle("ds-drawer-open", !!open);
+    const sh = $("shell"); if (sh) sh.classList.toggle("open", !!open);
+    const b = $("menuBtn"); if (b) b.setAttribute("aria-expanded", String(!!open));
+    if (open) { const a = document.querySelector(".nav a.on") || document.querySelector(".nav a"); if (a) a.focus(); }
+  }
+  function setCollapsed(v) {
+    document.body.classList.toggle("ds-sb-collapsed", !!v); prefSet(SB_KEY, !!v);
+    const b = $("collapseBtn"); if (b) { b.setAttribute("aria-label", v ? t("expand") : t("collapse")); b.setAttribute("aria-pressed", String(!!v)); }
+  }
+
+  /* header dropdowns: one open at a time, Esc / outside click closes, focus returns to the trigger */
+  let openPop = null;
+  function closePop() {
+    if (!openPop) return;
+    const { pop, btn } = openPop; pop.hidden = true; btn.setAttribute("aria-expanded", "false"); openPop = null;
+  }
+  function togglePop(btn, pop, onOpen) {
+    if (openPop && openPop.pop === pop) { closePop(); return; }
+    closePop();
+    if (onOpen) onOpen();
+    pop.hidden = false; btn.setAttribute("aria-expanded", "true"); openPop = { pop, btn };
+    const f = pop.querySelector("button,a,input"); if (f) f.focus();
+  }
+  document.addEventListener("click", (e) => { if (openPop && !openPop.pop.contains(e.target) && !openPop.btn.contains(e.target)) closePop(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { if (openPop) { const b = openPop.btn; closePop(); b.focus(); } else if (document.body.classList.contains("ds-drawer-open")) setDrawer(false); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && $("gSearch")) { e.preventDefault(); $("gSearch").focus(); }
+  });
+
+  function notifRows() {
+    const s = S.stats || {};
+    return [
+      [s.newOrders, "bell", t("n_new"), () => go("orders_new"), "orders_new"],
+      [s.unreadMessages, "message", t("n_unread"), () => go("chat"), "chat"],
+      [s.lowStockProducts, "down", t("n_low"), () => { S.prod.status = "low"; go("inventory"); }, "inventory"],
+      [s.unavailableProducts, "ban", t("n_unavail"), () => { S.prod.status = "unavailable"; go("products"); }, "products"],
+    ].filter((x) => x[0] > 0 && S.me.sections.includes(x[4]));
+  }
+  function renderNotifPop() {
+    const pop = $("notifPop"); if (!pop) return;
+    const rows = notifRows();
+    clear(pop).appendChild(h("div", { class: "pop-head" }, h("b", {}, t("notifications")),
+      S.me.sections.includes("notifications") ? h("button", { class: "linkish", type: "button", onclick: () => { closePop(); go("notifications"); } }, t("markAllSeen")) : null));
+    if (!rows.length) { pop.appendChild(h("div", { class: "pop-empty" }, ico("check"), h("span", {}, t("notifEmpty")))); return; }
+    rows.forEach(([n, ic, label, fn]) => pop.appendChild(h("button", { class: "pop-item", type: "button", onclick: () => { closePop(); fn(); } },
+      iconTile(ic), h("span", { class: "pop-txt" }, h("b", {}, `${n} ${label}`)), ico("chev", "flip"))));
+  }
+
+  function renderSearchPop(q) {
+    const pop = $("searchPop"); if (!pop) return;
+    q = String(q || "").trim();
+    const ql = q.toLowerCase();
+    const pages = S.me.sections.filter((k) => !ql || t(k).toLowerCase().includes(ql) || t("d_" + k).toLowerCase().includes(ql)).slice(0, 8);
+    clear(pop);
+    const items = [];
+    if (pages.length) {
+      pop.appendChild(h("div", { class: "pop-label" }, t("gs_pages")));
+      pages.forEach((k) => items.push(pop.appendChild(h("button", { class: "pop-item", type: "button", role: "option", onclick: () => { closeSearch(); go(k); } },
+        iconTile(ICONS[k] || "dashboard"), h("span", { class: "pop-txt" }, h("b", {}, t(k)), h("small", {}, t("d_" + k)))))));
+    }
+    if (q) {
+      const acts = [];
+      if (S.me.sections.includes("orders")) acts.push(["receipt", `${t("gs_orders")} «${q}»`, () => { S.ord.q = q; S.ord.stage = "all"; go("orders"); }]);
+      if (S.me.sections.includes("products")) acts.push(["package", `${t("gs_products")} «${q}»`, () => { S.prod.q = q; go("products"); }]);
+      if (acts.length) {
+        pop.appendChild(h("div", { class: "pop-label" }, t("gs_actions")));
+        acts.forEach(([ic, label, fn]) => items.push(pop.appendChild(h("button", { class: "pop-item", type: "button", role: "option", onclick: () => { closeSearch(); fn(); } }, iconTile(ic), h("span", { class: "pop-txt" }, h("b", {}, label))))));
+      }
+    }
+    if (!items.length) pop.appendChild(h("div", { class: "pop-empty" }, ico("search"), h("span", {}, t("gs_none"))));
+    pop.hidden = false;
+    return items;
+  }
+  function closeSearch() { const p = $("searchPop"); if (p) p.hidden = true; const i = $("gSearch"); if (i) { i.value = ""; i.setAttribute("aria-expanded", "false"); i.blur(); } }
+
+  function storeStatus() {
+    const s = S.me.store || {};
+    const st = String(s.status || (s.isActive === false ? "unpublished" : "active"));
+    return st;
+  }
+
   function renderShell() {
     document.documentElement.setAttribute("lang", lang);
     document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
     const me = S.me;
-    const nav = h("nav", { class: "nav" }, me.sections.map((k) =>
-      h("a", { class: S.view === k ? "on" : "", "data-k": k, role: "button", tabindex: "0", onclick: () => go(k), onkeydown: (e) => { if (e.key === "Enter") go(k); } },
-        h("span", { class: "ic" }, iconTile(ICONS[k] || "dashboard")), h("span", {}, t(k)), h("span", { class: "badge hidden", id: "bd_" + k }))));
-    const switcher = me.stores.length > 1 ? h("select", { class: "input", style: "max-width:220px", "aria-label": t("chooseStore"), onchange: async (e) => { storeId = e.target.value; localStorage.setItem(STORE_KEY, storeId); S.view = "dashboard"; S.chatOrder = null; await boot(); } },
-      me.stores.map((s) => h("option", { value: String(s.id), selected: String(s.id) === String(me.store.id) }, nm(s.name)))) : null;
-    const side = h("aside", { class: "side" },
-      h("div", { class: "who" }, h("div", { class: "brand" }, h("img", { src: safeImg(me.store.logo) || "/icons/icon-192.png", alt: "" }),
-        h("div", {}, h("div", { style: "font-weight:800" }, nm(me.store.name)), h("div", { class: "muted" }, `${me.type.icon || ""} ${nm(me.type.name)} · ${t("role_" + me.role)}`)))),
-      nav, h("div", { style: "padding:10px" }, h("button", { class: "btn", style: "width:100%", type: "button", onclick: logout }, "⎋ " + t("logout"))));
-    const top = h("header", { class: "top" },
-      h("button", { class: "btn menu-btn", type: "button", "aria-label": "menu", onclick: () => $("shell").classList.toggle("open") }, "≡"),
-      h("h1", { id: "viewTitle" }, t(S.view)), h("span", { class: "spacer" }), switcher,
-      h("button", { class: "btn sm", type: "button", onclick: toggleLang }, lang === "ar" ? "FR" : "AR"),
-      h("button", { class: "btn sm", type: "button", "aria-label": "theme", onclick: toggleTheme }, ico("moon")));
-    const shell = h("div", { class: "shell", id: "shell" }, side, h("div", { class: "scrim", onclick: () => $("shell").classList.remove("open") }), h("main", { class: "main" }, top, h("div", { class: "content", id: "view" })));
+    const openGroups = prefGet(GRP_KEY, {});
+    const navLink = (k) => h("a", { href: "#" + k, class: S.view === k ? "on" : "", "data-k": k, "data-tip": t(k), "aria-current": S.view === k ? "page" : null,
+      onclick: (e) => { e.preventDefault(); go(k); } },
+      h("span", { class: "ic" }, ico(ICONS[k] || "dashboard")), h("span", { class: "nav-label" }, t(k)), h("span", { class: "badge hidden", id: "bd_" + k }));
+    const nav = h("nav", { class: "nav", "aria-label": t("menu") }, GROUPS.map(([g, keys]) => {
+      const ks = keys.filter((k) => me.sections.includes(k));
+      if (!ks.length) return null;
+      const collapsed = openGroups[g] === false;
+      const gid = "grp_" + g;
+      return h("div", { class: "nav-group" + (collapsed ? " is-collapsed" : "") },
+        h("button", { class: "nav-group-btn", type: "button", "aria-expanded": String(!collapsed), "aria-controls": gid, onclick: (e) => {
+          const wrap = e.currentTarget.parentNode; const c = !wrap.classList.contains("is-collapsed");
+          wrap.classList.toggle("is-collapsed", c); e.currentTarget.setAttribute("aria-expanded", String(!c));
+          const cur = prefGet(GRP_KEY, {}); cur[g] = !c; prefSet(GRP_KEY, cur);
+        } }, h("span", {}, t(g)), ico("chevDown")),
+        h("div", { class: "nav-items", id: gid }, ks.map(navLink)));
+    }));
+    // keep any section the server adds that isn't in GROUPS reachable
+    const extra = me.sections.filter((k) => !GROUPS.some(([, ks]) => ks.includes(k)));
+    if (extra.length) nav.appendChild(h("div", { class: "nav-group" }, h("div", { class: "nav-items" }, extra.map(navLink))));
+
+    const st = storeStatus();
+    const side = h("aside", { class: "side ds-sidebar", id: "sideNav", "aria-label": t("menu") },
+      h("div", { class: "who" }, h("div", { class: "store-card", "data-tip": nm(me.store.name) },
+        h("span", { class: "store-av" }, safeImg(me.store.logo) ? h("img", { src: safeImg(me.store.logo), alt: "" }) : initials(nm(me.store.name))),
+        h("span", { class: "store-txt" }, h("b", {}, nm(me.store.name)), h("small", {}, `${nm(me.type.name)} · ${t("role_" + me.role)}`)))),
+      h("div", { class: "side-scroll" }, nav),
+      h("div", { class: "side-foot" }, h("button", { class: "nav-foot-btn", type: "button", "data-tip": t("logout"), onclick: logout }, h("span", { class: "ic" }, ico("logout")), h("span", { class: "nav-label" }, t("logout")))));
+
+    // ---- header ----
+    const searchInput = h("input", { id: "gSearch", type: "search", autocomplete: "off", placeholder: t("gsearch"), "aria-label": t("gsearch"),
+      role: "combobox", "aria-expanded": "false", "aria-controls": "searchPop", "aria-autocomplete": "list" });
+    let sItems = [], sIdx = -1;
+    const paintIdx = () => sItems.forEach((b, i) => b.classList.toggle("is-focused", i === sIdx));
+    searchInput.addEventListener("focus", () => { closePop(); sItems = renderSearchPop(searchInput.value) || []; sIdx = -1; searchInput.setAttribute("aria-expanded", "true"); });
+    searchInput.addEventListener("input", () => { sItems = renderSearchPop(searchInput.value) || []; sIdx = sItems.length ? 0 : -1; paintIdx(); });
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" && sItems.length) { e.preventDefault(); sIdx = (sIdx + 1) % sItems.length; paintIdx(); }
+      else if (e.key === "ArrowUp" && sItems.length) { e.preventDefault(); sIdx = (sIdx - 1 + sItems.length) % sItems.length; paintIdx(); }
+      else if (e.key === "Enter") { e.preventDefault(); const b = sItems[sIdx >= 0 ? sIdx : 0]; if (b) b.click(); }
+      else if (e.key === "Escape") { closeSearch(); }
+    });
+    searchInput.addEventListener("blur", () => setTimeout(() => { const p = $("searchPop"); if (p && !p.contains(document.activeElement)) { p.hidden = true; searchInput.setAttribute("aria-expanded", "false"); } }, 150));
+
+    const notifBtn = h("button", { class: "hd-btn", id: "notifBtn", type: "button", "aria-label": t("notifications"), "aria-haspopup": "true", "aria-expanded": "false", "aria-controls": "notifPop" },
+      ico("bell"), h("span", { class: "hd-badge", id: "notifCount", hidden: true }));
+    const notifPop = h("div", { class: "pop", id: "notifPop", role: "menu", hidden: true });
+    notifBtn.addEventListener("click", () => togglePop(notifBtn, notifPop, renderNotifPop));
+
+    const profBtn = h("button", { class: "profile-btn", id: "profileBtn", type: "button", "aria-haspopup": "true", "aria-expanded": "false", "aria-controls": "profilePop" },
+      h("span", { class: "avatar" }, initials(nm(me.store.name))),
+      h("span", { class: "profile-meta" }, h("b", {}, nm(me.store.name)), h("small", {}, t("role_" + me.role))), ico("chevDown"));
+    const profPop = h("div", { class: "pop", id: "profilePop", role: "menu", hidden: true },
+      h("div", { class: "pop-head col" }, h("b", {}, nm(me.store.name)), h("small", { class: "muted" }, `${nm(me.type.name)} · ${t("role_" + me.role)}`)),
+      me.stores.length > 1 ? [h("div", { class: "pop-label" }, t("switchStore")), me.stores.map((s) => h("button", { class: "pop-item" + (String(s.id) === String(me.store.id) ? " is-current" : ""), type: "button", role: "menuitem",
+        onclick: async () => { closePop(); if (String(s.id) === String(me.store.id)) return; storeId = String(s.id); localStorage.setItem(STORE_KEY, storeId); S.view = "dashboard"; S.chatOrder = null; await boot(); } },
+        h("span", { class: "picker-av sm" }, initials(nm(s.name))), h("span", { class: "pop-txt" }, h("b", {}, nm(s.name)), h("small", {}, t("role_" + s.role))),
+        String(s.id) === String(me.store.id) ? ico("check") : null)), h("div", { class: "pop-sep" })] : null,
+      me.sections.includes("settings") ? h("button", { class: "pop-item", type: "button", role: "menuitem", onclick: () => { closePop(); go("settings"); } }, ico("settings"), h("span", { class: "pop-txt" }, h("b", {}, t("settings")))) : null,
+      h("button", { class: "pop-item", type: "button", role: "menuitem", onclick: () => { closePop(); toggleLang(); } }, ico("globe"), h("span", { class: "pop-txt" }, h("b", {}, t("language")), h("small", {}, lang === "ar" ? "العربية → Français" : "Français → العربية"))),
+      h("button", { class: "pop-item", type: "button", role: "menuitem", onclick: () => { toggleTheme(); renderShellThemeIcon(); } }, ico("moon"), h("span", { class: "pop-txt" }, h("b", {}, t("theme")), h("small", { id: "themeLbl" }, curTheme() === "dark" ? t("dark") : t("light")))),
+      me.sections.includes("help") ? h("button", { class: "pop-item", type: "button", role: "menuitem", onclick: () => { closePop(); go("help"); } }, ico("help"), h("span", { class: "pop-txt" }, h("b", {}, t("help")))) : null,
+      h("div", { class: "pop-sep" }),
+      h("button", { class: "pop-item danger", type: "button", role: "menuitem", onclick: () => { closePop(); logout(); } }, ico("logout"), h("span", { class: "pop-txt" }, h("b", {}, t("logout")))));
+    profBtn.addEventListener("click", () => togglePop(profBtn, profPop));
+
+    const statusPill = (st === "active" || st === "paused") && me.sections.includes("settings")
+      ? h("button", { class: "status-pill " + st, id: "statusPill", type: "button", title: st === "paused" ? t("paused") : t("open"), onclick: () => go("settings") }, h("i", { class: "dot" }), h("span", {}, st === "paused" ? t("paused") : t("open")))
+      : null;
+
+    const top = h("header", { class: "top ds-topbar" },
+      h("div", { class: "top-start" },
+        h("button", { class: "hd-btn menu-btn", id: "menuBtn", type: "button", "aria-label": t("menu"), "aria-controls": "sideNav", "aria-expanded": "false", onclick: () => setDrawer(!document.body.classList.contains("ds-drawer-open")) }, ico("menu")),
+        h("button", { class: "hd-btn collapse-btn", id: "collapseBtn", type: "button", "aria-controls": "sideNav", onclick: () => setCollapsed(!document.body.classList.contains("ds-sb-collapsed")) }, ico("panel")),
+        h("a", { class: "brand-link", href: "#dashboard", onclick: (e) => { e.preventDefault(); go(me.sections.includes("dashboard") ? "dashboard" : me.sections[0]); } },
+          h("img", { src: "/icons/icon-192.png", alt: "" }), h("span", { class: "brand-copy" }, h("b", {}, "siymon"), h("small", {}, t("title")))),
+        h("span", { class: "vsep" }),
+        h("nav", { class: "crumbs", id: "crumbs", "aria-label": "Breadcrumb" })),
+      h("div", { class: "top-center" }, h("div", { class: "gsearch" }, h("label", { class: "gsearch-box" }, ico("search"), searchInput, h("kbd", {}, "Ctrl K")), h("div", { class: "pop search-pop", id: "searchPop", role: "listbox", hidden: true }))),
+      h("div", { class: "top-end" }, statusPill,
+        h("div", { class: "anchor" }, notifBtn, notifPop),
+        h("button", { class: "hd-btn lang-btn", type: "button", "aria-label": t("language"), onclick: toggleLang }, lang === "ar" ? "FR" : "AR"),
+        h("button", { class: "hd-btn", id: "themeBtn", type: "button", "aria-label": t("theme"), onclick: () => { toggleTheme(); renderShellThemeIcon(); } }, ico(curTheme() === "dark" ? "sun" : "moon")),
+        h("div", { class: "anchor" }, profBtn, profPop)));
+
+    const page = h("div", { class: "page" },
+      h("div", { class: "page-head" }, h("div", {}, h("h1", { id: "viewTitle" }, t(S.view)), h("p", { class: "page-sub", id: "viewSub" }, t("d_" + S.view)))),
+      h("div", { class: "content", id: "view" }));
+    const shell = h("div", { class: "shell", id: "shell" }, top, side, h("div", { class: "scrim ds-backdrop", onclick: () => setDrawer(false) }), h("main", { class: "main ds-main", id: "mainContent" }, page));
     clear($("app")).appendChild(shell);
+    setCollapsed(prefGet(SB_KEY, false));
+    renderCrumbs();
     updateBadges();
     renderView();
+  }
+  const curTheme = () => localStorage.getItem(THEME_KEY) || "dark";
+  function renderShellThemeIcon() {
+    const b = $("themeBtn"); if (b) clear(b).appendChild(ico(curTheme() === "dark" ? "sun" : "moon"));
+    const l = $("themeLbl"); if (l) l.textContent = curTheme() === "dark" ? t("dark") : t("light");
+  }
+  function renderCrumbs() {
+    const c = $("crumbs"); if (!c || !S.me) return;
+    const home = S.me.sections.includes("dashboard") ? "dashboard" : S.me.sections[0];
+    clear(c).appendChild(h("button", { class: "crumb", type: "button", onclick: () => go(home) }, nm(S.me.store.name)));
+    c.appendChild(h("span", { class: "crumb-sep", "aria-hidden": "true" }, "/"));
+    c.appendChild(h("span", { class: "crumb muted-c" }, t(groupOf(S.view))));
+    c.appendChild(h("span", { class: "crumb-sep", "aria-hidden": "true" }, "/"));
+    c.appendChild(h("span", { class: "crumb current", "aria-current": "page" }, t(S.view)));
   }
 
   function go(k) {
     S.view = k; stopViewTimers();
-    document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("on", a.getAttribute("data-k") === k));
+    document.querySelectorAll(".nav a").forEach((a) => { const on = a.getAttribute("data-k") === k; a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    // reveal the active item if its group was collapsed
+    const act = document.querySelector(`.nav a[data-k="${k}"]`); const grp = act && act.closest(".nav-group.is-collapsed");
+    if (grp) { grp.classList.remove("is-collapsed"); const b = grp.querySelector(".nav-group-btn"); if (b) b.setAttribute("aria-expanded", "true"); }
     const vt = $("viewTitle"); if (vt) vt.textContent = t(k);
-    $("shell").classList.remove("open");
+    const vs = $("viewSub"); if (vs) vs.textContent = t("d_" + k);
+    renderCrumbs();
+    setDrawer(false);
+    window.scrollTo(0, 0);
     renderView();
   }
   let viewTimers = [];
@@ -389,6 +672,13 @@
     const st = S.stats; if (!st) return;
     const set = (k, n) => { const b = $("bd_" + k); if (!b) return; b.textContent = n > 99 ? "99+" : String(n); b.classList.toggle("hidden", !(n > 0)); };
     set("orders_new", st.newOrders); set("chat", st.unreadMessages);
+    if (S.me) {
+      const n = notifRows().reduce((a, r) => a + (Number(r[0]) || 0), 0);
+      const c = $("notifCount");
+      if (c) { c.hidden = !n; c.textContent = n > 99 ? "99+" : String(n); }
+      const nb = $("notifBtn"); if (nb) nb.setAttribute("aria-label", t("notifications") + (n ? ` (${n})` : ""));
+      if (openPop && openPop.pop.id === "notifPop") renderNotifPop();
+    }
   }
   async function pollStats() {
     if (document.hidden || !token || !S.me) return;
@@ -408,35 +698,81 @@
 
   /* ------------------------------ dashboard / reports ------------------------------ */
   const STAT_ICON = { s_newOrders: "bell", s_preparing: "utensils", s_completed: "check", s_canceled: "ban", s_ordersValue: "receipt", s_sales: "up", s_unavailable: "package", s_low: "down", s_customers: "users", s_unread: "message", s_products: "package" };
-  function statCard(label, value, cls, onclick, key) {
+  function statCard(label, value, cls, onclick, key, foot) {
     const k = key || Object.keys(STAT_ICON).find((x) => t(x) === label);
-    return h("div", { class: "card stat " + (cls || ""), style: onclick ? "cursor:pointer" : "", onclick },
-      h("div", { class: "stat-top" }, iconTile(STAT_ICON[k] || "dashboard"), h("div", { class: "n" }, value)), h("div", { class: "l" }, label));
+    const props = { class: "card stat " + (cls || "") + (onclick ? " clickable" : "") };
+    if (onclick) Object.assign(props, { role: "button", tabindex: "0", onclick, onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onclick(); } } });
+    return h("div", props,
+      h("div", { class: "stat-top" }, h("div", { class: "stat-body" }, h("div", { class: "l" }, label), h("div", { class: "n" }, value)), iconTile(STAT_ICON[k] || "dashboard")),
+      foot ? h("div", { class: "stat-foot" }, foot) : null);
   }
   function periodSelect(onchange) {
     return h("select", { class: "input", "aria-label": t("period"), onchange: (e) => { S.days = Number(e.target.value); onchange(); } },
       [1, 7, 30, 90].map((d) => h("option", { value: String(d), selected: S.days === d }, `${d} ${d === 1 ? t("day") : t("days")}`)));
   }
+  function toolbarPeriod() {
+    return h("div", { class: "dash-toolbar" }, h("label", { class: "dash-period" }, ico("clock"), h("span", {}, t("period")), periodSelect(renderView)),
+      h("button", { class: "btn sm ghost dash-refresh", type: "button", onclick: renderView }, ico("refresh"), t("refresh")));
+  }
+  const numFmt = (n) => Number(n || 0).toLocaleString(locale(), { maximumFractionDigits: 1 });
+  /* horizontal bar chart built from real counts (no external chart lib) */
+  function barChart(rows) {
+    const max = Math.max(1, ...rows.map((r) => Number(r.v) || 0));
+    return h("div", { class: "hbars", role: "list" }, rows.map((r) => h("div", { class: "hbar", role: "listitem", "aria-label": `${r.l}: ${r.v}` },
+      h("div", { class: "hbar-top" }, h("span", {}, r.l), h("b", {}, numFmt(r.v))),
+      h("div", { class: "hbar-track" }, h("i", { class: "hbar-fill " + (r.cls || ""), style: `width:${Math.max(r.v ? 3 : 0, Math.round((Number(r.v) || 0) / max * 100))}%` })))));
+  }
+  /* donut from real parts: conic-gradient, legend carries the numbers */
+  function donut(parts, centerLabel) {
+    const total = parts.reduce((a, p) => a + (Number(p.v) || 0), 0);
+    let acc = 0;
+    const stops = total ? parts.map((p) => { const a = acc / total * 360; acc += Number(p.v) || 0; return `${p.c} ${a}deg ${acc / total * 360}deg`; }).join(",") : "var(--ds-surface-3) 0deg 360deg";
+    return h("div", { class: "donut-wrap" },
+      h("div", { class: "donut", style: `background:conic-gradient(${stops})`, role: "img", "aria-label": parts.map((p) => `${p.l}: ${p.v}`).join(", ") },
+        h("div", { class: "donut-hole" }, h("b", {}, numFmt(total)), h("small", {}, centerLabel))),
+      h("div", { class: "legend" }, parts.map((p) => h("div", { class: "legend-row" }, h("span", {}, h("i", { style: `background:${p.c}` }), p.l), h("b", {}, numFmt(p.v))))));
+  }
+  const panel = (title, sub, body, extra) => h("section", { class: "card panel" }, h("div", { class: "panel-head" }, h("div", {}, h("h3", {}, title), sub ? h("p", { class: "muted" }, sub) : null), extra || null), body);
 
   VIEWS.dashboard = async (root) => {
-    clear(root).appendChild(skeleton(3));
+    clear(root).appendChild(h("div", { class: "stats" }, Array.from({ length: 4 }, () => h("div", { class: "skeleton" }))));
     const r = await api("/api/store/stats", { query: { days: S.days } });
     S.stats = r.stats; S.prevNew = r.stats.newOrders; updateBadges();
     const s = r.stats;
-    const wrap = h("div", {}, h("div", { class: "dash-toolbar" }, h("label", { class: "dash-period" }, h("span", {}, t("period")), periodSelect(renderView)),
-      h("button", { class: "dash-refresh", type: "button", onclick: renderView }, [ico("refresh"), " " + t("refresh")])));
+    const wrap = h("div", { class: "dash" }, toolbarPeriod());
     if (!s.productsTotal && !s.completedOrders && !s.newOrders) {
-      wrap.appendChild(emptyBox(ico("bag"), t("emptyDash"), t("emptyDashHint"), can("products.write") ? h("button", { class: "btn primary", type: "button", onclick: () => { go("products"); } }, t("addFirst")) : null));
-    } else {
-      wrap.appendChild(h("div", { class: "stats" },
-        statCard(t("s_newOrders"), s.newOrders, s.newOrders ? "hot" : "", () => go("orders_new")),
-        statCard(t("s_preparing"), s.preparingOrders), statCard(t("s_completed"), s.completedOrders),
-        statCard(t("s_ordersValue"), money(s.ordersValue)), statCard(t("s_sales"), money(s.sales), "hot"),
-        statCard(t("s_unavailable"), s.unavailableProducts, s.unavailableProducts ? "alert" : ""),
-        statCard(t("s_low"), s.lowStockProducts, s.lowStockProducts ? "alert" : ""),
-        statCard(t("s_customers"), s.customers), statCard(t("s_unread"), s.unreadMessages, s.unreadMessages ? "hot" : "", () => go("chat"))));
-      wrap.appendChild(h("p", { class: "muted" }, t("valueVsSales")));
+      wrap.appendChild(emptyBox(ico("bag"), t("emptyDash"), t("emptyDashHint"), can("products.write") ? h("button", { class: "btn primary", type: "button", onclick: () => { go("products"); } }, ico("plus"), t("addFirst")) : null));
+      clear(root).appendChild(wrap);
+      return;
     }
+    const has = (k) => S.me.sections.includes(k);
+    wrap.appendChild(h("div", { class: "stats" },
+      statCard(t("s_newOrders"), numFmt(s.newOrders), s.newOrders ? "hot" : "", has("orders_new") ? () => go("orders_new") : null),
+      statCard(t("s_preparing"), numFmt(s.preparingOrders), "", has("orders") ? () => { S.ord.stage = "preparing"; go("orders"); } : null),
+      statCard(t("s_sales"), money(s.sales), "hot", has("reports") ? () => go("reports") : null, null, `${s.completedOrders} ${t("s_completed")}`),
+      statCard(t("s_ordersValue"), money(s.ordersValue), "", null, null, `${S.days} ${S.days === 1 ? t("day") : t("days")}`),
+      statCard(t("s_customers"), numFmt(s.customers), "", has("customers") ? () => go("customers") : null),
+      statCard(t("s_unread"), numFmt(s.unreadMessages), s.unreadMessages ? "hot" : "", has("chat") ? () => go("chat") : null),
+      statCard(t("s_completed"), numFmt(s.completedOrders)),
+      statCard(t("s_low"), numFmt(s.lowStockProducts), s.lowStockProducts ? "alert" : "", has("inventory") ? () => { S.prod.status = "low"; go("inventory"); } : null)));
+    const avail = Math.max(0, (s.productsTotal || 0) - (s.unavailableProducts || 0));
+    wrap.appendChild(h("div", { class: "dash-grid" },
+      panel(t("pipeline"), t("pipelineHint"), barChart([
+        { l: t("st_new"), v: s.newOrders, cls: "new" }, { l: t("st_preparing"), v: s.preparingOrders, cls: "warn" },
+        { l: t("s_completed"), v: s.completedOrders }, { l: t("s_canceled"), v: s.canceledOrders, cls: "bad" }])),
+      panel(t("catalogHealth"), `${numFmt(s.productsTotal)} ${t("products_n")}`, donut([
+        { l: t("available_n"), v: avail, c: "#5DD62C" }, { l: t("s_unavailable"), v: s.unavailableProducts, c: "#F87171" }], t("products")),
+        has("products") ? h("button", { class: "btn sm ghost", type: "button", onclick: () => go("products") }, t("products"), ico("chev", "flip")) : null)));
+    const done = Number(s.completedOrders) || 0, canc = Number(s.canceledOrders) || 0;
+    const quick = [["orders_new", "bell"], ["products", "plus"], ["chat", "message"], ["hours", "clock"]].filter(([k]) => has(k));
+    wrap.appendChild(h("div", { class: "dash-grid" },
+      panel(t("salesSummary"), t("valueVsSales"), h("div", { class: "mini-kpis" },
+        h("div", {}, h("small", {}, t("avgOrder")), h("b", {}, money(done ? s.sales / done : 0))),
+        h("div", {}, h("small", {}, t("completionRate")), h("b", {}, done + canc ? Math.round(done / (done + canc) * 100) + "%" : "—")),
+        h("div", {}, h("small", {}, t("s_canceled")), h("b", {}, numFmt(canc))))),
+      quick.length ? panel(t("quick"), "", h("div", { class: "quick" }, quick.map(([k, ic]) => h("button", { class: "quick-btn", type: "button",
+        onclick: () => { if (k === "products" && can("products.write")) { go("products"); setTimeout(() => { const b = document.querySelector("#addProductBtn"); if (b) b.click(); }, 400); } else go(k); } },
+        iconTile(ic), h("span", {}, k === "products" && can("products.write") ? t("newProduct") : t(k)), ico("chev", "flip"))))) : null));
     clear(root).appendChild(wrap);
   };
 
@@ -444,41 +780,86 @@
     clear(root).appendChild(skeleton(2));
     const r = await api("/api/store/stats", { query: { days: S.days } });
     const s = r.stats;
-    clear(root).appendChild(h("div", {}, h("div", { class: "row", style: "margin-bottom:12px" }, h("span", { class: "muted" }, t("period")), periodSelect(renderView)),
+    const done = Number(s.completedOrders) || 0, canc = Number(s.canceledOrders) || 0;
+    clear(root).appendChild(h("div", { class: "dash" }, toolbarPeriod(),
       h("div", { class: "stats" }, statCard(t("s_sales"), money(s.sales), "hot"), statCard(t("s_ordersValue"), money(s.ordersValue)),
-        statCard(t("s_completed"), s.completedOrders), statCard(t("s_canceled"), s.canceledOrders), statCard(t("s_customers"), s.customers)),
-      h("p", { class: "muted" }, t("valueVsSales"))));
+        statCard(t("s_completed"), numFmt(s.completedOrders)), statCard(t("s_canceled"), numFmt(s.canceledOrders), canc ? "alert" : ""), statCard(t("s_customers"), numFmt(s.customers))),
+      h("div", { class: "dash-grid" },
+        panel(t("salesSummary"), `${S.days} ${S.days === 1 ? t("day") : t("days")}`, barChart([{ l: t("s_ordersValue"), v: s.ordersValue }, { l: t("s_sales"), v: s.sales }])),
+        panel(t("pipeline"), t("completionRate"), donut([{ l: t("s_completed"), v: done, c: "#5DD62C" }, { l: t("s_canceled"), v: canc, c: "#F87171" }], t("orders")))),
+      h("p", { class: "muted note" }, t("valueVsSales"))));
   };
 
   /* ------------------------------ orders ------------------------------ */
   const STAGES = ["new", "preparing", "ready", "on_delivery", "done", "canceled"];
   const pillCls = (st) => (st === "new" ? "new" : st === "canceled" ? "bad" : st === "preparing" ? "warn" : "");
 
+  /* pagination footer shared by every list/table */
+  function pager(total, page, size, onPage) {
+    if (total <= size) return total ? h("div", { class: "pager" }, h("span", { class: "muted" }, t("showing").replace("{a}", 1).replace("{b}", total).replace("{n}", total))) : null;
+    const pages = Math.ceil(total / size);
+    const a = (page - 1) * size + 1, b = Math.min(total, page * size);
+    const nums = [];
+    [1, page - 1, page, page + 1, pages].forEach((n) => { if (n >= 1 && n <= pages && !nums.includes(n)) nums.push(n); });
+    nums.sort((x, y) => x - y);
+    const btns = [];
+    nums.forEach((n, idx) => {
+      if (idx && n - nums[idx - 1] > 1) btns.push(h("span", { class: "pg-gap", "aria-hidden": "true" }, "…"));
+      btns.push(h("button", { class: "pg" + (n === page ? " on" : ""), type: "button", "aria-current": n === page ? "page" : null, "aria-label": String(n), onclick: () => onPage(n) }, String(n)));
+    });
+    return h("nav", { class: "pager", "aria-label": "Pagination" },
+      h("span", { class: "muted" }, t("showing").replace("{a}", a).replace("{b}", b).replace("{n}", total)),
+      h("div", { class: "pg-btns" },
+        h("button", { class: "pg", type: "button", disabled: page <= 1, "aria-label": t("prev"), onclick: () => onPage(page - 1) }, ico("chev", "flip-start")),
+        btns,
+        h("button", { class: "pg", type: "button", disabled: page >= pages, "aria-label": t("next"), onclick: () => onPage(page + 1) }, ico("chev", "flip-end"))));
+  }
+  const ORD_PAGE = 15;
+
   function orderView(lockStage) {
     return async (root) => {
       // "new orders" has its own filter state so it can't leak into "all orders"
       const st = lockStage ? { stage: lockStage, q: "", from: "", to: "" } : S.ord;
       const list = h("div", { class: "list" });
+      const foot = h("div", {});
+      const count = h("span", { class: "muted count" });
+      let data = [], page = 1, first = true;
+      const paint = () => {
+        clear(list); clear(foot);
+        count.textContent = t("orderCount").replace("{n}", data.length);
+        if (!data.length) return list.appendChild(emptyBox(ico("receipt"), t("noOrders"), st.q || st.from || st.to ? t("gs_none") : ""));
+        const pages = Math.max(1, Math.ceil(data.length / ORD_PAGE)); if (page > pages) page = pages;
+        data.slice((page - 1) * ORD_PAGE, page * ORD_PAGE).forEach((o) => list.appendChild(h("div", { class: "item order-item", role: "button", tabindex: "0", "aria-label": `${t("order")} #${String(o.id).slice(-6)}`, onclick: () => openOrder(o, load), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openOrder(o, load); } } },
+          h("div", { class: "thumb" }, ico("receipt")),
+          h("div", { class: "grow" }, h("div", { class: "t" }, `#${String(o.id).slice(-6)} · ${(o.customer && o.customer.name) || ""}`),
+            h("div", { class: "muted" }, `${when(o.createdAt)} · ${(o.items || []).length} ${t("items")}`)),
+          h("div", { class: "item-end" }, h("div", { class: "amount" }, money(o.total)), h("span", { class: "pill " + pillCls(o.stage) }, t("st_" + o.stage))))));
+        const pg = pager(data.length, page, ORD_PAGE, (n) => { page = n; paint(); root.scrollIntoView({ block: "start" }); });
+        if (pg) foot.appendChild(pg);
+      };
       const load = async () => {
-        clear(list).appendChild(skeleton(3));
+        if (first) clear(list).appendChild(skeleton(3));
         try {
           const r = await api("/api/store/orders", { query: { stage: st.stage === "all" ? "" : st.stage, q: st.q, from: st.from, to: st.to } });
-          clear(list);
-          if (!r.orders.length) return list.appendChild(emptyBox(ico("receipt"), t("noOrders")));
-          r.orders.forEach((o) => list.appendChild(h("div", { class: "item", role: "button", tabindex: "0", onclick: () => openOrder(o, load), onkeydown: (e) => { if (e.key === "Enter") openOrder(o, load); } },
-            h("div", { class: "grow" }, h("div", { class: "t" }, `#${String(o.id).slice(-6)} · ${(o.customer && o.customer.name) || ""}`),
-              h("div", { class: "muted" }, `${when(o.createdAt)} · ${(o.items || []).length} ${t("items")}`)),
-            h("div", { style: "text-align:end" }, h("div", { style: "font-weight:700" }, money(o.total)), h("span", { class: "pill " + pillCls(o.stage) }, t("st_" + o.stage))))));
+          data = r.orders || []; first = false; paint();
         } catch (e) { showErr(list, e); }
       };
+      const reload = () => { page = 1; first = true; load(); };
       S.refresh = load;
-      const tabs = lockStage ? null : h("div", { class: "tabs" }, ["all", ...STAGES].map((k) =>
-        h("button", { class: "tab" + (st.stage === k ? " on" : ""), type: "button", onclick: (e) => { st.stage = k; document.querySelectorAll(".tabs .tab").forEach((x) => x.classList.remove("on")); e.currentTarget.classList.add("on"); load(); } }, k === "all" ? t("all") : t("st_" + k))));
+      const tabs = lockStage ? null : h("div", { class: "tabs", role: "tablist", "aria-label": t("orders") }, ["all", ...STAGES].map((k) =>
+        h("button", { class: "tab" + (st.stage === k ? " on" : ""), type: "button", role: "tab", "aria-selected": String(st.stage === k), onclick: (e) => {
+          st.stage = k; document.querySelectorAll(".tabs .tab").forEach((x) => { x.classList.remove("on"); x.setAttribute("aria-selected", "false"); });
+          e.currentTarget.classList.add("on"); e.currentTarget.setAttribute("aria-selected", "true"); reload(); } }, k === "all" ? t("all") : t("st_" + k))));
       let qTimer;
-      const q = h("input", { class: "input", type: "search", placeholder: t("search"), value: st.q, oninput: (e) => { clearTimeout(qTimer); qTimer = setTimeout(() => { st.q = e.target.value.trim(); load(); }, 300); } });
-      const from = h("input", { class: "input", type: "date", value: st.from, "aria-label": t("from"), onchange: (e) => { st.from = e.target.value; load(); } });
-      const to = h("input", { class: "input", type: "date", value: st.to, "aria-label": t("to"), onchange: (e) => { st.to = e.target.value; load(); } });
-      clear(root).appendChild(h("div", {}, tabs, h("div", { class: "row", style: "margin-bottom:12px" }, h("div", { style: "flex:2;min-width:160px" }, q), h("div", { style: "flex:1;min-width:130px" }, from), h("div", { style: "flex:1;min-width:130px" }, to)), list));
+      const q = h("input", { class: "input", type: "search", placeholder: t("search"), "aria-label": t("search"), value: st.q, oninput: (e) => { clearTimeout(qTimer); qTimer = setTimeout(() => { st.q = e.target.value.trim(); reload(); }, 300); } });
+      const from = h("input", { class: "input", type: "date", value: st.from, "aria-label": t("from"), onchange: (e) => { st.from = e.target.value; reload(); } });
+      const to = h("input", { class: "input", type: "date", value: st.to, "aria-label": t("to"), onchange: (e) => { st.to = e.target.value; reload(); } });
+      clear(root).appendChild(h("div", { class: "card table-card" }, tabs,
+        h("div", { class: "filters" }, h("div", { class: "search-field" }, ico("search"), q),
+          h("label", { class: "date-field" }, h("span", {}, t("from")), from), h("label", { class: "date-field" }, h("span", {}, t("to")), to),
+          h("span", { class: "spacer" }), count,
+          h("button", { class: "btn sm ghost", type: "button", "aria-label": t("refresh"), onclick: () => load() }, ico("refresh"))),
+        list, foot));
       load();
       viewTimers.push(setInterval(() => { if (!document.hidden) load(); }, 30000));
     };
@@ -613,29 +994,61 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
   }
 
   /* ------------------------------ products / pricing / inventory ------------------------------ */
+  /* sortable header cell: aria-sort + keyboard reachable button */
+  function sortTh(label, key, sort, onSort) {
+    if (!key) return h("th", {}, label);
+    const on = sort.key === key;
+    return h("th", { "aria-sort": on ? (sort.dir > 0 ? "ascending" : "descending") : "none" },
+      h("button", { class: "th-sort" + (on ? " on" : ""), type: "button", title: on && sort.dir > 0 ? t("sortDesc") : t("sortAsc"),
+        onclick: () => onSort(on ? { key, dir: -sort.dir } : { key, dir: 1 }) }, label, ico(on ? (sort.dir > 0 ? "sortUp" : "sortDown") : "sort")));
+  }
+  const PROD_PAGE = 12;
+  const prodSortVal = (it, key) => key === "name" ? nm(it.name).toLowerCase() : key === "cat" ? String(nm(it.catLabel) || it.cat || "").toLowerCase()
+    : key === "price" ? Number(it.salePrice != null && it.salePrice < it.price ? it.salePrice : it.price) || 0 : key === "stock" ? (it.stock == null ? Infinity : Number(it.stock)) : 0;
+
   function productView(mode) {
     return async (root) => {
       const st = S.prod;
       const box = h("div", { class: "scroll-x" });
-      let fields = [];
+      const foot = h("div", {});
+      const count = h("span", { class: "muted count" });
+      let fields = [], items = [], page = 1, sort = { key: "name", dir: 1 };
+      const head = mode === "pricing" ? [[t("name"), "name"], [t("price"), "price"], [t("salePrice"), null]]
+        : mode === "inventory" ? [[t("name"), "name"], [t("stock"), "stock"], [t("available"), null]]
+        : [[t("name"), "name"], [t("category"), "cat"], [t("price"), "price"], [t("stock"), "stock"], ["", null]];
+      const paint = () => {
+        clear(box); clear(foot);
+        count.textContent = t("productCount").replace("{n}", items.length);
+        if (!items.length) return box.appendChild(emptyBox(ico("package"), t("noProducts"), st.q || st.status ? t("gs_none") : "", can("products.write") && mode === "products" && !st.q && !st.status ? h("button", { class: "btn primary", type: "button", onclick: () => editProduct(null, fields, load) }, ico("plus"), t("addFirst")) : null));
+        const sorted = items.slice().sort((a, b) => { const x = prodSortVal(a, sort.key), y = prodSortVal(b, sort.key); return (x > y ? 1 : x < y ? -1 : 0) * sort.dir; });
+        const pages = Math.max(1, Math.ceil(sorted.length / PROD_PAGE)); if (page > pages) page = pages;
+        box.appendChild(h("table", { class: "tbl resp" }, h("thead", {}, h("tr", {}, head.map(([l, k]) => sortTh(l, k, sort, (ns) => { sort = ns; page = 1; paint(); })))),
+          h("tbody", {}, sorted.slice((page - 1) * PROD_PAGE, page * PROD_PAGE).map((it) => productRow(it, mode, fields, load)))));
+        const pg = pager(sorted.length, page, PROD_PAGE, (n) => { page = n; paint(); });
+        if (pg) foot.appendChild(pg);
+      };
+      let first = true;
       const load = async () => {
-        clear(box).appendChild(skeleton(3));
+        if (first) clear(box).appendChild(skeleton(3));
         try {
           const r = await api("/api/store/products", { query: { q: st.q, status: mode === "inventory" && !st.status ? "" : st.status, cat: st.cat } });
-          fields = r.fields || [];
-          clear(box);
-          if (!r.items.length) return box.appendChild(emptyBox(ico("package"), t("noProducts"), "", can("products.write") ? h("button", { class: "btn primary", type: "button", onclick: () => editProduct(null, fields, load) }, t("addFirst")) : null));
-          const head = mode === "pricing" ? [t("name"), t("price"), t("salePrice")] : mode === "inventory" ? [t("name"), t("stock"), t("available")] : [t("name"), t("category"), t("price"), t("stock"), ""];
-          box.appendChild(h("table", { class: "tbl resp" }, h("thead", {}, h("tr", {}, head.map((x) => h("th", {}, x)))), h("tbody", {}, r.items.map((it) => productRow(it, mode, fields, load)))));
+          fields = r.fields || []; items = r.items || []; first = false;
+          if (catSel && catSel.options.length <= 1) {
+            const cats = new Map(); items.forEach((it) => { if (it.cat && !cats.has(it.cat)) cats.set(it.cat, nm(it.catLabel) || it.cat); });
+            cats.forEach((l, v) => catSel.appendChild(h("option", { value: v, selected: st.cat === v }, l)));
+          }
+          paint();
         } catch (e) { showErr(box, e); }
       };
       let qt;
-      const q = h("input", { class: "input", type: "search", placeholder: t("search"), value: st.q, oninput: (e) => { clearTimeout(qt); qt = setTimeout(() => { st.q = e.target.value.trim(); load(); }, 300); } });
-      const sel = h("select", { class: "input", onchange: (e) => { st.status = e.target.value; load(); } },
+      const q = h("input", { class: "input", type: "search", placeholder: t("search"), "aria-label": t("search"), value: st.q, oninput: (e) => { clearTimeout(qt); qt = setTimeout(() => { st.q = e.target.value.trim(); page = 1; load(); }, 300); } });
+      const sel = h("select", { class: "input", "aria-label": t("available"), onchange: (e) => { st.status = e.target.value; page = 1; load(); } },
         [["", t("all")], ["available", t("available")], ["unavailable", t("unavailable")], ["low", t("lowStock")], ["archived", t("archived")]].map(([v, l]) => h("option", { value: v, selected: st.status === v }, l)));
-      if (mode === "inventory" && !st.status) { /* keep "all" */ }
-      clear(root).appendChild(h("div", {}, h("div", { class: "row", style: "margin-bottom:12px" }, h("div", { style: "flex:2;min-width:160px" }, q), h("div", { style: "flex:1;min-width:140px" }, sel),
-        mode === "products" && can("products.write") ? h("button", { class: "btn primary", type: "button", onclick: () => editProduct(null, fields, load) }, "＋ " + t("add")) : null), box));
+      const catSel = h("select", { class: "input", "aria-label": t("category"), onchange: (e) => { st.cat = e.target.value; page = 1; load(); } }, h("option", { value: "" }, `${t("category")}: ${t("all")}`));
+      clear(root).appendChild(h("div", { class: "card table-card" },
+        h("div", { class: "filters" }, h("div", { class: "search-field" }, ico("search"), q), sel, catSel, h("span", { class: "spacer" }), count,
+          mode === "products" && can("products.write") ? h("button", { class: "btn primary", id: "addProductBtn", type: "button", onclick: () => editProduct(null, fields, load) }, ico("plus"), t("add")) : null),
+        box, foot));
       S.refresh = load;
       load();
     };
@@ -661,7 +1074,7 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
       const av = h("input", { type: "checkbox", checked: it.isAvailable !== false, "aria-label": t("available"), onchange: async (e) => { const r = await patchProduct(it.id, { isAvailable: e.target.checked }); if (!r || (e.target.checked && r.isAvailable === false)) reload(); } });
       return h("tr", {}, nameCell, h("td", { "data-l": t("stock") }, numInput(it.stock, async (v) => { const r = await patchProduct(it.id, { stock: v === null ? "" : v }); if (!r) reload(); }, "∞")), h("td", { "data-l": t("available") }, av));
     }
-    const acts = h("div", { class: "row" });
+    const acts = h("div", { class: "row row-acts" });
     if (can("products.write")) {
       acts.appendChild(h("button", { class: "btn sm", type: "button", onclick: () => editProduct(it, fields, reload) }, t("edit")));
       if (it.archived) acts.appendChild(h("button", { class: "btn sm", type: "button", onclick: async () => { if (await patchProduct(it.id, { archived: false })) reload(); } }, t("restore")));
@@ -799,12 +1212,36 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
   VIEWS.customers = async (root) => {
     clear(root).appendChild(skeleton(3));
     const r = await api("/api/store/customers");
-    if (!r.customers.length) return clear(root).appendChild(emptyBox(ico("users"), t("noCustomers")));
-    clear(root).appendChild(h("div", { class: "scroll-x" }, h("table", { class: "tbl resp" },
-      h("thead", {}, h("tr", {}, [t("customer"), t("phone"), t("ordersN"), t("spent"), t("lastOrder"), ""].map((x) => h("th", {}, x)))),
-      h("tbody", {}, r.customers.map((c) => h("tr", {}, h("td", { "data-l": t("customer") }, c.name), h("td", { "data-l": t("phone") }, h("span", { dir: "ltr" }, c.phone || "—")), h("td", { "data-l": t("ordersN") }, c.orders),
-        h("td", { "data-l": t("spent") }, money(c.spent)), h("td", { "data-l": t("lastOrder") }, when(c.lastOrderAt)),
-        h("td", {}, can("chat.use") ? h("button", { class: "btn sm", type: "button", onclick: () => openChatFor(c.lastOrderId) }, [ico("message"), c.unread ? ` ${c.unread}` : ""]) : null)))))));
+    const all = r.customers || [];
+    if (!all.length) return clear(root).appendChild(emptyBox(ico("users"), t("noCustomers")));
+    let q = "", page = 1, sort = { key: "lastOrderAt", dir: -1 };
+    const PAGE = 15;
+    const box = h("div", { class: "scroll-x" }), foot = h("div", {}), count = h("span", { class: "muted count" });
+    const val = (c, k) => k === "name" ? String(c.name || "").toLowerCase() : k === "orders" ? Number(c.orders) || 0 : k === "spent" ? Number(c.spent) || 0 : String(c.lastOrderAt || "");
+    const paint = () => {
+      const ql = q.toLowerCase();
+      const list = all.filter((c) => !ql || String(c.name || "").toLowerCase().includes(ql) || String(c.phone || "").includes(ql))
+        .sort((a, b) => { const x = val(a, sort.key), y = val(b, sort.key); return (x > y ? 1 : x < y ? -1 : 0) * sort.dir; });
+      count.textContent = t("customerCount").replace("{n}", list.length);
+      clear(box); clear(foot);
+      if (!list.length) return box.appendChild(emptyBox(ico("search"), t("gs_none")));
+      const pages = Math.max(1, Math.ceil(list.length / PAGE)); if (page > pages) page = pages;
+      const onSort = (ns) => { sort = ns; page = 1; paint(); };
+      box.appendChild(h("table", { class: "tbl resp" },
+        h("thead", {}, h("tr", {}, sortTh(t("customer"), "name", sort, onSort), sortTh(t("phone"), null, sort, onSort), sortTh(t("ordersN"), "orders", sort, onSort),
+          sortTh(t("spent"), "spent", sort, onSort), sortTh(t("lastOrder"), "lastOrderAt", sort, onSort), h("th", {}, ""))),
+        h("tbody", {}, list.slice((page - 1) * PAGE, page * PAGE).map((c) => h("tr", {},
+          h("td", { "data-l": t("customer") }, h("div", { class: "who-cell" }, h("span", { class: "avatar sm" }, initials(c.name)), h("b", {}, c.name || "—"))),
+          h("td", { "data-l": t("phone") }, h("span", { dir: "ltr" }, c.phone || "—")), h("td", { "data-l": t("ordersN") }, c.orders),
+          h("td", { "data-l": t("spent") }, money(c.spent)), h("td", { "data-l": t("lastOrder") }, when(c.lastOrderAt)),
+          h("td", {}, can("chat.use") ? h("button", { class: "btn sm", type: "button", "aria-label": t("openChat"), onclick: () => openChatFor(c.lastOrderId) }, [ico("message"), c.unread ? h("span", { class: "badge" }, c.unread) : t("openChat")]) : null))))));
+      const pg = pager(list.length, page, PAGE, (n) => { page = n; paint(); });
+      if (pg) foot.appendChild(pg);
+    };
+    let qt;
+    const qi = h("input", { class: "input", type: "search", placeholder: t("search"), "aria-label": t("search"), oninput: (e) => { clearTimeout(qt); qt = setTimeout(() => { q = e.target.value.trim(); page = 1; paint(); }, 200); } });
+    clear(root).appendChild(h("div", { class: "card table-card" }, h("div", { class: "filters" }, h("div", { class: "search-field" }, ico("search"), qi), h("span", { class: "spacer" }), count), box, foot));
+    paint();
   };
 
   /* ------------------------------ chat ------------------------------ */

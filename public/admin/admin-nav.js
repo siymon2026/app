@@ -16,9 +16,9 @@
 
   /* ---------- strings owned by the sidebar (everything else mirrors admin.js) ---------- */
   var T = {
-    ar: { menu: "القائمة", home: "الطلبات", group: "الأعمال", search: "بحث…", light: "فاتح", dark: "داكن", collapse: "طي القائمة", expand: "توسيع القائمة", open: "القائمة", logout: "تسجيل الخروج", nav: "التنقل" },
-    fr: { menu: "Menu", home: "Commandes", group: "Activité", search: "Rechercher…", light: "Clair", dark: "Sombre", collapse: "Réduire", expand: "Agrandir", open: "Menu", logout: "Déconnexion", nav: "Navigation" },
-    en: { menu: "Menu", home: "Orders", group: "Business", search: "Search…", light: "Light", dark: "Dark", collapse: "Collapse", expand: "Expand", open: "Menu", logout: "Logout", nav: "Navigation" }
+    ar: { gOverview: "نظرة عامة", gCommerce: "المتاجر والكتالوج", gOps: "العمليات", gEngage: "العملاء والتواصل", gSystem: "النظام", menu: "القائمة", home: "الطلبات", group: "الأعمال", search: "بحث…", light: "فاتح", dark: "داكن", collapse: "طي القائمة", expand: "توسيع القائمة", open: "القائمة", logout: "تسجيل الخروج", nav: "التنقل" },
+    fr: { gOverview: "Vue d'ensemble", gCommerce: "Boutiques & catalogue", gOps: "Opérations", gEngage: "Clients & communication", gSystem: "Système", menu: "Menu", home: "Commandes", group: "Activité", search: "Rechercher…", light: "Clair", dark: "Sombre", collapse: "Réduire", expand: "Agrandir", open: "Menu", logout: "Déconnexion", nav: "Navigation" },
+    en: { gOverview: "Overview", gCommerce: "Stores & catalog", gOps: "Operations", gEngage: "Customers & engagement", gSystem: "System", menu: "Menu", home: "Orders", group: "Business", search: "Search…", light: "Light", dark: "Dark", collapse: "Collapse", expand: "Expand", open: "Menu", logout: "Logout", nav: "Navigation" }
   };
   function L() { return T[(html.lang || "ar").slice(0, 2)] || T.en; }
   function isMobile() { return mqMobile.matches; }
@@ -236,6 +236,7 @@
       });
       $$(".sb-label, .sb-sep").forEach(function (l) { l.style.display = q ? "none" : ""; });
       if (q) { $$(".sb-sub").forEach(function (n) { n.hidden = true; }); }
+      $$(".sb-group").forEach(function (g) { g.classList.toggle("is-filtering", !!q); });
     });
     $("sbSearch").addEventListener("keydown", function (e) {
       if (e.key === "Enter") { var first = $$(".sb-item[data-key]").filter(function (i) { return i.style.display !== "none"; })[0]; if (first) first.click(); }

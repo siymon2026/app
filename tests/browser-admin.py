@@ -26,7 +26,7 @@ try:
     pg.click("#addRestBtn"); pg.wait_for_timeout(1200)
     check("edit modal opens after add", pg.locator("#restEditModal").is_visible())
     check("extra fields built", pg.locator("#stMinOrder").count()==1)
-    pg.select_option("#stStatus","active"); pg.fill("#stType","pizza"); pg.fill("#stCity","برشيد")
+    pg.select_option("#stStatus","active"); pg.select_option("#stType","pizza"); pg.fill("#stCity","برشيد")
     pg.fill("#stMinOrder","30"); pg.fill("#stDelFee","10"); pg.fill("#stFreeOver","120"); pg.fill("#stAvgMin","25"); pg.fill("#stSort","5")
     pg.check("#stFeatured"); pg.fill("#stOffer","-15%")
     for d in range(7):

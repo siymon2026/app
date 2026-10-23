@@ -32,7 +32,7 @@
       if (win) win.location.href = url; else window.location.href = url;
     }).catch(function (e) {
       if (win) win.close();
-      say("❌ " + (e && e.message ? e.message : "Error"));
+      say(e && e.message ? e.message : "Error");
     }).then(function () { if (btn) btn.disabled = false; });
   }
 
@@ -42,10 +42,12 @@
     var ov = h("div", { class: "sen-ov", onclick: function (e) { if (e.target === ov) ov.remove(); } },
       h("div", { class: "sen-box", role: "dialog", "aria-modal": "true" },
         h("div", { class: "sen-head" }, h("h3", {}, kind === "portal" ? L("الدخول إلى بوابة المطعم", "Open restaurant portal", "Ouvrir le portail") : L("الدخول إلى لوحة المتجر", "Open store dashboard", "Ouvrir le tableau de bord")),
-          h("button", { class: "sen-x", type: "button", "aria-label": L("إغلاق", "Close", "Fermer"), onclick: function () { ov.remove(); } }, "✕")),
+          h("button", { class: "sen-x", type: "button", "aria-label": L("إغلاق", "Close", "Fermer"), onclick: function () { ov.remove(); } }, "×")),
         h("p", { class: "sen-muted" }, L("تدخل بصلاحية المالك وبإمكانك التعديل مباشرة، بدون كلمة مرور.", "You enter with owner rights and can edit directly, no password.", "Accès propriétaire, modification directe, sans mot de passe.")),
         search, list));
     doc.body.appendChild(ov);
+    var onKey = function (e) { if (e.key === "Escape" && doc.body.contains(ov)) { ov.remove(); doc.removeEventListener("keydown", onKey); } };
+    doc.addEventListener("keydown", onKey);
     search.focus();
     var stores = [];
     function render() {
@@ -55,8 +57,8 @@
       if (!rows.length) { list.appendChild(h("p", { class: "sen-muted" }, L("لا توجد نتائج", "No results", "Aucun résultat"))); return; }
       rows.forEach(function (s) {
         var b1, b2;
-        b1 = h("button", { class: "sen-btn" + (kind === "store" ? " primary" : ""), type: "button", onclick: function () { enter(s.id, "store", b1); } }, "🛍️ " + L("لوحة المتجر", "Store dashboard", "Tableau de bord"));
-        b2 = h("button", { class: "sen-btn" + (kind === "portal" ? " primary" : ""), type: "button", onclick: function () { enter(s.id, "portal", b2); } }, "🍽️ " + L("بوابة المطعم", "Restaurant portal", "Portail"));
+        b1 = h("button", { class: "sen-btn" + (kind === "store" ? " primary" : ""), type: "button", onclick: function () { enter(s.id, "store", b1); } }, L("لوحة المتجر", "Store dashboard", "Tableau de bord"));
+        b2 = h("button", { class: "sen-btn" + (kind === "portal" ? " primary" : ""), type: "button", onclick: function () { enter(s.id, "portal", b2); } }, L("بوابة المطعم", "Restaurant portal", "Portail"));
         list.appendChild(h("div", { class: "sen-row" + (s.isActive === false ? " off" : "") },
           h("div", { class: "sen-name" }, h("b", {}, nm(s.name) || String(s.id)), h("small", {}, (s.type || "restaurant") + (s.isActive === false ? " · " + L("معطّل", "disabled", "désactivé") : ""))),
           h("div", { class: "sen-acts" }, b1, b2)));
@@ -64,13 +66,13 @@
     }
     search.addEventListener("input", render);
     api("/api/admin/restaurants").then(function (r) { stores = r.restaurants || []; render(); })
-      .catch(function (e) { while (list.firstChild) list.removeChild(list.firstChild); list.appendChild(h("p", { class: "sen-muted" }, "❌ " + (e && e.message || "Error"))); });
+      .catch(function (e) { while (list.firstChild) list.removeChild(list.firstChild); list.appendChild(h("p", { class: "sen-muted" }, "" + (e && e.message || "Error"))); });
   }
 
   function setup() {
     var nav = doc.getElementById("sideNav"), portal = doc.getElementById("sbPortal");
     if (!nav || doc.getElementById("sbStoreEnter")) return;
-    var svg = '<span class="sb-tile t-orange"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M9 22v-6h6v6"/></svg></span>';
+    var svg = '<svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>';
     var btn = h("button", { class: "sb-item", id: "sbStoreEnter", type: "button", "data-key": "storeEnter" });
     btn.innerHTML = svg;                                        // static markup only
     var txt = h("span", { class: "sb-text" }); btn.appendChild(txt);

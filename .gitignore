@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data & logs
+logs/
+*.log
+data/
+public/uploads/
+
+# Build / test / editor caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+playwright-report/
+test-results/
+screenshots/
+.DS_Store
+u_*.png

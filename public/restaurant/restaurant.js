@@ -80,8 +80,8 @@ const i18n = {
     welcomeText: "سجّل الدخول لعرض الطلبات الخاصة بمطعمك.",
     refresh: "تحديث",
     logout: "خروج",
-    soundOn: "🔔 الصوت: تشغيل",
-    soundOff: "🔕 الصوت: إيقاف",
+    soundOn: "الصوت: تشغيل",
+    soundOff: "الصوت: إيقاف",
     newOrder: "طلب جديد",
     loginTitle: "تسجيل دخول المطعم",
     loginId: "الجمايل أو رقم الهاتف",
@@ -97,7 +97,7 @@ const i18n = {
     prodImg: "صورة الوجبة",
     uploadHint: "اختر صورة للوجبة (رفع مباشر)",
     uploading: "جاري رفع الصورة...",
-    uploadOk: "تم رفع الصورة ✅",
+    uploadOk: "تم رفع الصورة",
     uploadFail: "فشل رفع الصورة",
     prodDesc: "الوصف",
     prodAvail: "متوفر",
@@ -129,7 +129,7 @@ const i18n = {
     wifiPrint: "طباعة Wi‑Fi",
     btPrint: "طباعة BT",
 
-    editTicket: "✏️ تعديل التيكيت",
+    editTicket: "تعديل التيكيت",
     itemName: "المنتج",
     qty: "الكمية",
     unitPrice: "الثمن",
@@ -171,8 +171,8 @@ const i18n = {
     welcomeText: "Log in to view orders for your restaurant.",
     refresh: "Refresh",
     logout: "Logout",
-    soundOn: "🔔 Sound: ON",
-    soundOff: "🔕 Sound: OFF",
+    soundOn: "Sound: ON",
+    soundOff: "Sound: OFF",
     newOrder: "New order",
     loginTitle: "Restaurant Login",
     loginId: "Email or phone",
@@ -188,7 +188,7 @@ const i18n = {
     prodImg: "Meal image",
     uploadHint: "Choose a meal image (upload)",
     uploading: "Uploading image...",
-    uploadOk: "Image uploaded ✅",
+    uploadOk: "Image uploaded",
     uploadFail: "Image upload failed",
     prodDesc: "Description",
     prodAvail: "Available",
@@ -220,7 +220,7 @@ const i18n = {
     wifiPrint: "Wi‑Fi print",
     btPrint: "BT print",
 
-    editTicket: "✏️ Edit ticket",
+    editTicket: "Edit ticket",
     itemName: "Item",
     qty: "Qty",
     unitPrice: "Unit",
@@ -262,8 +262,8 @@ const i18n = {
     welcomeText: "Connectez‑vous pour voir les commandes de votre restaurant.",
     refresh: "Actualiser",
     logout: "Déconnexion",
-    soundOn: "🔔 Son: ON",
-    soundOff: "🔕 Son: OFF",
+    soundOn: "Son: ON",
+    soundOff: "Son: OFF",
     newOrder: "Nouvelle commande",
     loginTitle: "Connexion Restaurant",
     loginId: "Email ou téléphone",
@@ -279,7 +279,7 @@ const i18n = {
     prodImg: "Image du plat",
     uploadHint: "Choisir une image du plat (téléversement)",
     uploading: "Téléversement...",
-    uploadOk: "Image téléversée ✅",
+    uploadOk: "Image téléversée",
     uploadFail: "Échec du téléversement",
     prodDesc: "Description",
     prodAvail: "Disponible",
@@ -311,7 +311,7 @@ const i18n = {
     wifiPrint: "Impression Wi‑Fi",
     btPrint: "Impression BT",
 
-    editTicket: "✏️ Modifier ticket",
+    editTicket: "Modifier ticket",
     itemName: "Article",
     qty: "Qté",
     unitPrice: "Prix",
@@ -402,7 +402,8 @@ function updateSoundBtn() {
   const t = i18n[lang] || i18n.en;
   const btn = el("soundToggle");
   if (!btn) return;
-  btn.textContent = soundEnabled ? t.soundOn || "🔔" : t.soundOff || "🔕";
+  btn.textContent = soundEnabled ? t.soundOn || "Sound ON" : t.soundOff || "Sound OFF";
+  btn.classList.toggle("is-off", !soundEnabled);
 }
 
 function setSound(on) {
@@ -784,7 +785,7 @@ async function loadProducts(silent = false) {
   try {
     const res = await api("/api/restaurant/menu", { method: "GET" });
     menuItems = Array.isArray(res.items) ? res.items : [];
-    if (!silent) toast("✅");
+    if (!silent) toast((lang === "ar" ? "تم" : lang === "fr" ? "OK" : "Done"));
     render();
   } catch (e) {
     if (e.status === 401 || e.status === 403) {
@@ -824,7 +825,7 @@ function startEditProduct(it) {
   el("prodDesc").value = textForLang(it.desc || "");
   el("prodAvail").value = it.isAvailable !== false ? "1" : "0";
   el("prodHint").textContent = "";
-  toast("✏️ " + (i18n[lang]?.edit || "Edit"));
+  toast("" + (i18n[lang]?.edit || "Edit"));
 }
 
 async function saveProduct() {
@@ -872,7 +873,7 @@ async function saveProduct() {
         body: JSON.stringify(payload),
       });
     }
-    toast("✅ " + (t.save || "Save"));
+    toast("" + (t.save || "Save"));
     clearProductForm();
     await loadProducts(true);
   } catch (e) {
@@ -911,7 +912,7 @@ async function deleteProduct(id) {
     });
     if (String(editingItemId) === String(id)) clearProductForm();
     await loadProducts(true);
-    toast("✅");
+    toast((lang === "ar" ? "تم" : lang === "fr" ? "OK" : "Done"));
   } catch (e) {
     toast(e.message);
   }
@@ -1248,8 +1249,8 @@ async function saveReceiptEdits(orderId) {
     // update cache
     const idx = orders.findIndex((x) => String(x.id) === String(orderId));
     if (idx >= 0) orders[idx] = updated;
-    toast("✅ " + t.saveChanges);
-    if (hint) hint.textContent = "✅";
+    toast("" + t.saveChanges);
+    if (hint) hint.textContent = (lang === "ar" ? "تم" : lang === "fr" ? "OK" : "Done");
     showDetails(updated);
     render();
   } catch (e) {
@@ -1404,7 +1405,7 @@ async function printWifi(order) {
       method: "POST",
       body: JSON.stringify({ orderId: order.id }),
     });
-    toast("✅ " + t.wifiPrint);
+    toast("" + t.wifiPrint);
   } catch (e) {
     toast(e.message);
   }
@@ -1512,7 +1513,7 @@ async function connectBluetooth() {
     if (!BT.characteristic) throw new Error("No writable characteristic");
     BT.connected = true;
     updateBtBtn();
-    toast("✅ " + t.btConnected);
+    toast("" + t.btConnected);
   } catch (e) {
     BT.connected = false;
     updateBtBtn();
@@ -1560,7 +1561,7 @@ async function printBluetooth(order) {
     }
     const data = escposReceipt(order);
     await writeInChunks(BT.characteristic, data);
-    toast("✅ " + t.btPrint);
+    toast("" + t.btPrint);
   } catch (e) {
     toast(e.message || "BT print failed");
   }
@@ -1673,7 +1674,7 @@ function showDetails(o) {
   `
     : hasDriver && String(o.status || "") === "accepted"
       ? `
-    <button class="btn ghost small" type="button" disabled>✅ ${escapeHtml(driverTakenText)}</button>
+    <button class="btn ghost small" type="button" disabled>${escapeHtml(driverTakenText)}</button>
   `
       : "";
 
@@ -1876,7 +1877,7 @@ async function doLogin() {
     showLoggedIn(true);
     await loadMe();
     await loadOrders();
-    toast("✅ OK");
+    toast("OK");
   } catch (e) {
     el("authHint").textContent = e.message;
   }
@@ -1958,7 +1959,7 @@ async function loadOrders(silent = false) {
       /* ignore */
     }
 
-    if (!silent) toast("✅");
+    if (!silent) toast((lang === "ar" ? "تم" : lang === "fr" ? "OK" : "Done"));
     render();
   } catch (e) {
     if (e.status === 401 || e.status === 403) {
@@ -1976,7 +1977,7 @@ async function confirmDriverTaken(id) {
       method: "POST",
     });
     toast(
-      "✅ " +
+      "" +
         (lang === "ar"
           ? "تم إشعار المشرف والزبون"
           : lang === "fr"
@@ -1996,7 +1997,7 @@ async function markReady(id) {
       method: "PATCH",
       body: JSON.stringify({ status: "restaurant_ready" }),
     });
-    toast("✅ " + t.ready);
+    toast("" + t.ready);
     await loadOrders(true);
   } catch (e) {
     toast(e.message);

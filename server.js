@@ -238,6 +238,10 @@ const corsOptions = {
     "Authorization",
     "X-CSRF-Token",
     "X-Request-Id",
+    "X-Store-Id",
+    "X-Store-Token",
+    "X-Restaurant-Token",
+    "X-Restaurant-User-Token",
   ],
 };
 
@@ -323,6 +327,7 @@ app.use(
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false, // إلغاء حظر النوافذ المنبثقة تماماً
+    frameguard: IS_PROD ? { action: "sameorigin" } : false,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" }, // السماح لجوجل بمعرفة مصدر الطلب
   }),
 );
@@ -344,7 +349,9 @@ app.use(
       defaultSrc: ["'self'"],
       baseUri: ["'self'"],
       objectSrc: ["'none'"],
-      frameAncestors: ["'none'"],
+      frameAncestors: IS_PROD
+        ? ["'none'"]
+        : ["'self'", "https://*.e2b.app", "https://*.arena.ai", "https://arena.ai"],
       // Google Sign-In (GIS) requires loading scripts/iframes from Google
       scriptSrc: [
         "'self'",
@@ -360,6 +367,7 @@ app.use(
         "'unsafe-inline'",
         "https://accounts.google.com",
         "https://cdnjs.cloudflare.com",
+        "https://fonts.googleapis.com",
       ],
       imgSrc: [
         "'self'",
@@ -379,7 +387,7 @@ app.use(
         "https://appleid.apple.com",
       ],
       frameSrc: ["'self'", "https://accounts.google.com", "https://appleid.apple.com"],
-      fontSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       mediaSrc: ["'self'"],
       manifestSrc: ["'self'"],
       workerSrc: ["'self'"],

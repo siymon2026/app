@@ -374,7 +374,7 @@
       body.draft = true; body.requestId = state.requestId || (state.requestId = newRequestId());
       return api("/api/admin/notifications", { method: "POST", body: JSON.stringify(body) });
     }).then(function (res) {
-      if (!silent) { setMsg("ok", T("draftSaved")); toast("✅"); }
+      if (!silent) { setMsg("ok", T("draftSaved")); toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); }
       return res;
     });
   }
@@ -466,7 +466,7 @@
       return p.then(function (res) {
         var m = deliveryMessage(res);
         resetForm(); state.tab = "sent";
-        setMsg(m.kind, m.text); toast("✅");
+        setMsg(m.kind, m.text); toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
         return loadList().then(function () { if (res.processing) schedulePoll(); });
       }).catch(function (err) {
         if (err && err.message === "invalid") return;
@@ -489,7 +489,7 @@
       var body = { title: v.title, message: v.message, url: v.url || "", target: target };
       if (dataUrl) body.image = dataUrl;
       return api("/api/admin/notifications/test", { method: "POST", body: JSON.stringify(body) });
-    }).then(function () { setMsg("ok", T("testOk")); toast("✅"); })
+    }).then(function () { setMsg("ok", T("testOk")); toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); })
       .catch(function (err) { setMsg("bad", errText(err)); })
       .then(function () { setBusy(false); });
   }
@@ -599,7 +599,7 @@
         if (!ok) return;
         api("/api/admin/notifications/" + encodeURIComponent(id), { method: "DELETE" }).then(function () {
           if (state.editingId === id) resetForm();
-          toast("✅"); setMsg("ok", T("draftDeleted")); return loadList();
+          toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); setMsg("ok", T("draftDeleted")); return loadList();
         }).catch(function (err) { setMsg("bad", errText(err)); });
       });
     }

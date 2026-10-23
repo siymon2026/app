@@ -1,4 +1,4 @@
-const CACHE = "siymon-cache-v49";
+const CACHE = "siymon-cache-v50";
 const ASSETS = [
   "/",
   "/index.html",
@@ -68,8 +68,8 @@ const ASSETS = [
   "/driver/extras.js",
 
   "/restaurant/index.html",
-  "/restaurant/restaurant.css",
-  "/restaurant/restaurant.js?v=20261023",
+  "/restaurant/restaurant.css?v=2",
+  "/restaurant/restaurant.js?v=2",
   "/sounds/order.mp3"
 ];
 

@@ -103,7 +103,7 @@
       <input id="stFq" type="search" placeholder="${esc(L("بحث بالاسم أو المدينة…", "Search name or city…", "Rechercher…"))}" aria-label="search" />
       <select id="stFs" aria-label="status"><option value="">${esc(L("كل الحالات", "All statuses", "Tous les statuts"))}</option>${Object.keys(STATUS).map((k) => `<option value="${k}">${esc(statusLabel(k))}</option>`).join("")}</select>
       <select id="stFt" aria-label="type"><option value="">${esc(L("كل الأنواع", "All types", "Tous les types"))}</option>${TYPES.map((t) => `<option value="${t[0]}">${esc(L(t[1], t[2], t[3]))}</option>`).join("")}</select>
-      <button id="stTypesBtn" class="btn ghost small" type="button">🧩 ${esc(L("أنواع الأنشطة", "Business types", "Types d'activité"))}</button>`;
+      <button id="stTypesBtn" class="btn ghost small" type="button">${esc(L("أنواع الأنشطة", "Business types", "Types d'activité"))}</button>`;
     host.insertAdjacentElement("afterend", bar);
     const apply = () => {
       F.q = el("stFq").value.trim().toLowerCase();
@@ -144,7 +144,7 @@
         method: "PUT",
         body: JSON.stringify({ status }),
       });
-      toast("✅ " + statusLabel(status));
+      toast("" + statusLabel(status));
       if (typeof refreshMenuData === "function") await refreshMenuData();
     } catch (e) {
       toast(e.message);
@@ -455,7 +455,7 @@
           const out = await api("/api/admin/catalog", { method: "PUT", body: JSON.stringify(CATALOG) });
           CATALOG = { categories: out.categories, banners: out.banners, sections: out.sections };
           renderHome();
-          toast("✅ " + L("تم الحفظ", "Saved", "Enregistré"));
+          toast("" + L("تم الحفظ", "Saved", "Enregistré"));
         } catch (err) {
           hint.textContent = err.message;
         }

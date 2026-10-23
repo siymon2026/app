@@ -106,7 +106,7 @@ const I18N = {
     bannersLabel: "بانر العروض (صور)",
     bannersEmpty: "لا توجد صور عروض",
     bannerUploading: "جاري رفع الصورة...",
-    bannerUploadOk: "تم رفع الصورة ✅",
+    bannerUploadOk: "تم رفع الصورة",
     bannerUploadFail: "فشل رفع الصورة",
     supportTitle: "الدعم (دردشة الزبون)",
     supportConvosTitle: "المحادثات",
@@ -147,7 +147,7 @@ const I18N = {
     imageUrl: "صورة الوجبة",
     uploadHint: "اختر صورة للوجبة (رفع مباشر)",
     uploading: "جاري رفع الصورة...",
-    uploadOk: "تم رفع الصورة ✅",
+    uploadOk: "تم رفع الصورة",
     uploadFail: "فشل رفع الصورة",
     price: "السعر",
     restaurant: "المطعم",
@@ -314,7 +314,7 @@ const I18N = {
     bannersLabel: "Offers banner images",
     bannersEmpty: "No banner images",
     bannerUploading: "Uploading image...",
-    bannerUploadOk: "Image uploaded ✅",
+    bannerUploadOk: "Image uploaded",
     bannerUploadFail: "Image upload failed",
     supportTitle: "Support (Customer chat)",
     supportConvosTitle: "Conversations",
@@ -355,7 +355,7 @@ const I18N = {
     imageUrl: "Meal image",
     uploadHint: "Choose a meal image (upload)",
     uploading: "Uploading image...",
-    uploadOk: "Image uploaded ✅",
+    uploadOk: "Image uploaded",
     uploadFail: "Image upload failed",
     price: "Price",
     restaurant: "Restaurant",
@@ -521,7 +521,7 @@ const I18N = {
     bannersLabel: "Bannière des offres (images)",
     bannersEmpty: "Aucune image",
     bannerUploading: "Téléversement...",
-    bannerUploadOk: "Image téléversée ✅",
+    bannerUploadOk: "Image téléversée",
     bannerUploadFail: "Échec du téléversement",
     supportTitle: "Support (chat client)",
     supportConvosTitle: "Conversations",
@@ -562,7 +562,7 @@ const I18N = {
     imageUrl: "Image du plat",
     uploadHint: "Choisir une image du plat (téléversement)",
     uploading: "Téléversement...",
-    uploadOk: "Image téléversée ✅",
+    uploadOk: "Image téléversée",
     uploadFail: "Échec du téléversement",
     price: "Prix",
     restaurant: "Restaurant",
@@ -1623,7 +1623,7 @@ function openOrderChatModal(orderId) {
   showOrderChatModal(true);
   loadOrderChatModal().catch((e) => {
     const hint = el("orderChatModalHint");
-    if (hint) hint.textContent = "❌ " + (e.message || e);
+    if (hint) hint.textContent = "" + (e.message || e);
   });
   if (ORDER_CHAT_POLL) {
     try {
@@ -2457,7 +2457,7 @@ async function saveRestAuth() {
       { method: "PUT", body: JSON.stringify(payload) },
     );
     await refreshMenuData();
-    toast("✅");
+    toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
     showRestAuth(false);
   } catch (e) {
     el("restAuthHint").textContent = e.message;
@@ -2473,7 +2473,7 @@ async function clearRestPassword() {
       { method: "PUT", body: JSON.stringify({ clearPassword: true }) },
     );
     await refreshMenuData();
-    toast("✅");
+    toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
   } catch (e) {
     toast(e.message);
   }
@@ -2580,7 +2580,7 @@ async function saveRestEdit() {
         "الخادم لم يحفظ الصورة — تأكد من رفع server.js الجديد وإعادة تشغيل pm2";
       return;
     }
-    toast("✅ " + (t.save || "Save"));
+    toast("" + (t.save || "Save"));
     await refreshMenuData();
     showRestEdit(false);
   } catch (e) {
@@ -2681,10 +2681,10 @@ async function uploadMealImageEdit(file) {
     if (hint)
       hint.textContent =
         lang === "ar"
-          ? "✅ تم رفع الصورة"
+          ? "تم رفع الصورة"
           : lang === "fr"
-            ? "✅ Image envoyée"
-            : "✅ Uploaded";
+            ? "Image envoyée"
+            : "Uploaded";
   } catch (e) {
     if (hint) hint.textContent = e.message || "Upload failed";
   }
@@ -2738,7 +2738,7 @@ async function saveItemEdit() {
       method: "PUT",
       body: JSON.stringify(payload),
     });
-    toast("✅ " + (t.save || "Save"));
+    toast("" + (t.save || "Save"));
     await refreshMenuData();
     showItemEdit(false);
   } catch (e) {
@@ -2798,12 +2798,13 @@ function renderRestaurantsAdmin() {
     const name = escapeHtml(asText(r.name) || String(r.id));
     const phone = escapeHtml(r.phone || "");
     const login = r.loginEmail || r.loginPhone || "—";
-    const pass = r.hasPassword ? "✅" : "—";
+    const L3b = (ar, en, fr) => (lang === "ar" ? ar : lang === "fr" ? fr : en);
+    const pass = r.hasPassword ? `<span class="ds-badge ok">${escapeHtml(L3b("مضبوطة", "Set", "Définie"))}</span>` : `<span class="ds-badge warn">${escapeHtml(L3b("غير مضبوطة", "Not set", "Non définie"))}</span>`;
     const st = window.storesStatusBadge
       ? window.storesStatusBadge(r)
       : r.isActive !== false
-        ? "✅"
-        : "⛔";
+        ? `<span class="ds-badge ok">${escapeHtml(L3b("نشط", "Active", "Actif"))}</span>`
+        : `<span class="ds-badge neutral">${escapeHtml(L3b("موقوف", "Inactive", "Inactif"))}</span>`;
     const count = window.storesItemCount ? window.storesItemCount(r) : "";
     const archived = r.status === "archived";
     const L3 = (ar, en) => (lang === "ar" ? ar : en);
@@ -2842,17 +2843,22 @@ function renderItemsAdmin() {
       restMap.get(String(it.restaurantId || "")) ||
       String(it.restaurantId || "");
     const price = Number(it.price || 0).toFixed(2);
-    const st = it.archived ? "🗄" : it.isAvailable !== false ? "✅" : "⛔";
+    const L3c = (ar, en, fr) => (lang === "ar" ? ar : lang === "fr" ? fr : en);
+    const st = it.archived
+      ? `<span class="ds-badge neutral">${escapeHtml(L3c("مؤرشف", "Archived", "Archivé"))}</span>`
+      : it.isAvailable !== false
+        ? `<span class="ds-badge ok">${escapeHtml(L3c("متوفر", "Available", "Disponible"))}</span>`
+        : `<span class="ds-badge danger">${escapeHtml(L3c("غير متوفر", "Unavailable", "Indisponible"))}</span>`;
     const sale =
       it.salePrice != null && Number(it.salePrice) < Number(it.price)
         ? ` → <b>${Number(it.salePrice).toFixed(2)}</b>`
         : "";
     tr.innerHTML = `
-      <td>${name}</td>
-      <td>${restName}</td>
+      <td>${escapeHtml(name)}</td>
+      <td>${escapeHtml(restName)}</td>
       <td>${price}${sale}</td>
       <td>${st}</td>
-      <td><div class="row-actions"><button class="btn ghost small" data-action="edit-item" data-id="${it.id}">${(I18N[lang] || I18N.en).edit || "Edit"}</button><button class="btn ghost small" data-action="del-item" data-id="${it.id}">${(I18N[lang] || I18N.en).delete || "Delete"}</button></div></td>
+      <td><div class="row-actions"><button class="btn ghost small" data-action="edit-item" data-id="${escapeHtml(it.id)}">${(I18N[lang] || I18N.en).edit || "Edit"}</button><button class="btn ghost small danger" data-action="del-item" data-id="${escapeHtml(it.id)}">${(I18N[lang] || I18N.en).delete || "Delete"}</button></div></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2898,7 +2904,7 @@ async function addRestaurant() {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    toast("✅ " + (t.add || "Add"));
+    toast("" + (t.add || "Add"));
     // clear
     [
       "restNameAr",
@@ -2961,7 +2967,7 @@ async function addItem() {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    toast("✅ " + (t.add || "Add"));
+    toast("" + (t.add || "Add"));
     // clear minimal fields
     [
       "itemPrice",
@@ -3054,7 +3060,7 @@ async function doLogin() {
     token = res.token;
     localStorage.setItem(TOKEN_KEY, token);
     showAuth(false);
-    toast("✅ OK");
+    toast("OK");
     await bootstrapAfterAuth();
   } catch (e) {
     el("authHint").textContent = e.message;
@@ -3085,7 +3091,7 @@ async function doSignup() {
     token = res.token;
     localStorage.setItem(TOKEN_KEY, token);
     showAuth(false);
-    toast("✅ OK");
+    toast("OK");
     await bootstrapAfterAuth();
   } catch (e) {
     el("authHint").textContent = e.message;
@@ -3119,9 +3125,9 @@ async function setRestaurantMode(mode) {
     CONFIG.restaurantMode = res.restaurantMode || mode;
     el("restaurantMode").value = CONFIG.restaurantMode;
     updateRestaurantBtn();
-    toast("✅ OK");
+    toast("OK");
   } catch (e) {
-    toast("❌ " + e.message);
+    toast("" + e.message);
   }
 }
 
@@ -3337,7 +3343,7 @@ async function saveConfig() {
 
     el("restaurantMode").value = CONFIG.restaurantMode;
     updateRestaurantBtn();
-    el("cfgHint").textContent = "✅ Saved";
+    el("cfgHint").textContent = "Saved";
     setTimeout(() => (el("cfgHint").textContent = ""), 1500);
     render();
   } catch (e) {
@@ -3858,12 +3864,12 @@ function showDetails(order) {
         if (hint)
           hint.textContent =
             lang === "ar"
-              ? "✅ تم الإرسال"
+              ? "تم الإرسال"
               : lang === "fr"
-                ? "✅ Envoyé"
-                : "✅ Sent";
+                ? "Envoyé"
+                : "Sent";
       } catch (e) {
-        if (hint) hint.textContent = "❌ " + e.message;
+        if (hint) hint.textContent = "" + e.message;
       }
     });
 
@@ -3881,12 +3887,12 @@ function showDetails(order) {
         if (hint)
           hint.textContent =
             lang === "ar"
-              ? "✅ تم الإلغاء"
+              ? "تم الإلغاء"
               : lang === "fr"
-                ? "✅ Retiré"
-                : "✅ Unassigned";
+                ? "Retiré"
+                : "Unassigned";
       } catch (e) {
-        if (hint) hint.textContent = "❌ " + e.message;
+        if (hint) hint.textContent = "" + e.message;
       }
     });
   } catch (_e) {
@@ -3992,7 +3998,7 @@ async function saveReceiptEdits(orderId) {
 
   const edits = readReceiptEdits();
   if (!edits.items.length) {
-    hint.textContent = "❌ Empty items";
+    hint.textContent = "Empty items";
     return;
   }
 
@@ -4011,12 +4017,12 @@ async function saveReceiptEdits(orderId) {
     if (idx >= 0) orders[idx] = updated;
     if (selectedOrderId === updated.id) showDetails(updated);
     render();
-    hint.textContent = "✅ " + (t.save || "Saved");
+    hint.textContent = "" + (t.save || "Saved");
     setTimeout(() => {
       if (hint) hint.textContent = "";
     }, 1600);
   } catch (e) {
-    hint.textContent = "❌ " + e.message;
+    hint.textContent = "" + e.message;
   }
 }
 
@@ -4362,7 +4368,7 @@ async function markAccepted(id) {
       method: "PATCH",
       body: JSON.stringify({ status: "admin_accepted" }),
     });
-    toast("✅");
+    toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
     await loadOrders();
   } catch (e) {
     toast(e.message);
@@ -4376,7 +4382,7 @@ async function sendToDrivers(id) {
       method: "PATCH",
       body: JSON.stringify({ status: "restaurant_ready" }),
     });
-    toast("✅");
+    toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
     await loadOrders();
   } catch (e) {
     toast(e.message);
@@ -4440,7 +4446,7 @@ async function printWifi(order) {
         printerPort: CONFIG?.wifiPrinter?.port,
       }),
     });
-    toast("✅ Printed");
+    toast("Printed");
   } catch (e) {
     toast(e.message);
   }
@@ -4503,7 +4509,7 @@ async function connectBluetooth() {
     BT.characteristic = characteristic;
     updateBtBtn();
     updateRestaurantBtn();
-    toast("✅ BT");
+    toast("BT");
   } catch (e) {
     toast(e.message || t.errBtConnect);
   }
@@ -4660,7 +4666,7 @@ async function printBluetooth(order) {
     }
     const payload = escposReceipt(order);
     await writeInChunks(BT.characteristic, payload);
-    toast("✅ Printed");
+    toast("Printed");
   } catch (e) {
     toast(e.message || t.errBtConnect);
   }
@@ -4801,7 +4807,7 @@ function bindEvents() {
           method: "DELETE",
         });
         await refreshMenuData();
-        toast("✅");
+        toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
       } catch (err) {
         toast(err.message);
       }
@@ -4827,7 +4833,7 @@ function bindEvents() {
           method: "DELETE",
         });
         await refreshMenuData();
-        toast("✅");
+        toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
       } catch (err) {
         toast(err.message);
       }
@@ -4949,7 +4955,7 @@ function bindEvents() {
           }),
         });
         await loadDriversAdmin();
-        toast("✅");
+        toast((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved"));
       } catch (err) {
         toast(err.message);
       }
