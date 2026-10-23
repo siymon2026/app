@@ -260,3 +260,4 @@ body.page-active main.admin-wrap:not(.admin-pages){ display:none; }
 
 /* support is a two-pane chat: give it a stable height inside the page area */
 #supportModal.page-view .modal-card.sc-card{ width:100%; max-width:none; height:calc(100dvh - 130px); min-height:560px; }
+.sb-subitem.active{ background:var(--sb-hover); color:var(--sb-text); font-weight:600; }

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/admin/admin-dispatch.css" />
   <link rel="stylesheet" href="/admin/admin-nav.css">
   <link rel="stylesheet" href="/admin/admin-stores.css">
+  <link rel="stylesheet" href="/admin/admin-stores-page.css">
   <link rel="stylesheet" href="/admin/admin-store-types.css">
   <link rel="stylesheet" href="/admin/admin-enter.css?v=20261023">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -33,6 +34,11 @@
     <nav class="sb-scroll" id="sbScroll">
       <div class="sb-label" data-i="menu"></div>
       <button class="sb-item active" type="button" data-key="home" id="sbHome"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="sb-text" data-i="home"></span><span class="sb-badge" hidden></span></button>
+      <button class="sb-item sb-parent" type="button" data-key="stores" data-src="storesBtn" data-text="storesText" data-modal="storesModal" data-nav-parent aria-expanded="false" aria-controls="sbSubStores"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M9 22v-6h6v6M2 7h20"/></svg><span class="sb-text" data-i="stores"></span><span class="sb-badge" hidden></span><svg class="sb-ico sb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="sb-sub" id="sbSubStores" hidden>
+        <button class="sb-subitem" type="button" data-key="storesOnline" data-text="storesOnlineText"><span class="sb-text"></span></button>
+        <button class="sb-subitem" type="button" data-key="storesOffline" data-text="storesOfflineText"><span class="sb-text"></span></button>
+      </div>
       <button class="sb-item" type="button" data-key="drivers" data-src="driversBtn" data-text="driversText" data-modal="driversModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg><span class="sb-text" data-i="drivers"></span><span class="sb-badge" hidden></span></button>
       <button class="sb-item" type="button" data-key="dispatch" data-src="dispatchBtn" data-text="dispatchText" data-modal="dispatchModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span class="sb-text" data-i="dispatch"></span><span class="sb-badge" hidden></span></button>
       <button class="sb-item" type="button" data-key="customers" data-src="customersBtn" data-text="customersText" data-modal="customersModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sb-text" data-i="customers"></span><span class="sb-badge" hidden></span></button>
@@ -98,6 +104,8 @@
       </div>
       <div class="admin-actions">
         <div class="admin-actions-main" aria-label="Navigation" id="legacyNav" hidden>
+          <button class="btn nav" id="storesBtn" type="button" title="Stores"><span id="storesText">Stores</span></button>
+          <span id="storesOnlineText" hidden>Online Stores</span><span id="storesOfflineText" hidden>Offline Stores</span>
           <button class="btn nav" id="driversBtn" type="button" title="Drivers"><span id="driversText">Drivers</span></button>
           <button class="btn nav" id="dispatchBtn" type="button" title="Dispatch"><span id="dispatchText">Dispatch</span></button>
           <button class="btn nav" id="customersBtn" type="button" title="Customers"><span id="customersText">Customers</span></button>
@@ -556,6 +564,10 @@
       </div>
       <div class="ord-pager cu-pager" id="drvPager" aria-label="Pagination"></div>
     </div>
+  </div>
+
+  <div class="modal page-view" id="storesModal" data-page="stores">
+    <div class="modal-card sp-card"><div id="storesRoot" aria-live="polite"></div></div>
   </div>
 
   <div class="modal page-view" id="customersModal" data-page="customers">
@@ -1126,6 +1138,7 @@
   <script src="/admin/admin-login.js"></script>
   <script src="/admin/admin.js"></script>
   <script src="/admin/admin-stores.js"></script>
+  <script src="/admin/admin-stores-page.js"></script>
   <script src="/admin/admin-store-types.js"></script>
   <script src="/admin/admin-enter.js?v=20261023"></script>
   <script src="/admin/admin-notifications.js"></script>

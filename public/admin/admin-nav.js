@@ -95,11 +95,12 @@
   /* ---------- routing (hash router) ---------- */
   // route -> sidebar item key.  "" is the Orders view (home).
   var ROUTE_OF = { home: "", drivers: "drivers", dispatch: "dispatch", customers: "customers", support: "support", notifications: "notifications",
-                   settings: "settings", topups: "topups", menuManage: "menu", subRest: "menu/restaurants", subMeals: "menu/meals" };
+                   settings: "settings", topups: "topups", menuManage: "menu", subRest: "menu/restaurants", subMeals: "menu/meals",
+                   stores: "stores", storesOnline: "stores/online", storesOffline: "stores/offline" };
   var ROUTE_KEY = {}; Object.keys(ROUTE_OF).forEach(function (k) { ROUTE_KEY[ROUTE_OF[k]] = k; });
   // page container -> the global admin.js function that closes it (keeps polling timers / state resets working)
   var PAGE_FN = { settingsModal: "showSettings", menuModal: "showMenu", driversModal: "showDrivers", dispatchModal: "showDispatch", customersModal: "showCustomers",
-                  supportModal: "showSupport", notificationsModal: "showNotificationsModal", topupsModal: "showTopups" };
+                  supportModal: "showSupport", notificationsModal: "showNotificationsModal", topupsModal: "showTopups", storesModal: "showStores" };
   var pending = null;        // {key} while a page is being opened (admin.js loads its data before showing it)
   var lastOpened = null, shownId = null;
 
@@ -107,7 +108,7 @@
     var h = (location.hash || "").replace(/^#\/?/, "").split("?")[0].replace(/\/+$/, "").toLowerCase();
     return Object.prototype.hasOwnProperty.call(ROUTE_KEY, h) ? ROUTE_KEY[h] : "home";
   }
-  function pageKey(k) { return (k === "subRest" || k === "subMeals") ? "menuManage" : k; }   // sub routes belong to the Menu page
+  function pageKey(k) { return (k === "subRest" || k === "subMeals") ? "menuManage" : (k === "storesOnline" || k === "storesOffline") ? "stores" : k; }   // sub routes belong to the Menu page
   function pageItems() { return $$(".sb-item[data-modal]"); }
   function pageItem(key) { return pageItems().filter(function (i) { return i.getAttribute("data-key") === pageKey(key); })[0] || null; }
   function openPages() { return $$(".modal.page-view").filter(function (m) { return m.classList.contains("show"); }); }
@@ -139,6 +140,7 @@
     var it = pageItem(key), m = it && $(it.getAttribute("data-modal"));
     if (!it || !m) return;
     var already = m.classList.contains("show");
+    if (pageKey(key) === "stores" && window.storesPage) window.storesPage.setChannel(key === "storesOnline" ? "online" : key === "storesOffline" ? "offline" : "");
     if (already) {
       pending = null;
       openPages().forEach(function (o) { if (o !== m) closePage(o); });
@@ -147,6 +149,7 @@
       var src = $(it.getAttribute("data-src")); if (src) src.click();      // original handler: auth check + load data + show
       setTimeout(function () { if (pending === mine) { pending = null; reconcile(); } }, 8000);   // load failed / was refused
     }
+    if (already) setTimeout(reconcile, 0);                  // route changed inside an open page (e.g. Stores -> Online Stores): refresh the highlight
     if (key === "subRest" || key === "subMeals") {
       var sub = $$(".sb-subitem").filter(function (b) { return b.getAttribute("data-key") === key; })[0];
       var tab = sub && $(sub.getAttribute("data-tab"));
@@ -176,6 +179,14 @@
       if (!pending && !authOpen() && hasToken() && routeKey() !== "home") location.hash = "#/";
     }
     setActive(item || $("sbHome"));
+    var rk = routeKey();
+    $$(".sb-subitem").forEach(function (b) { var on = !!cur && b.getAttribute("data-key") === rk; b.classList.toggle("active", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    if (cur && item && item.classList.contains("sb-parent")) expandGroup(item, true);
+  }
+  function expandGroup(parent, open) {
+    var sub = $(parent.getAttribute("aria-controls"));
+    if (!sub) return;
+    parent.setAttribute("aria-expanded", String(!!open)); sub.hidden = !open;
   }
 
   function bindNav() {
@@ -184,9 +195,11 @@
       it.addEventListener("click", function () {
         var key = it.getAttribute("data-key");
         if (key === "home") { go("home"); window.scrollTo({ top: 0, behavior: "smooth" }); if (isMobile()) openDrawer(false); return; }
+        if (it.classList.contains("sb-parent") && it.hasAttribute("data-nav-parent")) {   // group whose parent is also a page (Stores)
+          expandGroup(it, true); go(key); return;
+        }
         if (it.classList.contains("sb-parent") && !body.classList.contains("sb-collapsed") || (it.classList.contains("sb-parent") && isMobile())) {
-          var open = it.getAttribute("aria-expanded") !== "true";
-          it.setAttribute("aria-expanded", String(open)); $("sbSubMenu").hidden = !open; return;
+          expandGroup(it, it.getAttribute("aria-expanded") !== "true"); return;
         }
         go(key);
         if (isMobile()) openDrawer(false);
@@ -222,7 +235,7 @@
         }
       });
       $$(".sb-label, .sb-sep").forEach(function (l) { l.style.display = q ? "none" : ""; });
-      if (q) { $("sbSubMenu").hidden = true; }
+      if (q) { $$(".sb-sub").forEach(function (n) { n.hidden = true; }); }
     });
     $("sbSearch").addEventListener("keydown", function (e) {
       if (e.key === "Enter") { var first = $$(".sb-item[data-key]").filter(function (i) { return i.style.display !== "none"; })[0]; if (first) first.click(); }

@@ -168,6 +168,9 @@
             <select id="stStatus">${Object.keys(STATUS).map((k) => `<option value="${k}">${esc(statusLabel(k))}</option>`).join("")}</select></div>
           <div class="input-row"><label for="stType">${esc(L("نوع النشاط", "Business type", "Type"))}</label>
             <select id="stType">${TYPES.map((t) => `<option value="${esc(t[0])}">${esc(L(t[1], t[2], t[3]))}</option>`).join("")}</select></div>
+          <div class="input-row"><label for="stChannel">${esc(L("قناة البيع", "Sales channel", "Canal de vente"))}</label>
+            <select id="stChannel"><option value="online">${esc(L("متجر إلكتروني", "Online store", "Boutique en ligne"))}</option><option value="offline">${esc(L("متجر فعلي", "Offline store", "Magasin physique"))}</option></select></div>
+          <div class="input-row"><label for="stWebsite">${esc(L("الموقع الإلكتروني", "Website", "Site web"))}</label><input id="stWebsite" maxlength="200" inputmode="url" placeholder="shop.example.com" /></div>
           <div class="input-row"><label for="stCity">${esc(L("المدينة", "City", "Ville"))}</label><input id="stCity" maxlength="80" /></div>
           <div class="input-row"><label for="stArea">${esc(L("المنطقة", "Area", "Zone"))}</label><input id="stArea" maxlength="80" /></div>
         </div>
@@ -222,6 +225,8 @@
       }
     }
     v("stType", (r && r.type) || "restaurant");
+    v("stChannel", r && r.channel === "offline" ? "offline" : "online");
+    v("stWebsite", r && r.website);
     v("stCity", r && r.city);
     v("stArea", r && r.area);
     v("stDescAr", r && r.description && r.description.ar);
@@ -265,6 +270,8 @@
     const out = {
       status: g("stStatus"),
       type: g("stType") || "restaurant",
+      channel: g("stChannel") || "online",
+      website: g("stWebsite"),
       city: g("stCity"),
       area: g("stArea"),
       description: { ar: g("stDescAr"), en: g("stDescEn"), fr: g("stDescFr") },
