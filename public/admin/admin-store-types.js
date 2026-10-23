@@ -56,7 +56,7 @@
       try { data = await api("/api/admin/store-types", { method: "GET" }); }
       catch (e) { return clear(body).appendChild(h("p", { class: "stx-err" }, e.message)); }
       clear(body);
-      body.appendChild(h("div", { class: "stx-head" }, h("h3", {}, "🧩 " + L("أنواع الأنشطة التجارية", "Business types", "Types d'activité")), h("span", { class: "sp" }),
+      body.appendChild(h("div", { class: "stx-head" }, h("h3", {}, L("أنواع الأنشطة التجارية", "Business types", "Types d'activité")), h("span", { class: "sp" }),
         h("button", { class: "btn small", type: "button", onclick: () => edit(null, data) }, "＋ " + L("نوع جديد", "New type", "Nouveau type")),
         h("button", { class: "btn ghost small", type: "button", onclick: () => ov.remove() }, "✕")));
       body.appendChild(h("div", { class: "stx-list" }, data.types.map((t) => h("div", { class: "stx-item" },
@@ -64,13 +64,13 @@
         h("div", { class: "grow" }, h("div", { class: "nm" }, nm(t.name) + (t.builtin ? "" : " ★")), h("small", {}, t.id + " · " + t.stores + " " + L("متجر", "stores", "boutiques"))),
         h("span", { class: "stx-tag " + t.flow }, flowLabel(t.flow)), t.enabled === false ? h("span", { class: "stx-tag off" }, L("معطّل", "Disabled", "Désactivé")) : null,
         h("label", { class: "st-check" }, h("input", { type: "checkbox", checked: t.enabled !== false, onchange: async (e) => {
-          try { await api("/api/admin/store-types/" + encodeURIComponent(t.id), { method: "PUT", body: J({ enabled: e.target.checked }) }); say("✅"); show(); reloadTypes(); }
+          try { await api("/api/admin/store-types/" + encodeURIComponent(t.id), { method: "PUT", body: J({ enabled: e.target.checked }) }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); show(); reloadTypes(); }
           catch (er) { say(er.message); e.target.checked = !e.target.checked; }
         } }), L("مفعّل", "Enabled", "Activé")),
         h("button", { class: "btn ghost small", type: "button", onclick: () => edit(t, data) }, L("تعديل", "Edit", "Modifier")),
         !t.builtin && !t.stores ? h("button", { class: "btn ghost small", type: "button", onclick: async () => {
           if (!confirm(L("حذف هذا النوع؟", "Delete this type?", "Supprimer ce type ?"))) return;
-          try { await api("/api/admin/store-types/" + encodeURIComponent(t.id), { method: "DELETE" }); say("✅"); show(); reloadTypes(); } catch (er) { say(er.message); }
+          try { await api("/api/admin/store-types/" + encodeURIComponent(t.id), { method: "DELETE" }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); show(); reloadTypes(); } catch (er) { say(er.message); }
         } }, L("حذف", "Delete", "Supprimer")) : null))));
       body.appendChild(h("p", { class: "st-hint" }, L("الأنواع الأساسية لا تُحذف لكن يمكن تعطيلها. النوع المستخدم من متجر لا يُحذف.", "Built-in types can't be deleted (disable them instead). A type used by a store can't be deleted.", "Les types intégrés ne peuvent pas être supprimés (désactivez-les). Un type utilisé ne peut pas être supprimé.")));
     };
@@ -112,7 +112,7 @@
         };
         try {
           await api(isNew ? "/api/admin/store-types" : "/api/admin/store-types/" + encodeURIComponent(cur.id), { method: isNew ? "POST" : "PUT", body: J(payload) });
-          say("✅ " + L("تم الحفظ", "Saved", "Enregistré")); reloadTypes(); show();
+          say("" + L("تم الحفظ", "Saved", "Enregistré")); reloadTypes(); show();
         } catch (e) { err.textContent = e.message; }
       };
       clear(body);
@@ -144,7 +144,7 @@
       const s = d.stats, st = d.store;
       const stat = (label, val) => h("div", { class: "stx-stat" }, h("b", {}, String(val)), h("small", {}, label));
       const money = (n) => Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " MAD";
-      const roleSel = (u) => h("select", { onchange: async (e) => { try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ role: e.target.value }) }); say("✅"); } catch (er) { say(er.message); show(); } } },
+      const roleSel = (u) => h("select", { onchange: async (e) => { try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ role: e.target.value }) }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); } catch (er) { say(er.message); show(); } } },
         ["owner", "manager", "cashier"].map((r) => h("option", { value: r, selected: u.role === r }, r)));
       const email = h("input", { type: "email", placeholder: "email", dir: "ltr" }), phone = h("input", { placeholder: L("هاتف", "phone", "téléphone"), dir: "ltr", inputmode: "tel" });
       const pw = h("input", { type: "password", placeholder: L("كلمة مرور (6+)", "password (6+)", "mot de passe (6+)"), autocomplete: "new-password" });
@@ -161,11 +161,11 @@
         h("h4", {}, L("حسابات المتجر", "Store accounts", "Comptes")),
         d.accounts.length ? h("div", { style: "overflow-x:auto" }, h("table", { class: "stx-table" }, h("tbody", {}, d.accounts.map((u) => h("tr", {},
           h("td", { dir: "ltr" }, u.email || u.phone || "—"), h("td", {}, roleSel(u)),
-          h("td", {}, h("label", { class: "st-check" }, h("input", { type: "checkbox", checked: u.isActive, onchange: async (e) => { try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ isActive: e.target.checked }) }); say("✅"); } catch (er) { say(er.message); e.target.checked = !e.target.checked; } } }), L("فعّال", "Active", "Actif"))),
+          h("td", {}, h("label", { class: "st-check" }, h("input", { type: "checkbox", checked: u.isActive, onchange: async (e) => { try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ isActive: e.target.checked }) }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); } catch (er) { say(er.message); e.target.checked = !e.target.checked; } } }), L("فعّال", "Active", "Actif"))),
           h("td", {}, h("button", { class: "btn ghost small", type: "button", onclick: async () => {
             const p = prompt(L("كلمة المرور الجديدة (6 أحرف على الأقل)", "New password (min 6 chars)", "Nouveau mot de passe (min 6)"));
             if (!p) return; if (p.length < 6) return say(L("قصيرة جداً", "Too short", "Trop court"));
-            try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ password: p }) }); say("✅"); } catch (er) { say(er.message); }
+            try { await api("/api/admin/restaurant-users/" + encodeURIComponent(u.id), { method: "PATCH", body: J({ password: p }) }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); } catch (er) { say(er.message); }
           } }, L("تغيير كلمة المرور", "Reset password", "Réinitialiser"))))))))
           : h("p", { class: "st-hint" }, L("لا توجد حسابات بعد — أضف حساب المالك أدناه.", "No accounts yet — add the owner below.", "Aucun compte — ajoutez le propriétaire ci-dessous.")),
         h("h4", {}, L("إضافة حساب", "Add account", "Ajouter un compte")),
@@ -174,7 +174,7 @@
           err.textContent = "";
           const b = { restaurantId: storeId, password: pw.value, role: role.value };
           if (email.value.trim()) b.email = email.value.trim(); if (phone.value.trim()) b.phone = phone.value.trim();
-          try { await api("/api/admin/restaurant-users", { method: "POST", body: J(b) }); say("✅"); show(); } catch (e) { err.textContent = e.message; }
+          try { await api("/api/admin/restaurant-users", { method: "POST", body: J(b) }); say((lang === "ar" ? "تم الحفظ" : lang === "fr" ? "Enregistré" : "Saved")); show(); } catch (e) { err.textContent = e.message; }
         } }, "＋ " + L("إضافة", "Add", "Ajouter"))),
         h("p", { class: "st-hint" }, L("نفس البريد/الهاتف وكلمة المرور في متجرين = حساب واحد يدير المتجرين.", "Same email/phone and password in two stores = one login managing both.", "Même e-mail/téléphone et mot de passe dans deux boutiques = une seule connexion."))));
     };

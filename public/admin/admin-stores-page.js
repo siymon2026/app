@@ -273,7 +273,7 @@
     api("/api/admin/stores/" + encodeURIComponent(s.id) + "/enter", { method: "POST", body: "{}" }).then(function (r) {
       var url = "/store/#admintoken=" + encodeURIComponent(r.token) + "&store=" + encodeURIComponent(s.id);
       if (win) win.location.href = url; else window.location.href = url;
-    }).catch(function (e) { if (win) win.close(); say("❌ " + ((e && e.message) || "Error")); }).then(function () { btn.disabled = false; });
+    }).catch(function (e) { if (win) win.close(); say("" + ((e && e.message) || "Error")); }).then(function () { btn.disabled = false; });
   }
 
   function editStore(s, opener) {
@@ -282,7 +282,7 @@
     var known = typeof adminRestaurants !== "undefined" && (adminRestaurants || []).some(function (x) { return String(x.id) === String(s.id); });
     if (known || typeof refreshMenuData !== "function") return open();
     if (opener) opener.disabled = true;
-    refreshMenuData().then(open).catch(function (e) { say("❌ " + ((e && e.message) || "Error")); }).then(function () { if (opener) opener.disabled = false; });
+    refreshMenuData().then(open).catch(function (e) { say("" + ((e && e.message) || "Error")); }).then(function () { if (opener) opener.disabled = false; });
   }
 
   function addStore(opener) {
@@ -313,7 +313,7 @@
       if (!validate()) { var bad = form.querySelector("[aria-invalid]"); if (bad) bad.focus(); return; }
       submit.disabled = true;
       api("/api/admin/restaurants", { method: "POST", body: JSON.stringify({ name: name.value.trim(), channel: channel.value, type: type.value, phone: phone.value.trim(), address: addr.value.trim(), city: city.value.trim(), website: web.value.trim(), status: "active" }) })
-        .then(function () { dlg.close(); say("✅ " + L("تمت إضافة المتجر", "Store added", "Boutique ajoutée")); S.page = 1; load(); if (typeof refreshMenuData === "function") refreshMenuData().catch(function () {}); })
+        .then(function () { dlg.close(); say("" + L("تمت إضافة المتجر", "Store added", "Boutique ajoutée")); S.page = 1; load(); if (typeof refreshMenuData === "function") refreshMenuData().catch(function () {}); })
         .catch(function (e2) { top.textContent = (e2 && e2.message) || "Error"; submit.disabled = false; });
     } },
       top,

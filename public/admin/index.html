@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin</title>
+  <title>siymon • Admin</title>
+  <meta name="theme-color" content="#0F0F0F" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" />
   <link rel="stylesheet" href="/brand.css" />
-    <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin/admin.css">
   <link rel="stylesheet" href="/pw-toggle.css">
   <link rel="stylesheet" href="/admin/admin-dispatch.css" />
-  <link rel="stylesheet" href="/admin/admin-nav.css">
+  <link rel="stylesheet" href="/admin/admin-nav.css?v=2">
   <link rel="stylesheet" href="/admin/admin-stores.css">
   <link rel="stylesheet" href="/admin/admin-stores-page.css">
   <link rel="stylesheet" href="/admin/admin-store-types.css">
@@ -20,6 +26,7 @@
   <link rel="stylesheet" href="/reveal.css">
   <link rel="stylesheet" href="/admin/admin-notifications.css">
   <link rel="stylesheet" href="/admin/admin-login.css">
+  <link rel="stylesheet" href="/admin/admin-theme.css?v=2">
 </head>
 <body class="has-sb">
   <aside class="sb" id="sideNav" aria-label="Navigation">
@@ -32,30 +39,50 @@
       <input id="sbSearch" type="search" autocomplete="off" data-i-ph="search" />
     </div>
     <nav class="sb-scroll" id="sbScroll">
-      <div class="sb-label" data-i="menu"></div>
-      <button class="sb-item active" type="button" data-key="home" id="sbHome"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="sb-text" data-i="home"></span><span class="sb-badge" hidden></span></button>
-      <button class="sb-item sb-parent" type="button" data-key="stores" data-src="storesBtn" data-text="storesText" data-modal="storesModal" data-nav-parent aria-expanded="false" aria-controls="sbSubStores"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M9 22v-6h6v6M2 7h20"/></svg><span class="sb-text" data-i="stores"></span><span class="sb-badge" hidden></span><svg class="sb-ico sb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-      <div class="sb-sub" id="sbSubStores" hidden>
+      <div class="sb-group" data-group="overview">
+        <button class="sb-label sb-group-btn" type="button" aria-expanded="true" aria-controls="sbg-overview"><span data-i="gOverview"></span><svg class="sb-ico sb-gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="sb-group-items" id="sbg-overview">
+          <button class="sb-item active" type="button" data-key="home" id="sbHome"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="sb-text" data-i="home"></span><span class="sb-badge" hidden></span></button>
+        </div>
+      </div>
+      <div class="sb-group" data-group="commerce">
+        <button class="sb-label sb-group-btn" type="button" aria-expanded="true" aria-controls="sbg-commerce"><span data-i="gCommerce"></span><svg class="sb-ico sb-gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="sb-group-items" id="sbg-commerce">
+          <button class="sb-item sb-parent" type="button" data-key="stores" data-src="storesBtn" data-text="storesText" data-modal="storesModal" data-nav-parent aria-expanded="false" aria-controls="sbSubStores"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M9 22v-6h6v6M2 7h20"/></svg><span class="sb-text" data-i="stores"></span><span class="sb-badge" hidden></span><svg class="sb-ico sb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="sb-sub" id="sbSubStores" hidden>
         <button class="sb-subitem" type="button" data-key="storesOnline" data-text="storesOnlineText"><span class="sb-text"></span></button>
         <button class="sb-subitem" type="button" data-key="storesOffline" data-text="storesOfflineText"><span class="sb-text"></span></button>
       </div>
-      <button class="sb-item" type="button" data-key="drivers" data-src="driversBtn" data-text="driversText" data-modal="driversModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg><span class="sb-text" data-i="drivers"></span><span class="sb-badge" hidden></span></button>
-      <button class="sb-item" type="button" data-key="dispatch" data-src="dispatchBtn" data-text="dispatchText" data-modal="dispatchModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span class="sb-text" data-i="dispatch"></span><span class="sb-badge" hidden></span></button>
-      <button class="sb-item" type="button" data-key="customers" data-src="customersBtn" data-text="customersText" data-modal="customersModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sb-text" data-i="customers"></span><span class="sb-badge" hidden></span></button>
-      <button class="sb-item" type="button" data-key="support" data-src="supportBtn" data-text="supportText" data-modal="supportModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span class="sb-text" data-i="support"></span><span class="sb-badge" hidden></span></button>
-      <button class="sb-item" type="button" data-key="notifications" data-src="notificationsBtn" data-text="notificationsText" data-modal="notificationsModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="sb-text" data-i="notifications"></span><span class="sb-badge" hidden></span></button>
-      <div class="sb-sep" role="separator"></div>
-      <button class="sb-item" type="button" data-key="settings" data-src="settingsBtn" data-text="settingsText" data-modal="settingsModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sb-text" data-i="settings"></span><span class="sb-badge" hidden></span></button>
-      <div class="sb-label" data-i="group"></div>
-      <button class="sb-item sb-parent" type="button" data-key="menuManage" data-src="menuManageBtn" data-text="menuManageText" data-modal="menuModal" aria-expanded="false" aria-controls="sbSubMenu">
-        <span class="sb-tile t-orange"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/></svg></span><span class="sb-text" data-i="menuManage"></span><span class="sb-badge" hidden></span><svg class="sb-ico sb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <div class="sb-sub" id="sbSubMenu" hidden>
+          <button class="sb-item sb-parent" type="button" data-key="menuManage" data-src="menuManageBtn" data-text="menuManageText" data-modal="menuModal" aria-expanded="false" aria-controls="sbSubMenu"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg><span class="sb-text" data-i="menuManage"></span><span class="sb-badge" hidden></span><svg class="sb-ico sb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="sb-sub" id="sbSubMenu" hidden>
         <button class="sb-subitem" type="button" data-key="subRest" data-tab="menuTabRestaurants" data-text="menuTabRestaurants"><span class="sb-text"></span></button>
         <button class="sb-subitem" type="button" data-key="subMeals" data-tab="menuTabItems" data-text="menuTabItems"><span class="sb-text"></span></button>
       </div>
-      <button class="sb-item" type="button" data-key="topups" data-src="topupsBtn" data-text="topupsText" data-modal="topupsModal"><span class="sb-tile t-green"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span><span class="sb-text" data-i="topups"></span><span class="sb-badge" hidden></span></button>
-      <a class="sb-item" id="sbPortal" href="/restaurant/" target="_blank" rel="noopener" data-key="portal" data-text="restaurantPortalText"><span class="sb-tile t-blue"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span><span class="sb-text" data-i="portal"></span></a>
+          <a class="sb-item" id="sbPortal" href="/restaurant/" target="_blank" rel="noopener" data-key="portal" data-text="restaurantPortalText"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg><span class="sb-text" data-i="portal"></span></a>
+        </div>
+      </div>
+      <div class="sb-group" data-group="operations">
+        <button class="sb-label sb-group-btn" type="button" aria-expanded="true" aria-controls="sbg-operations"><span data-i="gOps"></span><svg class="sb-ico sb-gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="sb-group-items" id="sbg-operations">
+          <button class="sb-item" type="button" data-key="drivers" data-src="driversBtn" data-text="driversText" data-modal="driversModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg><span class="sb-text" data-i="drivers"></span><span class="sb-badge" hidden></span></button>
+          <button class="sb-item" type="button" data-key="dispatch" data-src="dispatchBtn" data-text="dispatchText" data-modal="dispatchModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span class="sb-text" data-i="dispatch"></span><span class="sb-badge" hidden></span></button>
+          <button class="sb-item" type="button" data-key="topups" data-src="topupsBtn" data-text="topupsText" data-modal="topupsModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg><span class="sb-text" data-i="topups"></span><span class="sb-badge" hidden></span></button>
+        </div>
+      </div>
+      <div class="sb-group" data-group="engagement">
+        <button class="sb-label sb-group-btn" type="button" aria-expanded="true" aria-controls="sbg-engagement"><span data-i="gEngage"></span><svg class="sb-ico sb-gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="sb-group-items" id="sbg-engagement">
+          <button class="sb-item" type="button" data-key="customers" data-src="customersBtn" data-text="customersText" data-modal="customersModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sb-text" data-i="customers"></span><span class="sb-badge" hidden></span></button>
+          <button class="sb-item" type="button" data-key="support" data-src="supportBtn" data-text="supportText" data-modal="supportModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span class="sb-text" data-i="support"></span><span class="sb-badge" hidden></span></button>
+          <button class="sb-item" type="button" data-key="notifications" data-src="notificationsBtn" data-text="notificationsText" data-modal="notificationsModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="sb-text" data-i="notifications"></span><span class="sb-badge" hidden></span></button>
+        </div>
+      </div>
+      <div class="sb-group" data-group="system">
+        <button class="sb-label sb-group-btn" type="button" aria-expanded="true" aria-controls="sbg-system"><span data-i="gSystem"></span><svg class="sb-ico sb-gchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="sb-group-items" id="sbg-system">
+          <button class="sb-item" type="button" data-key="settings" data-src="settingsBtn" data-text="settingsText" data-modal="settingsModal"><svg class="sb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sb-text" data-i="settings"></span><span class="sb-badge" hidden></span></button>
+        </div>
+      </div>
     </nav>
     <div class="sb-bottom">
       <div class="sb-theme" role="group" aria-label="Theme">
@@ -72,36 +99,77 @@
   <div class="sb-backdrop" id="sbBackdrop"></div>
   <div class="sb-tip" id="sbTip" role="tooltip"></div>
 
-  <header class="app-header">
-    <div class="wrap">
-      <div class="topbar">
-        <button class="hbtn hbtn-burger" id="navBurger" type="button" title="Menu" aria-label="Menu" aria-controls="sideNav" aria-expanded="false"></button>
+  <header class="app-header" id="appHeader">
+    <div class="hd-start">
+      <button class="hd-icon hbtn-burger" id="navBurger" type="button" title="Menu" aria-label="Menu" aria-controls="sideNav" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <button class="hd-icon hd-collapse" id="hdCollapse" type="button" aria-controls="sideNav" aria-label="Collapse"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+      <a class="brand" href="#/" id="hdBrand">
+        <img class="logo-img" src="/icons/icon-192.png" alt="" width="32" height="32" />
+        <span class="brand-text"><span class="brand-title" id="adminBrand">siymon Admin</span><span class="brand-sub" id="adminSubtitle">إدارة الطلبات والطباعة</span></span>
+      </a>
+      <span class="hd-vsep" aria-hidden="true"></span>
+      <nav class="hd-crumbs" id="hdCrumbs" aria-label="Breadcrumb"></nav>
+    </div>
 
-        <div class="brand">
-          <img class="logo-img" src="/icons/icon-192.png" alt="logo" width="40" height="40" />
-          <div class="brand-text">
-            <h1 id="adminBrand">siymon Admin</h1>
-            <p id="adminSubtitle">إدارة الطلبات والطباعة</p>
-          </div>
-        </div>
+    <div class="hd-center">
+      <div class="hd-search" id="hdSearchWrap">
+        <label class="hd-search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="hdSearch" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hdSearchPop" aria-autocomplete="list" />
+          <kbd>Ctrl K</kbd>
+        </label>
+        <div class="hd-pop hd-search-pop" id="hdSearchPop" role="listbox" hidden></div>
+      </div>
+    </div>
 
-        <div class="actions" role="toolbar" aria-label="Controls">
-          <button class="btn ghost hbtn hbtn-lang" id="adminLangToggle" type="button" title="Language" aria-label="Language">EN</button>
-          <button class="btn ghost hbtn hbtn-sound" id="soundToggle" type="button" title="Sound" aria-label="Sound">Sound ON</button>
-          <button class="btn ghost hbtn hbtn-rest" id="restToggleBtn" type="button" title="Restaurant" aria-label="Restaurant">Restaurant</button>
-          <button class="btn ghost hbtn hbtn-theme icon-btn" id="themeToggle" type="button" title="Theme" aria-label="Theme"></button>
-          <button class="btn hbtn hbtn-logout" id="logoutBtn" type="button" title="Logout" aria-label="Logout">Logout</button>
+    <div class="actions" role="toolbar" aria-label="Controls">
+      <button class="hbtn hbtn-rest" id="restToggleBtn" type="button" title="Restaurant" aria-label="Restaurant">Restaurant</button>
+      <button class="hbtn hbtn-sound" id="soundToggle" type="button" title="Sound" aria-label="Sound">Sound ON</button>
+      <button class="hbtn hbtn-lang" id="adminLangToggle" type="button" title="Language" aria-label="Language">EN</button>
+      <button class="hbtn hbtn-theme icon-btn" id="themeToggle" type="button" title="Theme" aria-label="Theme"></button>
+      <div class="hd-anchor">
+        <button class="hd-icon hd-bell" id="hdNotifBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="hdNotifPop" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="hd-badge" id="hdNotifCount" hidden></span>
+        </button>
+        <div class="hd-pop" id="hdNotifPop" role="menu" hidden></div>
+      </div>
+      <div class="hd-anchor">
+        <button class="hd-profile" id="hdProfileBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="hdProfilePop">
+          <span class="hd-avatar" id="hdAvatar">A</span>
+          <span class="hd-profile-meta"><b id="hdUserName">—</b><small id="hdUserRole"></small></span>
+          <svg class="hd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="hd-pop" id="hdProfilePop" role="menu" hidden>
+          <div class="hd-pop-head"><span class="hd-avatar lg" id="hdAvatar2">A</span><span class="hd-pop-id"><b id="hdUserName2">—</b><small id="hdUserMail"></small></span></div>
+          <button class="hd-pop-item" type="button" role="menuitem" data-hd-go="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span data-hd-t="settings"></span></button>
+          <button class="hd-pop-item" type="button" role="menuitem" data-hd-click="adminLangToggle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span data-hd-t="language"></span></button>
+          <button class="hd-pop-item" type="button" role="menuitem" data-hd-click="themeToggle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span data-hd-t="theme"></span></button>
+          <button class="hd-pop-item" type="button" role="menuitem" data-hd-click="btConnectBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg><span data-hd-t="bt"></span></button>
+          <div class="hd-pop-sep"></div>
+          <button class="hd-pop-item danger" id="logoutBtn" type="button" role="menuitem">Logout</button>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="admin-wrap">
-    <div class="admin-header">
-      <div class="kpi">
-        <span class="badge" id="kpiAll"><span class="dot"></span><span id="kpiAllText">All</span>: <b id="allCount">0</b></span>
-        <span class="badge" id="kpiNew"><span class="dot"></span><span id="kpiNewText">New</span>: <b id="newCount">0</b></span>
+  <main class="admin-wrap" id="ordersView">
+    <div class="pg-head ord-head">
+      <div class="pg-head-text">
+        <h2 id="ordersTitle">Orders</h2>
+        <p id="ordersFound" class="muted"></p>
       </div>
+      <div class="pg-actions admin-actions-tools" aria-label="Tools">
+        <span class="kpi">
+          <span class="badge" id="kpiAll"><span class="dot"></span><span id="kpiAllText">All</span>: <b id="allCount">0</b></span>
+          <span class="badge" id="kpiNew"><span class="dot"></span><span id="kpiNewText">New</span>: <b id="newCount">0</b></span>
+        </span>
+        <button class="btn ghost" id="btConnectBtn" type="button" title="Bluetooth"><span id="btText">Connect BT</span></button>
+        <button class="btn primary" id="refreshBtn" type="button" title="Refresh"><span id="refreshText">Refresh</span></button>
+      </div>
+    </div>
+    <section class="adm-kpis" id="adminKpis" aria-label="KPIs"></section>
+    <div class="admin-header" hidden>
       <div class="admin-actions">
         <div class="admin-actions-main" aria-label="Navigation" id="legacyNav" hidden>
           <button class="btn nav" id="storesBtn" type="button" title="Stores"><span id="storesText">Stores</span></button>
@@ -116,17 +184,9 @@
           <button class="btn nav" id="menuManageBtn" type="button" title="Menu"><span id="menuManageText">Menu</span></button>
           <button class="btn nav primary" id="settingsBtn" type="button" title="Settings"><span id="settingsText">Settings</span></button>
         </div>
-        <div class="admin-actions-tools" aria-label="Tools">
-          <button class="btn ghost" id="refreshBtn" type="button" title="Refresh"><span id="refreshText">Refresh</span></button>
-          <button class="btn ghost" id="btConnectBtn" type="button" title="Bluetooth"><span id="btText">Connect BT</span></button>
-        </div>
       </div>
     </div>
 
-    <div class="ord-head">
-      <h2 id="ordersTitle">Orders</h2>
-      <p id="ordersFound" class="muted"></p>
-    </div>
     <div class="ord-tabs" id="ordersTabs" role="tablist" aria-label="Order status">
       <button type="button" class="ord-tab active" role="tab" data-tab="all"></button>
       <button type="button" class="ord-tab" role="tab" data-tab="new"></button>
@@ -154,7 +214,7 @@
       <div class="hint muted" id="filterHint"></div>
     </div>
 
-    <div class="split" style="margin-top:14px">
+    <div class="split ord-split">
       <div class="ord-main">
       <div class="table-wrap ord-wrap" aria-label="Orders list">
         <table class="table ord-table" id="ordersTable">
@@ -1146,7 +1206,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="/shared/minimap.js?v=2"></script>
   <script src="/admin/admin-dispatch.js"></script>
-  <script src="/admin/admin-nav.js"></script>
+  <script src="/admin/admin-nav.js?v=2"></script>
+  <script src="/admin/admin-shell.js?v=2"></script>
   <script src="/reveal.js"></script>
 </body>
 </html>

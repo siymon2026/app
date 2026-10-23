@@ -38,6 +38,8 @@ html[data-theme="dark"] {
 body {
   margin: 0;
   font-family:
+    "Tajawal",
+    "Inter",
     system-ui,
     -apple-system,
     Segoe UI,
@@ -45,17 +47,6 @@ body {
     Arial,
     sans-serif;
   background: var(--bg);
-  background-image:
-    radial-gradient(
-      900px 420px at 20% 0%,
-      rgba(93,214,44, 0.12),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 420px at 80% 10%,
-      rgba(51,116,24, 0.1),
-      transparent 55%
-    );
   color: var(--text);
   line-height: 1.5;
 }
@@ -73,14 +64,13 @@ header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(247, 244, 239, 0.92);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
 }
 
 html[data-theme="dark"] header {
-  background: rgba(15, 15, 16, 0.92);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0F0F0F;
+  border-bottom: 1px solid var(--border);
 }
 
 .topbar {
@@ -162,15 +152,15 @@ html[data-theme="dark"] header {
 
 .btn.primary {
   background: var(--brand);
-  color:#0F0F0F;
+  color: #0F0F0F;
   border-color: transparent;
-  box-shadow: 0 14px 32px rgba(93,214,44, 0.18);
+  box-shadow: var(--shadow-sm);
 }
 .btn.good {
   background: var(--brand2);
-  color:#0F0F0F;
+  color: #F8F8F8;
   border-color: transparent;
-  box-shadow: 0 14px 32px rgba(51,116,24, 0.18);
+  box-shadow: var(--shadow-sm);
 }
 .btn.bad {
   background: #b00020;
@@ -820,8 +810,8 @@ html[data-theme="dark"] .rating-card {
 }
 /* --- التعديلات الجديدة لصفحة العميل --- */
 
-/* 1. جعل الشريط العلوي يتحرك مع الصفحة ولا يظل ثابتاً */
-header {
+/* Customer home page only: non-fixed header */
+body.home > header {
   position: relative !important;
 }
 

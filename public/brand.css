@@ -1,20 +1,132 @@
-/* SIYMON brand tokens — black & green identity. Single source of truth. */
-:root{
-  --color-bg:#0F0F0F;
-  --color-surface:#202020;
-  --color-primary:#5DD62C;
-  --color-primary-dark:#337418;
-  --color-text:#F8F8F8;
-  --color-text-muted:#A8A8A8;
-  --color-border:rgba(248,248,248,.12);
-  --color-primary-hover:#4DBF20;
-  --color-primary-press:#337418;
-  --color-primary-tint:rgba(93,214,44,.14);
-  --color-focus:rgba(93,214,44,.45);
-  --color-on-primary:#0F0F0F;
-  --on-brand:#0F0F0F;
+/* ============================================================================
+ * SIYMON OFFICIAL VISUAL IDENTITY & DESIGN TOKENS
+ * Official Brand Palette:
+ *   - Electric Green:     #5DD62C
+ *   - Deep Forest Green:  #337418
+ *   - Pure Black:         #0F0F0F
+ *   - Charcoal Black:     #202020
+ *   - Soft White:         #F8F8F8
+ * ========================================================================== */
+
+:root {
+  /* Official SIYMON Brand Colors */
+  --siy-electric: #5DD62C;
+  --siy-forest: #337418;
+  --siy-black: #0F0F0F;
+  --siy-charcoal: #202020;
+  --siy-white: #F8F8F8;
+
+  /* Core Brand Aliases (backwards-compatible across all modules) */
+  --color-bg: #0F0F0F;
+  --color-surface: #202020;
+  --color-primary: #5DD62C;
+  --color-primary-dark: #337418;
+  --color-text: #F8F8F8;
+  --color-text-muted: #A8A8A8;
+  --color-border: rgba(248, 248, 248, 0.12);
+  --color-primary-hover: #4DBF20;
+  --color-primary-press: #337418;
+  --color-primary-tint: rgba(93, 214, 44, 0.14);
+  --color-focus: rgba(93, 214, 44, 0.45);
+  --color-on-primary: #0F0F0F;
+  --on-brand: #0F0F0F;
+  --brand-text: #5DD62C;
+
+  --brand: #5DD62C;
+  --brand2: #337418;
+  --accent: #5DD62C;
+  --brand-ink: #0F0F0F;
+  --brand-soft: rgba(93, 214, 44, 0.12);
+  --brand-soft-strong: rgba(93, 214, 44, 0.20);
+  --brand-border: rgba(93, 214, 44, 0.32);
+
+  /* Layout Dimensions */
+  --ds-header-h: 64px;
+  --ds-sidebar-w: 260px;
+  --ds-sidebar-collapsed-w: 72px;
+
+  /* Radii & Spacing Scale */
+  --ds-r-xs: 6px;
+  --ds-r-sm: 8px;
+  --ds-r-md: 10px;
+  --ds-r-lg: 14px;
+  --ds-r-xl: 18px;
+  --ds-r-pill: 999px;
+
+  /* Typography */
+  --ds-font: "Tajawal", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --ds-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Default Light Theme Surface Tokens (overridden in [data-theme="dark"]) */
+  --ds-bg: #F8F8F8;
+  --ds-surface: #FFFFFF;
+  --ds-surface-2: #F1F2F3;
+  --ds-surface-3: #E7E9EB;
+  --ds-sidebar-bg: #0F0F0F;
+  --ds-sidebar-surface: #202020;
+  --ds-topbar-bg: #FFFFFF;
+  --ds-text: #0F0F0F;
+  --ds-text-secondary: #4B5056;
+  --ds-text-muted: #6C727A;
+  --ds-border: rgba(15, 15, 15, 0.09);
+  --ds-border-strong: rgba(15, 15, 15, 0.16);
+  --ds-brand-text: #337418;
+  --ds-focus-ring: 0 0 0 3px rgba(93, 214, 44, 0.30);
+  --ds-shadow-xs: 0 1px 2px rgba(15, 15, 15, 0.05);
+  --ds-shadow-sm: 0 2px 8px rgba(15, 15, 15, 0.06);
+  --ds-shadow-md: 0 8px 24px rgba(15, 15, 15, 0.10);
+  --ds-shadow-lg: 0 16px 40px rgba(15, 15, 15, 0.16);
+
+  /* Semantic Status Colors (restrained, accessible contrast) */
+  --ds-ok: #337418;
+  --ds-ok-bg: rgba(93, 214, 44, 0.14);
+  --ds-ok-border: rgba(51, 116, 24, 0.30);
+  --ds-warn: #B45309;
+  --ds-warn-bg: rgba(217, 119, 6, 0.12);
+  --ds-warn-border: rgba(217, 119, 6, 0.28);
+  --ds-danger: #DC2626;
+  --ds-danger-bg: rgba(220, 38, 38, 0.10);
+  --ds-danger-border: rgba(220, 38, 38, 0.26);
+  --ds-info: #2563EB;
+  --ds-info-bg: rgba(37, 99, 235, 0.10);
+  --ds-info-border: rgba(37, 99, 235, 0.24);
 }
 
-/* Brand-coloured TEXT: bright green on dark, dark green on light (contrast-safe) */
-:root{--brand-text:#5DD62C}
-html:not([data-theme="dark"]){--brand-text:#337418}
+html[data-theme="dark"] {
+  --brand-text: #5DD62C;
+  --ds-bg: #0F0F0F;
+  --ds-surface: #202020;
+  --ds-surface-2: #171717;
+  --ds-surface-3: #292929;
+  --ds-sidebar-bg: #0F0F0F;
+  --ds-sidebar-surface: #202020;
+  --ds-topbar-bg: #0F0F0F;
+  --ds-text: #F8F8F8;
+  --ds-text-secondary: #C4C7CC;
+  --ds-text-muted: #8E939B;
+  --ds-border: rgba(248, 248, 248, 0.09);
+  --ds-border-strong: rgba(248, 248, 248, 0.16);
+  --ds-brand-text: #5DD62C;
+  --ds-focus-ring: 0 0 0 3px rgba(93, 214, 44, 0.35);
+  --ds-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --ds-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.38);
+  --ds-shadow-md: 0 10px 28px rgba(0, 0, 0, 0.48);
+  --ds-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.65);
+
+  --ds-ok: #5DD62C;
+  --ds-ok-bg: rgba(93, 214, 44, 0.14);
+  --ds-ok-border: rgba(93, 214, 44, 0.30);
+  --ds-warn: #FBBF24;
+  --ds-warn-bg: rgba(251, 191, 36, 0.13);
+  --ds-warn-border: rgba(251, 191, 36, 0.28);
+  --ds-danger: #F87171;
+  --ds-danger-bg: rgba(248, 113, 113, 0.13);
+  --ds-danger-border: rgba(248, 113, 113, 0.28);
+  --ds-info: #60A5FA;
+  --ds-info-bg: rgba(96, 165, 250, 0.13);
+  --ds-info-border: rgba(96, 165, 250, 0.28);
+}
+
+html:not([data-theme="dark"]) {
+  --brand-text: #337418;
+}
