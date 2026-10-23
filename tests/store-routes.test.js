@@ -291,3 +291,19 @@ test("merchant uploads a product photo (needs products.write; bad data refused)"
   assert.equal((await w.call("POST", "/api/store/upload/image", { headers: H(TOK(["u-own"]), "g1"), body: { image: "http://x/y.png" } })).status, 400);
   assert.equal((await w.call("POST", "/api/store/upload/image", { headers: H(TOK(["u-cash"]), "g1"), body: { image: png } })).status, 403);
 });
+
+test("admin: stores directory is admin-only, filters, paginates and reports KPIs", async () => {
+  const w = world();
+  const A = { "X-Admin": "1" };
+  assert.equal((await w.call("GET", "/api/admin/stores/directory", {})).status, 401);
+  const all = await w.call("GET", "/api/admin/stores/directory", { headers: A, query: { pageSize: "2" } });
+  assert.equal(all.status, 200);
+  assert.equal(all.body.total, 3);
+  assert.equal(all.body.stores.length, 2);
+  assert.equal(all.body.totalPages, 2);
+  assert.equal(all.body.summary.totalStores, 3);
+  assert.equal(all.body.summary.totalOrders, 0); // nothing delivered yet: no invented sales
+  assert.equal(all.body.stores[0].password, undefined);
+  const f = await w.call("GET", "/api/admin/stores/directory", { headers: A, query: { q: "R", status: "open" } });
+  assert.ok(f.body.stores.every((s) => s.isOpen));
+});

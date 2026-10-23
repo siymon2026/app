@@ -41,6 +41,7 @@ function create(seed) {
       const b = req.method === "GET" ? {} : await body(req);
       if (p.startsWith("/api/admin/") && !isAdmin && p !== "/api/admin/login") return send(res, 401, { error: "Unauthorized" });
       const m = (re) => p.match(re);
+      let mm;
       if (p === "/api/restaurants") return send(res, 200, { ok: true, restaurants: state.restaurants.filter(cat.isPublic).map((s) => cat.publicStore(s)).sort((a, c) => a.sortOrder - c.sortOrder) });
       if (p === "/api/menu") {
         const pub = new Set(state.restaurants.filter(cat.isPublic).map((r) => String(r.id)));
@@ -87,12 +88,17 @@ function create(seed) {
         const r = { id: makeId(), name: i18n(b.name), phone: String(b.phone || ""), address: String(b.address || ""), isActive: true, createdAt: new Date().toISOString(), ...cat.pickStoreMeta(b, i18n, cleanImg) };
         state.restaurants.push(r); return send(res, 200, { ok: true, restaurant: adminRest(r) });
       }
-      let mm = m(/^\/api\/admin\/restaurants\/([^/]+)$/);
+      mm = m(/^\/api\/admin\/restaurants\/([^/]+)$/);
       if (mm) {
         const i = state.restaurants.findIndex((x) => x.id === decodeURIComponent(mm[1]));
         if (i < 0) return send(res, 404, { error: "Not found" });
         if (req.method === "PUT") { const cur = state.restaurants[i]; if (b.name !== undefined) cur.name = i18n(b.name); if (b.phone !== undefined) cur.phone = String(b.phone); if (b.address !== undefined) cur.address = String(b.address); Object.assign(cur, cat.pickStoreMeta(b, i18n, cleanImg)); return send(res, 200, { ok: true, restaurant: adminRest(cur) }); }
         if (req.method === "DELETE") { if (state.orders.some((o) => o.restaurantId === state.restaurants[i].id)) return send(res, 409, { error: "Restaurant has orders; archive it instead (status: archived)" }); state.restaurants.splice(i, 1); return send(res, 200, { ok: true }); }
+      }
+      if (p === "/api/admin/stores/directory") return send(res, 200, { ok: true, ...require("../lib/store-directory").buildStoreDirectory({ restaurants: state.restaurants, orders: state.orders, catalogLib: cat, query: Object.fromEntries(u.searchParams) }) });
+      if ((mm = m(/^\/api\/admin\/stores\/([^/]+)\/overview$/))) {
+        const st = state.restaurants.find((x) => x.id === decodeURIComponent(mm[1]));
+        return st ? send(res, 200, { ok: true, store: st, type: null, accounts: [], stats: { productsTotal: state.items.filter((i) => i.restaurantId === st.id).length, activeOrders: 0 }, days: 30 }) : send(res, 404, { error: "Not found" });
       }
       if (p === "/api/admin/menu") {
         if (req.method === "GET") return send(res, 200, { ok: true, items: state.items });

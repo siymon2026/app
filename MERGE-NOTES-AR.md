@@ -48,3 +48,11 @@
 - التذكرة: إن لم يكن للمتجر شعار يُعرض شعار التطبيق (icons/invoice-logo.png) دائرياً بدرجات الرمادي. sw.js → v47.
 
 - التذكرة: شعار التطبيق دائماً (وليس شعار المتجر)، والمتغيّر هو اسم المتجر فقط. sw.js → v48.
+
+---
+# صفحة المتاجر (Stores) في لوحة المشرف
+- مسارات جديدة: `#/stores` و`#/stores/online` و`#/stores/offline` + مجموعة «المتاجر» في القائمة الجانبية.
+- `GET /api/admin/stores/directory` (للمشرف فقط): بحث/تصفية/ترقيم من الخادم + مؤشرات من بيانات حقيقية (`lib/store-directory.js`).
+- حقلان اختياريان جديدان للمتجر: `channel` (online|offline، الافتراضي online) و`website`، يُعدَّلان من نافذة تعديل المتجر.
+- التقييم من `customerRating` في الطلبات المسلَّمة؛ الأداء: ≥4.5 جيد، ≥4.0 متوسط، وإلا يحتاج اهتماماً؛ بلا تقييمات = لا شيء مُختلَق.
+- ملفات: `public/admin/admin-stores-page.{js,css}`، تعديل `admin-nav.js` و`index.html` و`admin-stores.js` و`lib/catalog.js` و`lib/store-routes.js`، اختبارات جديدة. sw.js → v49.
