@@ -1,4 +1,4 @@
-const CACHE = "siymon-cache-v48";
+const CACHE = "siymon-cache-v49";
 const ASSETS = [
   "/",
   "/index.html",
@@ -26,6 +26,8 @@ const ASSETS = [
   "/admin/admin.js",
   "/admin/admin-stores.js",
   "/admin/admin-stores.css",
+  "/admin/admin-stores-page.js",
+  "/admin/admin-stores-page.css",
   "/admin/admin-enter.js",
   "/admin/admin-enter.css",
 
