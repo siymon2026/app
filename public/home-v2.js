@@ -186,6 +186,7 @@
     } else { exactLat = null; exactLng = null; }
     var bar = $("addrBar"); if (bar) bar.classList.remove("out");
     renderAddrBar();
+    if (typeof window.refreshRoadEstimate === "function") window.refreshRoadEstimate();
     document.dispatchEvent(new CustomEvent("siymon:address-changed", { detail: a }));
   }
   window.siymonReapplyAddress = function () { var d = defaultAddress(); if (d) applyAddress(d); };
@@ -335,6 +336,74 @@
     var cityW = h("div", "addr-field"); cityW.appendChild(h("span", null, at("city")));
     var chip = h("div", "addr-city", (CITY[lang] || CITY.ar)); chip.appendChild(h("small", null, at("cityNote"))); cityW.appendChild(chip);
     body.appendChild(cityW);
+
+    // Interactive Berrechid Movable Map Pin Picker (Section 8)
+    if (draft.lat == null || draft.lng == null) {
+      draft.lat = 33.2655;
+      draft.lng = -7.5875;
+    }
+    var pinWrap = h("div", "addr-pin-wrap");
+    pinWrap.style.cssText = "margin:8px 0 12px;padding:10px;border-radius:12px;border:1px solid rgba(93,214,44,.35);background:rgba(93,214,44,.06)";
+    var pinHead = h("div", "");
+    pinHead.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;flex-wrap:wrap";
+    var pinTitle = h("span", "", lang === "fr" ? "📌 Déplacez l'épingle sur la carte (Berrechid)" : (lang === "en" ? "📌 Move pin on map (Berrechid)" : "📌 حرّك الدبوس لتحديد الموقع الدقيق في برشيد"));
+    pinTitle.style.cssText = "font-size:12px;font-weight:700;color:#337418";
+    var gpsQuickBtn = h("button", "addr-chip", "📍 " + at("locate"));
+    gpsQuickBtn.type = "button";
+    gpsQuickBtn.addEventListener("click", function () { locateFlow("form"); });
+    pinHead.appendChild(pinTitle);
+    pinHead.appendChild(gpsQuickBtn);
+    pinWrap.appendChild(pinHead);
+    var mapCanvas = h("div", "addr-pin-canvas");
+    mapCanvas.style.cssText = "position:relative;height:130px;border-radius:10px;background:linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 50%,#e0f2f1 100%);border:1px solid rgba(0,0,0,.14);overflow:hidden;cursor:crosshair;touch-action:none;user-select:none";
+    var gridLines = h("div", "");
+    gridLines.style.cssText = "position:absolute;inset:0;background-image:linear-gradient(rgba(51,116,24,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(51,116,24,.1) 1px,transparent 1px);background-size:24px 24px;pointer-events:none";
+    mapCanvas.appendChild(gridLines);
+    var centerLbl = h("div", "", "Berrechid · برشيد");
+    centerLbl.style.cssText = "position:absolute;bottom:6px;right:8px;font-size:10px;color:#337418;opacity:.75;pointer-events:none";
+    mapCanvas.appendChild(centerLbl);
+    var pinMarker = h("div", "", "📍");
+    pinMarker.style.cssText = "position:absolute;font-size:24px;transform:translate(-50%,-90%);pointer-events:none;transition:left .06s,top .06s";
+    function syncPinMarkerPosition() {
+      var ny = 1 - ((Number(draft.lat) - 33.235) / 0.06);
+      var nx = (Number(draft.lng) - (-7.620)) / 0.065;
+      nx = Math.max(0.06, Math.min(0.94, nx));
+      ny = Math.max(0.10, Math.min(0.90, ny));
+      pinMarker.style.left = (nx * 100).toFixed(1) + "%";
+      pinMarker.style.top = (ny * 100).toFixed(1) + "%";
+    }
+    syncPinMarkerPosition();
+    mapCanvas.appendChild(pinMarker);
+    var coordBadge = h("div", "", "📍 " + Number(draft.lat).toFixed(5) + ", " + Number(draft.lng).toFixed(5));
+    coordBadge.style.cssText = "font-size:11px;margin-top:6px;color:#555";
+    function updatePinFromEvent(ev) {
+      var rect = mapCanvas.getBoundingClientRect();
+      var clientX = ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX;
+      var clientY = ev.touches && ev.touches[0] ? ev.touches[0].clientY : ev.clientY;
+      var rx = Math.max(0, Math.min(1, (clientX - rect.left) / (rect.width || 1)));
+      var ry = Math.max(0, Math.min(1, (clientY - rect.top) / (rect.height || 1)));
+      draft.lat = Number((33.235 + (1 - ry) * 0.06).toFixed(6));
+      draft.lng = Number((-7.620 + rx * 0.065).toFixed(6));
+      syncPinMarkerPosition();
+      coordBadge.textContent = "📍 " + draft.lat.toFixed(5) + ", " + draft.lng.toFixed(5);
+      if (typeof reverseGeocode === "function") {
+        reverseGeocode(draft.lat, draft.lng).then(function (g) {
+          if (g) {
+            var hoodInput = $("adHood");
+            var streetInput = $("adStreet");
+            if (g.hood && hoodInput && !hoodInput.value.trim()) { hoodInput.value = g.hood; draft.hood = g.hood; }
+            if (g.street && streetInput && !streetInput.value.trim()) { streetInput.value = g.street; draft.street = g.street; }
+          }
+        });
+      }
+    }
+    var draggingPin = false;
+    mapCanvas.addEventListener("pointerdown", function (ev) { draggingPin = true; updatePinFromEvent(ev); });
+    mapCanvas.addEventListener("pointermove", function (ev) { if (draggingPin) updatePinFromEvent(ev); });
+    window.addEventListener("pointerup", function () { draggingPin = false; });
+    pinWrap.appendChild(mapCanvas);
+    pinWrap.appendChild(coordBadge);
+    body.appendChild(pinWrap);
     body.appendChild(fieldEl("adHood", at("hood"), draft.hood, { max: 80 }));
     body.appendChild(fieldEl("adStreet", at("street"), draft.street));
     body.appendChild(fieldEl("adBldg", at("bldg"), draft.bldg, { max: 80 }));

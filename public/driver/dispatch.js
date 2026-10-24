@@ -237,14 +237,22 @@
   function showOffer(o) {
     const box = q("offerBackdrop"); if (!box) return;
     const T = L();
-    q("offerTitle").textContent = T.offerTitle;
-    q("offerFee").textContent = money(o.deliveryFee);
+    q("offerTitle").textContent = o.reofferedAfterTimeout ? (T.offerTitle + " (2/2)") : T.offerTitle;
+    const earn = o.expectedEarnings != null ? o.expectedEarnings : o.deliveryFee;
+    q("offerFee").textContent = money(earn);
     q("offerFeeLbl").textContent = T.fee;
     q("offerPickupLbl").textContent = T.pickup;
     const pickup = o.pickup && validLL(o.pickup.lat, o.pickup.lng) ? o.pickup : null;
-    q("offerPickup").textContent = pickup ? (localizedText(pickup.name) || "—") : "—";
-    q("offerDist").textContent = o.pickupDistM == null ? "" :
-      (o.pickupDistM < 1000 ? o.pickupDistM + " " + T.m : (o.pickupDistM / 1000).toFixed(1) + " " + T.km) + " " + T.away;
+    const destArea = o.destinationArea ? ` → ${o.destinationArea}` : "";
+    q("offerPickup").textContent = (pickup ? (localizedText(pickup.name) || "—") : "—") + destArea;
+    const distParts = [];
+    if (o.pickupDistM != null) {
+      distParts.push((o.pickupDistM < 1000 ? o.pickupDistM + " " + T.m : (o.pickupDistM / 1000).toFixed(1) + " " + T.km) + " " + T.away);
+    }
+    if (o.roadDistanceKm != null) {
+      distParts.push(`🛣️ ${Number(o.roadDistanceKm).toFixed(1)} ${T.km}`);
+    }
+    q("offerDist").textContent = distParts.join(" · ");
     q("offerAccept").textContent = T.accept;
     q("offerReject").textContent = T.reject;
     const nav = q("offerNav");

@@ -15,7 +15,7 @@
       settings: "الإعدادات", mode: "نظام الطلبات", pull: "سحب (السائق يقبل بنفسه)", offers: "عروض (توزيع ذكي)", auto: "تعيين تلقائي", ttl: "مهلة العرض (ثانية)",
       pickup: "نقطة الاستلام الافتراضية", save: "حفظ", saved: "تم الحفظ", events: "آخر الأحداث", warnPickup: "لا توجد إحداثيات للمطعم؛ حدّد نقطة الاستلام في الإعدادات حتى يعمل التوزيع.",
       warnPull: "الوضع الحالي: سحب. العروض معطّلة والسائقون يقبلون الطلبات بأنفسهم.", err: "تعذّر التحميل", cell: "خلية", noloc: "بلا موقع", fail: "فشل",
-      ev: { offer_created: "عرض جديد", offer_accepted: "قُبل العرض", offer_rejected: "رُفض العرض", offer_expired: "انتهى العرض", driver_status: "حالة سائق", order_reset: "إعادة تعيين" },
+      ev: { offer_created: "عرض جديد", offer_reoffered: "إعادة عرض لنفس السائق", offer_accepted: "قُبل العرض", offer_rejected: "رُفض العرض", offer_expired: "انتهى العرض", supervisor_alert_repeated_rejections: "⚠️ تنبيه: رفض متكرر", order_reassigned: "إعادة تعيين سائق", driver_status: "حالة سائق", order_reset: "إعادة تعيين" },
       kDrivers: "سائق", kPickup: "المطعم", kOrder: "طلب" },
     en: { nav: "Dispatch", title: "Dispatch board", sub: "Live driver positions and offers", pending: "Orders waiting for a driver", drivers: "Drivers",
       none: "Nothing right now", all: "All", state_available: "Available", state_offer_pending: "Has offer", state_assigned: "Assigned", state_delivering: "Delivering", state_paused: "Paused", state_offline: "Offline",
@@ -173,9 +173,12 @@
       let info = "";
       if (o.offer) {
         const d = (st.drivers || []).find((x) => x.id === o.offer.driverId);
-        info = `${T().offeredTo} ${d ? d.name || d.id : o.offer.driverId} · ${Math.max(0, Math.ceil((o.offer.expiresAt - st.serverNow) / 1000))}${T().left}`;
+        info = `${T().offeredTo} ${d ? d.name || d.id : o.offer.driverId} · ${Math.max(0, Math.ceil((o.offer.expiresAt - st.serverNow) / 1000))}${T().left}` +
+          (o.offer.reofferedAfterTimeout ? " (2/2)" : "") +
+          (o.lastRing != null ? ` · H3 Ring k=${o.lastRing}` : "");
       } else if (o.exhausted === "no_pickup_location") info = T().nopickup;
-      else if (o.exhausted === "no_candidates") info = T().nocand;
+      else if (o.exhausted === "no_candidates") info = T().nocand + (o.pickupCell ? ` (${T().cell}: ${o.pickupCell})` : "");
+      else if (o.pickupCell) info = `H3 ${T().cell}: ${o.pickupCell}` + (o.lastRing != null ? ` · Ring k=${o.lastRing}` : "");
       if (info) row.appendChild(mk("div", { class: "dsp-info" }, info));
       const act = mk("div", { class: "dsp-act" });
       const locate = mk("button", { type: "button", class: "btn small ghost" }, T().showLocation);
@@ -215,7 +218,8 @@
       const dot = mk("i", { class: "dsp-dot" }); dot.style.background = COLORS[d.dispatchState] || "#999";
       row.appendChild(dot);
       row.appendChild(mk("b", null, d.name || d.id));
-      row.appendChild(mk("span", { class: "muted" }, T()["state_" + d.dispatchState] + " · " + (d.location ? T()["fresh_" + d.freshness] + " " + Math.round(d.location.ageMs / 1000) + T().left : T().noloc)));
+      const cellInfo = d.cell ? ` · H3:${String(d.cell).slice(-6)}` : "";
+      row.appendChild(mk("span", { class: "muted" }, T()["state_" + d.dispatchState] + " · " + (d.location ? T()["fresh_" + d.freshness] + " " + Math.round(d.location.ageMs / 1000) + T().left + cellInfo : T().noloc)));
       row.addEventListener("click", () => { selected = selected === d.id ? null : d.id; render(); });
       box.appendChild(row);
     });

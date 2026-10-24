@@ -1,4 +1,4 @@
-const CACHE = "siymon-cache-v50";
+const CACHE = "siymon-cache-v52";
 const ASSETS = [
   "/",
   "/index.html",
@@ -24,6 +24,7 @@ const ASSETS = [
   "/admin/admin-dispatch.js",
   "/admin/admin-dispatch.css",
   "/admin/admin.js",
+  "/admin/admin-ops-suite.js",
   "/admin/admin-stores.js",
   "/admin/admin-stores.css",
   "/admin/admin-stores-page.js",
@@ -47,9 +48,18 @@ const ASSETS = [
   "/orders/index.html",
   "/orders/orders.css?v=38",
   "/orders/orders.js?v=37",
+  "/orders/customer-suite.js",
   "/shared/minimap.js?v=2",
   "/orders/orders-extras.js?v=3",
   "/orders/legacy-redirect.js?v=36",
+
+  "/stores/index.html",
+  "/stores/stores.css",
+  "/stores/stores.js",
+  "/store/index.html",
+  "/store/store.css",
+  "/store/store.js",
+  "/support/index.html",
 
   "/notifications/index.html",
   "/notifications/notifications.js?v=36",
@@ -65,6 +75,7 @@ const ASSETS = [
   "/driver/driver.css",
   "/driver/driver.js",
   "/driver/dispatch.js",
+  "/driver/driver-verification.js",
   "/driver/extras.js",
 
   "/restaurant/index.html",
