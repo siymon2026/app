@@ -522,12 +522,136 @@ function selStore() {
     ) || null
   );
 }
+let ROAD_ESTIMATE = null;
+let APPLIED_PROMO = null;
+let CUSTOMER_WALLET_BAL = 0;
+const ITEM_OPTIONS_MAP = new Map();
+
+async function refreshRoadEstimate() {
+  const hint = el("roadEstimateHint");
+  if (!exactLat || !exactLng) {
+    ROAD_ESTIMATE = null;
+    if (hint) hint.style.display = "none";
+    return;
+  }
+  try {
+    const res = await fetch("/api/delivery/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        restaurantId: selectedRestaurantId || "main",
+        customerLat: exactLat,
+        customerLng: exactLng,
+        subtotal: cartSubTotal(),
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      ROAD_ESTIMATE = data;
+      if (hint) {
+        hint.style.display = cart.size ? "block" : "none";
+        hint.textContent =
+          lang === "ar"
+            ? `🛣️ مسافة الطريق: ${Number(data.distanceKm || 0).toFixed(2)} كم (${money(data.deliveryFee)})`
+            : `🛣️ Road distance: ${Number(data.distanceKm || 0).toFixed(2)} km (${money(data.deliveryFee)})`;
+      }
+      renderCart();
+    } else {
+      ROAD_ESTIMATE = null;
+      if (hint) {
+        hint.style.display = cart.size ? "block" : "none";
+        hint.textContent = data?.message || "";
+      }
+    }
+  } catch (_e) {
+    ROAD_ESTIMATE = null;
+  }
+}
+
+async function refreshCustomerWallet() {
+  const box = el("walletPayBox");
+  const balSpan = el("walletBalSpan");
+  const tok = typeof getCustomerToken === "function" ? getCustomerToken() : "";
+  if (!tok || !box) {
+    if (box) box.style.display = "none";
+    return;
+  }
+  try {
+    const res = await fetch("/api/customer/wallet", {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      CUSTOMER_WALLET_BAL = Number(data.balance || 0);
+      if (balSpan) balSpan.textContent = money(CUSTOMER_WALLET_BAL);
+      box.style.display = CUSTOMER_WALLET_BAL > 0 && cart.size > 0 ? "block" : "none";
+    }
+  } catch (_e) {}
+}
+
+async function applyPromoCode() {
+  const inp = el("promoCodeInput");
+  const hint = el("promoHint");
+  const code = String(inp?.value || "").trim();
+  if (!code) {
+    APPLIED_PROMO = null;
+    if (hint) hint.textContent = "";
+    renderCart();
+    return;
+  }
+  try {
+    const tok = typeof getCustomerToken === "function" ? getCustomerToken() : "";
+    const headers = { "Content-Type": "application/json" };
+    if (tok) headers.Authorization = `Bearer ${tok}`;
+    const res = await fetch("/api/promotions/validate", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        code,
+        storeId: selectedRestaurantId || "main",
+        subtotal: cartSubTotal(),
+        deliveryFee: cartDeliveryFee(),
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      APPLIED_PROMO = data;
+      if (hint) {
+        hint.style.color = "#5DD62C";
+        hint.textContent =
+          lang === "ar"
+            ? `✅ تم تطبيق الكود (${data.code}): خصم ${money(data.discountAmount)}`
+            : `✅ Code (${data.code}) applied: -${money(data.discountAmount)}`;
+      }
+    } else {
+      APPLIED_PROMO = null;
+      if (hint) {
+        hint.style.color = "#ef4444";
+        hint.textContent =
+          lang === "ar"
+            ? `⚠️ كود غير صالح أو منتهي (${data?.error || "invalid"})`
+            : `⚠️ Invalid or expired code (${data?.error || "invalid"})`;
+      }
+    }
+    renderCart();
+  } catch (_e) {
+    APPLIED_PROMO = null;
+  }
+}
+
 function cartDeliveryFee() {
   const s = selStore();
   if (!s || cart.size === 0) return 0;
   if (s.freeDeliveryOver != null && cartSubTotal() >= Number(s.freeDeliveryOver))
     return 0;
+  if (ROAD_ESTIMATE && Number.isFinite(Number(ROAD_ESTIMATE.deliveryFee))) {
+    return Number(ROAD_ESTIMATE.deliveryFee);
+  }
   return Number(s.deliveryFee || 0);
+}
+function cartDiscount() {
+  if (!APPLIED_PROMO || cart.size === 0) return 0;
+  return Math.min(cartSubTotal() + cartDeliveryFee(), Number(APPLIED_PROMO.discountAmount || 0));
 }
 function cartMinShortfall() {
   const s = selStore();
@@ -542,12 +666,16 @@ function cartSubTotal() {
   let total = 0;
   for (const [id, qty] of cart.entries()) {
     const p = getProduct(id);
-    if (p) total += unitPrice(p) * qty;
+    if (p) {
+      const opt = ITEM_OPTIONS_MAP.get(id);
+      const u = opt && Number.isFinite(opt.unitPrice) ? opt.unitPrice : unitPrice(p);
+      total += u * qty;
+    }
   }
   return total;
 }
 function cartGrandTotal() {
-  return cartSubTotal() + cartDeliveryFee();
+  return Math.max(0, cartSubTotal() + cartDeliveryFee() - cartDiscount());
 }
 function cartItemsCount() {
   let c = 0;
@@ -860,6 +988,17 @@ function renderCart() {
         : "";
   }
   totalValue.textContent = money(cartGrandTotal());
+  const pRow = el("promoDiscountRow");
+  const pVal = el("promoDiscountValue");
+  const disc = cartDiscount();
+  if (pRow && pVal) {
+    pRow.style.display = disc > 0 ? "" : "none";
+    pVal.textContent = "-" + money(disc);
+  }
+  const wBox = el("walletPayBox");
+  if (wBox) {
+    wBox.style.display = CUSTOMER_WALLET_BAL > 0 && cart.size > 0 ? "block" : "none";
+  }
   const bTv = document.getElementById("barTotalValue");
   if (bTv) bTv.textContent = money(cartGrandTotal());
   const bTl = document.getElementById("barTotalLabel");
@@ -994,18 +1133,46 @@ function renderAll() {
   updateOpenStatus();
 }
 
-function addToCart(id, delta) {
+function addToCart(id, delta, customOptions) {
   const p = getProduct(id);
   if (!p) return;
+  if (delta > 0 && cart.size > 0) {
+    const targetStoreId = String(p.restaurantId || selectedRestaurantId || "main");
+    for (const existingId of cart.keys()) {
+      const ep = getProduct(existingId);
+      if (ep && String(ep.restaurantId || "main") !== targetStoreId) {
+        const msg =
+          lang === "ar"
+            ? "سلتك تحتوي على منتجات من متجر آخر. هل تريد تفريغ السلة والمتابعة مع هذا المتجر؟"
+            : lang === "fr"
+              ? "Votre panier contient des produits d'un autre magasin. Vider le panier et continuer ?"
+              : "Your cart has items from another store. Clear cart and switch store?";
+        if (!window.confirm(msg)) return;
+        cart.clear();
+        ITEM_OPTIONS_MAP.clear();
+        selectedRestaurantId = targetStoreId;
+        break;
+      }
+    }
+  }
+  if (customOptions && typeof customOptions === "object") {
+    ITEM_OPTIONS_MAP.set(id, customOptions);
+  }
   const cur = cart.get(id) || 0;
   const next = cur + delta;
-  if (next <= 0) cart.delete(id);
-  else cart.set(id, next);
+  if (next <= 0) {
+    cart.delete(id);
+    ITEM_OPTIONS_MAP.delete(id);
+  } else {
+    cart.set(id, next);
+  }
   renderCart();
   saveCart();
 }
 function clearCart() {
   cart.clear();
+  ITEM_OPTIONS_MAP.clear();
+  APPLIED_PROMO = null;
   renderCart();
   saveCart();
 }
@@ -1039,6 +1206,7 @@ async function getLocation() {
       exactLng = lng;
       areaInside = null;
       const areaPromise = checkServiceArea(lat, lng);
+      refreshRoadEstimate();
 
       try {
         const res = await fetch(
@@ -1121,9 +1289,27 @@ function buildOrderPayload() {
   }
 
   const items = [];
-  for (const [id, qty] of cart.entries()) items.push({ id, qty });
+  for (const [id, qty] of cart.entries()) {
+    const opt = ITEM_OPTIONS_MAP.get(id) || {};
+    const entry = { id, qty };
+    if (opt.size) entry.size = opt.size;
+    if (Array.isArray(opt.extras) && opt.extras.length) entry.extras = opt.extras;
+    items.push(entry);
+  }
 
-  const customerInfo = { name, phone, addr, notes };
+  const recipientName = String(el("recipientName")?.value || "").trim();
+  const recipientPhone = String(el("recipientPhone")?.value || "").trim();
+  const driverInstructions = String(el("driverInstructions")?.value || "").trim();
+
+  const customerInfo = {
+    name,
+    phone,
+    addr,
+    notes,
+    ...(recipientName ? { recipientName } : {}),
+    ...(recipientPhone ? { recipientPhone } : {}),
+    ...(driverInstructions ? { driverInstructions } : {}),
+  };
 
   // إذا تم سحب الموقع تلقائياً بنجاح، يتم إرفاقه بالطلب ورابط مباشر للملاحظات
   if (exactLat && exactLng) {
@@ -1136,13 +1322,18 @@ function buildOrderPayload() {
       : `📍 الموقع الدقيق للعميل:\n${mapsLink}`;
   }
 
+  const useWallet = !!el("useWalletChk")?.checked;
+  const promoCode = APPLIED_PROMO?.code || String(el("promoCodeInput")?.value || "").trim() || undefined;
+
   return {
     payload: {
       lang,
       restaurantId: selectedRestaurantId,
       customer: customerInfo,
       items,
-      paymentMethod: SELECTED_PAYMENT,
+      paymentMethod: useWallet && CUSTOMER_WALLET_BAL >= cartGrandTotal() ? "wallet" : SELECTED_PAYMENT,
+      useWallet,
+      ...(promoCode ? { promoCode } : {}),
       currency: lang === "ar" ? CURRENCY_AR : CURRENCY_EN,
     },
   };
@@ -1255,6 +1446,7 @@ goCartBtn.addEventListener("click", () => {
 });
 getAddrBtn.addEventListener("click", getLocation);
 placeBtn.addEventListener("click", placeOrder);
+el("applyPromoBtn")?.addEventListener("click", applyPromoCode);
 [custName, custPhone, custAddr, custNotes].forEach((input) =>
   input.addEventListener("input", () => saveCart()),
 );
@@ -1268,6 +1460,8 @@ placeBtn.addEventListener("click", placeOrder);
   loadCart();
   loadTheme();
   prefillCustomerFields();
+  await refreshCustomerWallet();
+  await refreshRoadEstimate();
   renderAll();
   setInterval(() => updateOpenStatus(), 60_000);
 })();
@@ -1289,6 +1483,38 @@ placeBtn.addEventListener("click", placeOrder);
     $("dPrice").innerHTML = priceHtml(p);
     $("dDesc").textContent = textForLang(p.desc) || "";
     $("dQty").textContent = "1";
+    const optHost = $("dOptionsHost");
+    if (optHost) {
+      optHost.innerHTML = "";
+      const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+      const extras = Array.isArray(p.extras) ? p.extras : [];
+      if (sizes.length) {
+        const sDiv = document.createElement("div");
+        sDiv.innerHTML = `<b style="font-size:13px">${lang === "ar" ? "الحجم / الصنف:" : "Size / Variant:"}</b>`;
+        sizes.forEach((sz, idx) => {
+          const sName = textForLang(sz.name || sz.id || "");
+          const sPrice = Number(sz.price ?? unitPrice(p));
+          const lbl = document.createElement("label");
+          lbl.style = "display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border:1px solid rgba(128,128,128,0.25);border-radius:8px;margin-top:4px;cursor:pointer;font-size:13px";
+          lbl.innerHTML = `<span><input type="radio" name="dSizeOpt" value="${escHtml(String(sz.id || sName))}" data-price="${sPrice}" ${idx === 0 ? "checked" : ""} /> ${escHtml(sName)}</span><b>${money(sPrice)}</b>`;
+          sDiv.appendChild(lbl);
+        });
+        optHost.appendChild(sDiv);
+      }
+      if (extras.length) {
+        const eDiv = document.createElement("div");
+        eDiv.innerHTML = `<b style="font-size:13px">${lang === "ar" ? "إضافات اختيارية:" : "Extras:"}</b>`;
+        extras.forEach((ex) => {
+          const eName = textForLang(ex.name || ex.id || "");
+          const ePrice = Number(ex.price || 0);
+          const lbl = document.createElement("label");
+          lbl.style = "display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border:1px solid rgba(128,128,128,0.25);border-radius:8px;margin-top:4px;cursor:pointer;font-size:13px";
+          lbl.innerHTML = `<span><input type="checkbox" name="dExtraOpt" value="${escHtml(String(ex.id || eName))}" data-price="${ePrice}" /> ${escHtml(eName)}</span><b>+${money(ePrice)}</b>`;
+          eDiv.appendChild(lbl);
+        });
+        optHost.appendChild(eDiv);
+      }
+    }
     sheet.hidden = false;
     document.body.classList.add("no-scroll");
   };
@@ -1297,7 +1523,27 @@ placeBtn.addEventListener("click", placeOrder);
     $("dClose").addEventListener("click", closeDetail);
     $("dMinus").addEventListener("click", () => { dQty = Math.max(1, dQty - 1); $("dQty").textContent = dQty; });
     $("dPlus").addEventListener("click", () => { dQty += 1; $("dQty").textContent = dQty; });
-    $("dAdd").addEventListener("click", () => { addToCart(dId, dQty); closeDetail(); toast("✅"); });
+    $("dAdd").addEventListener("click", () => {
+      const p = getProduct(dId);
+      let customOpt = null;
+      const optHost = $("dOptionsHost");
+      if (p && optHost) {
+        const selSize = optHost.querySelector('input[name="dSizeOpt"]:checked');
+        const selExtras = Array.from(optHost.querySelectorAll('input[name="dExtraOpt"]:checked'));
+        if (selSize || selExtras.length) {
+          const baseP = selSize ? Number(selSize.getAttribute("data-price") || unitPrice(p)) : unitPrice(p);
+          const extraP = selExtras.reduce((s, el) => s + Number(el.getAttribute("data-price") || 0), 0);
+          customOpt = {
+            size: selSize ? selSize.value : null,
+            extras: selExtras.map((el) => el.value),
+            unitPrice: baseP + extraP,
+          };
+        }
+      }
+      addToCart(dId, dQty, customOpt);
+      closeDetail();
+      toast("✅");
+    });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDetail(); });
   }
   $("navHome")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));

@@ -442,11 +442,35 @@
 
   VIEWS.reports = async (root) => {
     clear(root).appendChild(skeleton(2));
-    const r = await api("/api/store/stats", { query: { days: S.days } });
+    const [r, fin] = await Promise.all([
+      api("/api/store/stats", { query: { days: S.days } }),
+      api("/api/store/reports").catch(() => ({ summary: null })),
+    ]);
     const s = r.stats;
-    clear(root).appendChild(h("div", {}, h("div", { class: "row", style: "margin-bottom:12px" }, h("span", { class: "muted" }, t("period")), periodSelect(renderView)),
+    const fs = (fin && fin.summary) || {};
+    const dl = (fmt) => {
+      fetch("/api/store/reports?format=" + fmt, {
+        headers: { Authorization: "Bearer " + token, "X-Store-Id": storeId },
+      })
+        .then((res) => res.blob())
+        .then((blob) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `siymon-store-report-${storeId}.${fmt}`;
+          a.click();
+        });
+    };
+    clear(root).appendChild(h("div", {},
+      h("div", { class: "row", style: "margin-bottom:12px;justify-content:space-between;flex-wrap:wrap" },
+        h("div", { class: "row" }, h("span", { class: "muted" }, t("period")), periodSelect(renderView)),
+        h("div", { class: "row" },
+          h("button", { class: "btn sm", type: "button", onclick: () => dl("csv") }, "⬇ CSV"),
+          h("button", { class: "btn sm", type: "button", onclick: () => dl("xlsx") }, "⬇ Excel (.xlsx)"),
+          h("button", { class: "btn sm", type: "button", onclick: () => dl("pdf") }, "⬇ PDF"))),
       h("div", { class: "stats" }, statCard(t("s_sales"), money(s.sales), "hot"), statCard(t("s_ordersValue"), money(s.ordersValue)),
-        statCard(t("s_completed"), s.completedOrders), statCard(t("s_canceled"), s.canceledOrders), statCard(t("s_customers"), s.customers)),
+        statCard(t("s_completed"), s.completedOrders), statCard(t("s_canceled"), s.canceledOrders), statCard(t("s_customers"), s.customers),
+        fs.netMerchantPayout !== undefined ? statCard("صافي مستحقات المتجر / Net Payout", money(fs.netMerchantPayout), "hot") : null,
+        fs.totalPlatformCommission !== undefined ? statCard("عمولة المنصة / Commission", money(fs.totalPlatformCommission)) : null),
       h("p", { class: "muted" }, t("valueVsSales"))));
   };
 
@@ -738,6 +762,11 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
     const cat = h("input", { class: "input", value: v(it && it.cat, "general"), maxlength: "60" });
     const price = h("input", { class: "input", type: "number", min: "0", step: "any", value: v(it && it.price, "") });
     const sale = h("input", { class: "input", type: "number", min: "0", step: "any", value: v(it && it.salePrice, "") });
+    const discStart = h("input", { class: "input", type: "date", value: v(it && it.discountStartsAt ? String(it.discountStartsAt).slice(0, 10) : "", "") });
+    const discEnd = h("input", { class: "input", type: "date", value: v(it && it.discountEndsAt ? String(it.discountEndsAt).slice(0, 10) : "", "") });
+    const availFrom = h("input", { class: "input", type: "time", value: v(it && it.availableFrom, "") });
+    const availTo = h("input", { class: "input", type: "time", value: v(it && it.availableTo, "") });
+    const prepTime = h("input", { class: "input", type: "number", min: "0", step: "1", value: v(it && it.prepTimeMin, "") });
     const stock = h("input", { class: "input", type: "number", min: "0", step: "1", value: v(it && it.stock, "") });
     const img = imagePicker(it && it.img);
     const avail = h("input", { type: "checkbox", checked: !it || it.isAvailable !== false });
@@ -755,7 +784,10 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
     const body = h("div", {}, h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("nameAr")), nameAr), h("div", { class: "field" }, h("label", { class: "f" }, t("nameFr")), nameFr)),
       h("div", { class: "field" }, h("label", { class: "f" }, t("desc")), desc), h("div", { class: "field" }, h("label", { class: "f" }, t("category")), cat),
       h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("price") + " (MAD)"), price), h("div", { class: "field" }, h("label", { class: "f" }, t("salePrice")), sale)),
-      h("div", { class: "field" }, h("label", { class: "f" }, `${t("stock")} — ${t("stockHint")}`), stock), h("div", { class: "field" }, h("label", { class: "f" }, t("image")), img.el),
+      h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, "تاريخ بداية الخصم / Discount Start"), discStart), h("div", { class: "field" }, h("label", { class: "f" }, "تاريخ نهاية الخصم / Discount End"), discEnd)),
+      h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, "متاح من الساعة / Available From"), availFrom), h("div", { class: "field" }, h("label", { class: "f" }, "متاح إلى الساعة / Available To"), availTo)),
+      h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, `${t("stock")} — ${t("stockHint")}`), stock), h("div", { class: "field" }, h("label", { class: "f" }, "وقت التحضير (دقيقة) / Prep min"), prepTime)),
+      h("div", { class: "field" }, h("label", { class: "f" }, t("image")), img.el),
       attrBox, h("label", { class: "row" }, avail, t("available")));
     modal(isNew ? t("newProduct") : t("editProduct"), body, [
       { label: t("cancel"), run: (c) => c() },
@@ -768,7 +800,13 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
           if (f.kind === "bool") attrs[k] = inp.checked; else if (inp.value !== "") attrs[k] = inp.value;
         }
         const payload = { name: { ar: ar || fr, fr: fr || ar }, desc: desc.value.trim(), cat: cat.value.trim() || "general", price: Number(price.value),
-          salePrice: sale.value === "" ? "" : Number(sale.value), stock: stock.value === "" ? "" : Number(stock.value), img: img.get(), isAvailable: avail.checked, attrs };
+          salePrice: sale.value === "" ? "" : Number(sale.value),
+          discountStartsAt: discStart.value || null,
+          discountEndsAt: discEnd.value || null,
+          availableFrom: availFrom.value || null,
+          availableTo: availTo.value || null,
+          prepTimeMin: prepTime.value === "" ? null : Number(prepTime.value),
+          stock: stock.value === "" ? "" : Number(stock.value), img: img.get(), isAvailable: avail.checked, attrs };
         try {
           await api(isNew ? "/api/store/products" : "/api/store/products/" + encodeURIComponent(it.id), { method: isNew ? "POST" : "PUT", body: payload });
           toast(t("saved")); close(); reload();
@@ -890,20 +928,55 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
     const showPickupChk = h("input", { type: "checkbox", checked: s.showPickupOnDriverMap !== false });
     const status = String(s.status || (s.isActive === false ? "unpublished" : "active"));
     const canPause = status === "active" || status === "paused";
-    clear(root).appendChild(h("div", { class: "card", style: "max-width:640px" },
-      canPause ? h("div", { class: "row", style: "margin-bottom:14px" }, h("span", { class: "pill " + (status === "paused" ? "warn" : "new") }, status === "paused" ? t("paused") : t("open")),
-        h("button", { class: "btn sm", type: "button", onclick: async () => { if (await saveSettings({ status: status === "paused" ? "active" : "paused" })) renderView(); } }, status === "paused" ? t("resume") : t("pause"))) : null,
-      h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("nameAr")), nameAr), h("div", { class: "field" }, h("label", { class: "f" }, t("nameFr")), nameFr)),
-      h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("phone")), phone), h("div", { class: "field" }, h("label", { class: "f" }, t("address")), addr)),
-      h("div", { class: "field" }, h("label", { class: "f" }, t("desc")), desc),
-      h("div", { class: "field" }, h("label", { class: "row", style: "gap:8px;cursor:pointer" }, showPickupChk, h("span", {}, "إظهار موقع المتجر على خريطة السائق / Show pickup location on driver map"))),
-      h("button", { class: "btn primary", type: "button", onclick: async () => { const ar = nameAr.value.trim(), fr = nameFr.value.trim(); if (!ar && !fr) return toast(t("nameAr"), true);
-        await saveSettings({ name: { ar: ar || fr, fr: fr || ar }, phone: phone.value.trim(), address: addr.value.trim(), description: desc.value.trim(), showPickupOnDriverMap: showPickupChk.checked }); } }, t("save"))));
+    const empBox = h("div", { class: "card", style: "max-width:640px;margin-top:16px" });
+    clear(root).appendChild(h("div", {},
+      h("div", { class: "card", style: "max-width:640px" },
+        canPause ? h("div", { class: "row", style: "margin-bottom:14px" }, h("span", { class: "pill " + (status === "paused" ? "warn" : "new") }, status === "paused" ? t("paused") : t("open")),
+          h("button", { class: "btn sm", type: "button", onclick: async () => { if (await saveSettings({ status: status === "paused" ? "active" : "paused" })) renderView(); } }, status === "paused" ? t("resume") : t("pause"))) : null,
+        h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("nameAr")), nameAr), h("div", { class: "field" }, h("label", { class: "f" }, t("nameFr")), nameFr)),
+        h("div", { class: "grid2" }, h("div", { class: "field" }, h("label", { class: "f" }, t("phone")), phone), h("div", { class: "field" }, h("label", { class: "f" }, t("address")), addr)),
+        h("div", { class: "field" }, h("label", { class: "f" }, t("desc")), desc),
+        h("div", { class: "field" }, h("label", { class: "row", style: "gap:8px;cursor:pointer" }, showPickupChk, h("span", {}, "إظهار موقع المتجر على خريطة السائق / Show pickup location on driver map"))),
+        h("button", { class: "btn primary", type: "button", onclick: async () => { const ar = nameAr.value.trim(), fr = nameFr.value.trim(); if (!ar && !fr) return toast(t("nameAr"), true);
+          await saveSettings({ name: { ar: ar || fr, fr: fr || ar }, phone: phone.value.trim(), address: addr.value.trim(), description: desc.value.trim(), showPickupOnDriverMap: showPickupChk.checked }); } }, t("save"))),
+      empBox));
+
+    if (can("employees.manage")) {
+      const loadEmps = async () => {
+        try {
+          const r = await api("/api/store/employees");
+          const eName = h("input", { class: "input", placeholder: "الاسم / Name" });
+          const eEmail = h("input", { class: "input", placeholder: "Email" });
+          const ePass = h("input", { class: "input", type: "password", placeholder: "Password" });
+          const eRole = h("select", { class: "input" },
+            ["manager", "cashier", "preparer", "viewer"].map((rl) => h("option", { value: rl }, rl)));
+          clear(empBox).appendChild(h("div", {},
+            h("h3", { style: "margin:0 0 10px 0" }, "👥 حسابات الموظفين / Employee Accounts"),
+            h("div", { class: "grid2", style: "margin-bottom:8px" }, eName, eEmail, ePass, eRole),
+            h("button", { class: "btn primary sm", type: "button", onclick: async () => {
+              try {
+                await api("/api/store/employees", { method: "POST", body: { name: eName.value.trim(), email: eEmail.value.trim(), password: ePass.value, role: eRole.value } });
+                toast(t("saved"));
+                loadEmps();
+              } catch (err) { toast(errText(err), true); }
+            } }, "＋ إضافة موظف / Add Employee"),
+            h("div", { class: "list", style: "margin-top:10px" }, (r.employees || []).map((u) =>
+              h("div", { class: "item", style: "cursor:default" },
+                h("div", { class: "grow" }, h("b", {}, u.name || u.email), h("div", { class: "muted" }, `${u.email || ""} · ${u.role}`)),
+                h("span", { class: "pill" }, u.isActive !== false ? "Active" : "Disabled"))))));
+        } catch (_e) {}
+      };
+      loadEmps();
+    } else {
+      empBox.remove();
+    }
   };
 
   const DAYS = [[1, "mon"], [2, "tue"], [3, "wed"], [4, "thu"], [5, "fri"], [6, "sat"], [0, "sun"]];
   VIEWS.hours = async (root) => {
     const cur = (S.me.store.hours && S.me.store.hours.days) || {};
+    const curHolidays = Array.isArray(S.me.store.holidays) ? S.me.store.holidays.join(", ") : "";
+    const holidaysInp = h("input", { class: "input", placeholder: "2026-11-06, 2026-11-18", value: curHolidays });
     const rows = DAYS.map(([d, key]) => {
       const x = cur[d] || cur[String(d)] || null;
       const closed = h("input", { type: "checkbox", checked: !!(x && x.closed) });
@@ -911,10 +984,12 @@ ${tot(L.sub, amt(sub))}${disc > 0 ? tot(L.disc, "−" + amt(disc)) : ""}${tot(L.
       return { d, closed, open, close, el: h("div", { class: "hours-row" }, h("b", {}, t(key)), open, close, h("label", { class: "row" }, closed, t("closed"))) };
     });
     clear(root).appendChild(h("div", { class: "card", style: "max-width:640px" }, h("p", { class: "muted" }, t("hoursHint")), rows.map((r) => r.el),
+      h("div", { class: "field", style: "margin-top:12px" }, h("label", { class: "f" }, "أيام العطل الاستثنائية (YYYY-MM-DD) / Holiday Dates"), holidaysInp),
       h("button", { class: "btn primary", type: "button", onclick: async () => {
         const days = {};
         for (const r of rows) { if (r.closed.checked) days[r.d] = { closed: true }; else if (r.open.value && r.close.value) days[r.d] = { open: r.open.value, close: r.close.value }; }
-        await saveSettings({ hours: Object.keys(days).length ? { days } : null });
+        const holidays = holidaysInp.value.split(",").map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s));
+        await saveSettings({ hours: Object.keys(days).length ? { days } : null, holidays });
       } }, t("save"))));
   };
 

@@ -5687,24 +5687,60 @@ app.get("/api/driver/orders", requireDriver, (req, res) => {
   const offersMode = cfg.dispatchMode === "offers";
   const available = offersMode
     ? []
-    : data.orders.filter(
-        (o) => String(o.status || "new") === "restaurant_ready" && !o.driverId,
-      );
+    : data.orders
+        .filter(
+          (o) => String(o.status || "new") === "restaurant_ready" && !o.driverId,
+        )
+        .map((o) => {
+          // Section 16: Unassigned drivers must NEVER receive customer phone, exact address, coordinates, or verification codes
+          const sanitized = orderLifecycle.sanitizeOrderVerificationForRole(o, "driver");
+          const c = sanitized.customer && typeof sanitized.customer === "object" ? { ...sanitized.customer } : {};
+          delete c.phone;
+          delete c.recipientPhone;
+          delete c.lat;
+          delete c.lng;
+          delete c.liveLocation;
+          c.addr = c.city || "Berrechid";
+          delete c.notes;
+          delete c.driverInstructions;
+          return {
+            ...pickupLocations.orderForDriver(
+              { ...sanitized, customer: c },
+              req.driverId,
+              restaurants,
+              cfg.pickupLocation,
+            ),
+          };
+        });
   const chatByOrder = new Map(
     (loadOrderChats().chats || []).map((c) => [String(c.orderId), c]),
   );
   const mine = data.orders
     .filter((o) => String(o.driverId || "") === String(req.driverId))
-    .map((o) => ({
-      ...pickupLocations.orderForDriver(
-        orderLifecycle.sanitizeOrderVerificationForRole(o, "driver"),
-        req.driverId,
-        restaurants,
-        cfg.pickupLocation,
-      ),
-      chatUnread: driverFeedback.unreadFor(chatByOrder.get(String(o.id)), "driver"),
-      chatOpen: driverFeedback.isChatOpen(o),
-    }));
+    .map((o) => {
+      const sanitized = orderLifecycle.sanitizeOrderVerificationForRole(o, "driver");
+      const closed = ["delivered", "done", "canceled", "rejected", "failed_delivery"].includes(
+        String(sanitized.status || ""),
+      );
+      if (closed && sanitized.customer && typeof sanitized.customer === "object") {
+        sanitized.customer = {
+          ...sanitized.customer,
+          phone: "",
+          recipientPhone: "",
+          liveLocation: null,
+        };
+      }
+      return {
+        ...pickupLocations.orderForDriver(
+          sanitized,
+          req.driverId,
+          restaurants,
+          cfg.pickupLocation,
+        ),
+        chatUnread: driverFeedback.unreadFor(chatByOrder.get(String(o.id)), "driver"),
+        chatOpen: driverFeedback.isChatOpen(o),
+      };
+    });
   const delivered = mine.filter((o) =>
     ["delivered", "done"].includes(String(o.status || "")),
   );
@@ -6226,25 +6262,89 @@ app.get("/api/admin/drivers/:id/image/:kind", requireAdmin, (req, res) => {
 app.patch("/api/admin/drivers/:id", requireAdmin, (req, res) => {
   const id = String(req.params.id);
   const status = String(req.body?.status || "").toLowerCase();
-  if (!["pending", "approved", "rejected"].includes(status))
+  const reason = String(req.body?.reason || req.body?.reviewReason || "").trim().slice(0, 400);
+  if (!["pending", "approved", "rejected", "suspended"].includes(status))
     return res.status(400).json({ error: "Invalid status" });
 
   const data = loadDrivers();
   const idx = data.drivers.findIndex((d) => String(d.id) === id);
   if (idx < 0) return res.status(404).json({ error: "Not found" });
 
+  const nowIso = new Date().toISOString();
   const d = data.drivers[idx];
   d.status = status;
-  d.updatedAt = new Date().toISOString();
+  d.updatedAt = nowIso;
+  d.reviewedBy = String(req.adminId || "admin");
+  d.reviewedAt = nowIso;
+  if (reason) d.reviewReason = reason;
   if (status === "approved") {
-    d.approvedAt = new Date().toISOString();
+    d.approvedAt = nowIso;
     d.rejectedAt = null;
+    d.suspendedAt = null;
   }
   if (status === "rejected") {
-    d.rejectedAt = new Date().toISOString();
+    d.rejectedAt = nowIso;
     d.approvedAt = null;
+    d.onlineStatus = "offline";
+    securityRbac.revokeUserSessions(id, `driver_rejected:${reason}`);
+  }
+  if (status === "suspended") {
+    d.suspendedAt = nowIso;
+    d.onlineStatus = "offline";
+    securityRbac.revokeUserSessions(id, `driver_suspended:${reason}`);
   }
   saveDrivers(data);
+
+  // Safely handle any active orders if driver is suspended or rejected
+  if (status === "suspended" || status === "rejected") {
+    try {
+      const ordersDoc = loadOrders();
+      let changed = false;
+      for (const o of ordersDoc.orders || []) {
+        if (
+          String(o.driverId || "") === id &&
+          ["accepted", "picked_up", "on_the_way"].includes(String(o.status || ""))
+        ) {
+          if (o.status === "accepted") {
+            o.driverId = null;
+            o.status = "restaurant_ready";
+            o.updatedAt = nowIso;
+            orderLifecycle.appendOrderEvent(o, {
+              type: "driver_unassigned_due_to_suspension",
+              actorType: "admin",
+              actorId: String(req.adminId || "admin"),
+              fromStatus: "accepted",
+              toStatus: "restaurant_ready",
+              reason: reason || status,
+            });
+            changed = true;
+          } else {
+            exceptionsModeration.createExceptionCase({
+              type: "driver_failure",
+              severity: "critical",
+              orderId: String(o.id),
+              storeId: String(o.restaurantId || "main"),
+              driverId: id,
+              customerId: o.customerId ? String(o.customerId) : null,
+              reason: `Driver ${status} while order in status ${o.status}: ${reason}`,
+              createdBy: { type: "admin", id: String(req.adminId || "admin") },
+            });
+          }
+        }
+      }
+      if (changed) saveOrders(ordersDoc);
+    } catch (_e) {}
+  }
+
+  appendAuditLog({
+    actorType: "admin",
+    actorId: String(req.adminId || "admin"),
+    action: `driver_${status}`,
+    targetType: "driver",
+    targetId: id,
+    meta: { reason },
+  });
+
   const { password, ...rest } = d;
   res.json({ ok: true, driver: rest });
 });
@@ -6440,7 +6540,10 @@ app.post(
  ***********************/
 app.get("/api/orders", requireAdmin, (req, res) => {
   const data = loadOrders();
-  res.json({ ok: true, orders: data.orders });
+  const sanitized = (data.orders || []).map((o) =>
+    orderLifecycle.sanitizeOrderVerificationForRole(o, "admin"),
+  );
+  res.json({ ok: true, orders: sanitized });
 });
 
 app.get("/api/orders/:id", requireAdmin, (req, res) => {
@@ -6448,7 +6551,18 @@ app.get("/api/orders/:id", requireAdmin, (req, res) => {
   const data = loadOrders();
   const found = data.orders.find((o) => o.id === id);
   if (!found) return res.status(404).json({ error: "Not found" });
-  res.json({ ok: true, order: found });
+  appendAuditLog({
+    actorType: "admin",
+    actorId: String(req.adminId || "admin"),
+    action: "admin_order_view",
+    targetType: "order",
+    targetId: id,
+    ip: req.ip || "",
+  });
+  res.json({
+    ok: true,
+    order: orderLifecycle.sanitizeOrderVerificationForRole(found, "admin"),
+  });
 });
 
 app.patch("/api/orders/:id", requireAdmin, (req, res) => {
@@ -6514,6 +6628,12 @@ app.patch("/api/orders/:id", requireAdmin, (req, res) => {
       "on_the_way",
       "delivered",
       "canceled",
+      "rejected",
+      "delayed",
+      "driver_unavailable",
+      "failed_delivery",
+      "refund_pending",
+      "refund_completed",
       "sent",
       "done",
     ];
@@ -6527,14 +6647,25 @@ app.patch("/api/orders/:id", requireAdmin, (req, res) => {
       }
       order.status = st;
 
-      if (st === "admin_accepted")
+      if (st === "admin_accepted") {
         order.adminAcceptedAt =
           order.adminAcceptedAt || new Date().toISOString();
+        order.storeAcceptedAt =
+          order.storeAcceptedAt || order.adminAcceptedAt;
+      }
       if (st === "restaurant_ready")
         order.restaurantReadyAt =
           order.restaurantReadyAt || new Date().toISOString();
       if (st === "delivered" || st === "done")
         order.deliveredAt = order.deliveredAt || new Date().toISOString();
+      orderLifecycle.appendOrderEvent(order, {
+        type: "admin_status_update",
+        actorType: "admin",
+        actorId: String(req.adminId || "admin"),
+        fromStatus: prevStatus,
+        toStatus: st,
+        reason: String(patch.reason || ""),
+      });
     }
   }
 
@@ -6851,17 +6982,28 @@ app.get("/api/restaurant/orders", requireRestaurant, (req, res) => {
   const drivers = loadDrivers();
   const byId = new Map((drivers.drivers || []).map((d) => [String(d.id), d]));
   const enhanced = mine.map((o) => {
-    const out = { ...o };
+    const out = orderLifecycle.sanitizeOrderVerificationForRole(o, "store");
     const did = String(o.driverId || "");
     if (did) {
       const d = byId.get(did) || null;
+      const isActiveDelivery = ["accepted", "picked_up", "on_the_way"].includes(
+        String(o.status || ""),
+      );
       out.driver = d
         ? {
             id: String(d.id),
             name: String(d.name || ""),
             phone: String(d.phone || ""),
+            location:
+              isActiveDelivery && d.location && Number.isFinite(Number(d.location.lat))
+                ? {
+                    lat: Number(d.location.lat),
+                    lng: Number(d.location.lng),
+                    updatedAt: d.location.updatedAt || null,
+                  }
+                : null,
           }
-        : { id: did, name: "", phone: "" };
+        : { id: did, name: "", phone: "", location: null };
     }
     return out;
   });
@@ -6883,6 +7025,38 @@ app.patch("/api/restaurant/orders/:id", requireRestaurant, (req, res) => {
 
   const st = String(order.status || "new");
 
+  // 0) Restaurant can mark preparation delay with reason -> creates Exception Center case
+  if (patch.action === "delay") {
+    const delayReason = String(patch.delayReason || patch.reason || "").trim().slice(0, 300);
+    if (!delayReason) {
+      return res.status(400).json({ error: "Delay reason required" });
+    }
+    order.preparationStatus = "delayed";
+    order.delayReason = delayReason;
+    order.delayedAt = new Date().toISOString();
+    if (Number.isFinite(Number(patch.delayMinutes)) && Number(patch.delayMinutes) > 0) {
+      order.expectedPrepMinutes = Number(patch.delayMinutes);
+    }
+    order.updatedAt = new Date().toISOString();
+    orderLifecycle.appendOrderEvent(order, {
+      type: "store_marked_delayed",
+      actorType: "store",
+      actorId: String(req.restaurantId),
+      fromStatus: st,
+      toStatus: st,
+      reason: delayReason,
+    });
+    exceptionsModeration.createExceptionCase({
+      type: "delayed_preparation",
+      severity: "warning",
+      orderId: String(order.id),
+      storeId: String(order.restaurantId || "main"),
+      customerId: order.customerId ? String(order.customerId) : null,
+      reason: delayReason,
+      createdBy: { type: "store", id: String(req.restaurantId) },
+    });
+  }
+
   // 1) Restaurant can mark ready
   if (patch.status !== undefined) {
     const next = String(patch.status || "");
@@ -6896,6 +7070,7 @@ app.patch("/api/restaurant/orders/:id", requireRestaurant, (req, res) => {
     }
 
     order.status = "restaurant_ready";
+    order.preparationStatus = "ready";
     order.restaurantReadyAt =
       order.restaurantReadyAt || new Date().toISOString();
     order.updatedAt = new Date().toISOString();

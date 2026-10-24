@@ -2062,16 +2062,19 @@ function renderDriversAdmin() {
     lang === "ar" ? "قبول" : lang === "fr" ? "Valider" : "Approve";
   const rejectLabel =
     lang === "ar" ? "رفض" : lang === "fr" ? "Rejeter" : "Reject";
+  const suspendLabel =
+    lang === "ar" ? "تعليق" : lang === "fr" ? "Suspendre" : "Suspend";
   const stLabel = {
     pending: t.drvTabPending,
     approved: t.drvTabApproved,
     rejected: t.drvTabRejected,
+    suspended: lang === "ar" ? "موقوف" : "Suspended",
   };
 
   body.innerHTML =
     items
       .map((d) => {
-        const st = drvStatusOf(d);
+        const st = String(d?.status || "pending");
         const id = escapeHtml(d.id);
         const name = String(d.name || "");
         const email = String(d.email || "");
@@ -2082,13 +2085,15 @@ function renderDriversAdmin() {
         const viewBtn = `<button type="button" class="ord-ico" data-action="view-driver" data-id="${id}" title="${escapeHtml(t.view || "View")}" aria-label="${escapeHtml(t.view || "View")}">${ORD_ICONS.view}</button>`;
         const approveBtn = `<button type="button" class="ord-btn ord-btn--accept" data-action="approve-driver" data-id="${id}">${approveLabel}</button>`;
         const rejectBtn = `<button type="button" class="ord-btn ord-btn--reject" data-action="reject-driver" data-id="${id}">${rejectLabel}</button>`;
-        // pending: approve / reject (as before) · rejected: can be approved again
+        const suspendBtn = `<button type="button" class="ord-btn ord-btn--reject" data-action="suspend-driver" data-id="${id}">${suspendLabel}</button>`;
         const decide =
           st === "pending"
             ? approveBtn + rejectBtn
-            : st === "rejected"
+            : st === "rejected" || st === "suspended"
               ? approveBtn
-              : "";
+              : st === "approved"
+                ? suspendBtn
+                : "";
         return `
     <tr>
       <td class="cu-name"><div class="cu-who">
@@ -2121,6 +2126,7 @@ function openDriverView(driver) {
   const hasFace = !!driver?.images?.faceWithBikeCard;
   const hasFront = !!driver?.images?.idFront;
   const hasBack = !!driver?.images?.idBack;
+  const hasLicence = !!driver?.images?.drivingLicence;
 
   box.innerHTML = `
     <div class="panel-like">
@@ -2129,7 +2135,9 @@ function openDriverView(driver) {
       <div><b>${escapeHtml(t.email || "Email")}:</b> ${escapeHtml(driver.email || "")}</div>
       <div><b>${escapeHtml(t.phone || "Phone")}:</b> ${escapeHtml(driver.phone || "")}</div>
       <div><b>${escapeHtml(t.cardLabel || "Card")}:</b> ${escapeHtml(driver.cardNumber || "")}</div>
-      <div><b>${escapeHtml(t.statusLabel || "Status")}:</b> ${escapeHtml(driver.status || "pending")}</div>
+      <div><b>Vehicle Type:</b> ${escapeHtml(driver.vehicleType || "motorcycle")} ${driver.vehiclePlate ? `• Plate: ${escapeHtml(driver.vehiclePlate)}` : ""}</div>
+      <div><b>Driving Licence #:</b> ${escapeHtml(driver.drivingLicenceNumber || "—")}</div>
+      <div><b>${escapeHtml(t.statusLabel || "Status")}:</b> ${escapeHtml(driver.status || "pending")} ${driver.reviewedBy ? `(Reviewed by ${escapeHtml(driver.reviewedBy)} — ${escapeHtml(driver.reviewReason || "")})` : ""}</div>
       <div><b>${escapeHtml(t.createdLabel || "Created")}:</b> ${escapeHtml(fmtTime(driver.createdAt || ""))}</div>
     </div>
 
@@ -2137,6 +2145,7 @@ function openDriverView(driver) {
       <div class="panel-like">
         <h4 style="margin:0 0 10px 0">${escapeHtml(t.faceBikeCard || "Face + Bike card")}</h4>
         ${hasFace ? `<div class="row" style="justify-content:flex-end;margin-bottom:8px"><button class="btn ghost small" type="button" data-action="zoom-driver-img" data-img="drvFaceImg">${escapeHtml(zoomLabel)}</button></div><img id="drvFaceImg" alt="face" style="width:100%;border-radius:12px;border:1px solid rgba(0,0,0,.1)"/>` : `<div class="muted">${escapeHtml(t.noImage || "No image")}</div>`}
+        ${hasLicence ? `<div style="height:10px"></div><h4 style="margin:0 0 10px 0">Driving Licence</h4><img id="drvLicenceImg" alt="driving-licence" style="width:100%;border-radius:12px;border:1px solid rgba(0,0,0,.1)"/>` : ``}
       </div>
       <div class="panel-like">
         <h4 style="margin:0 0 10px 0">${escapeHtml(t.idFront || "ID Front")}</h4>
@@ -2174,6 +2183,7 @@ function openDriverView(driver) {
       await load("faceWithBikeCard", "drvFaceImg");
       await load("idFront", "drvFrontImg");
       await load("idBack", "drvBackImg");
+      await load("drivingLicence", "drvLicenceImg");
     } catch (_e) {}
   })();
 }
@@ -4972,13 +4982,28 @@ function bindEvents() {
       return;
     }
 
-    if (action === "approve-driver" || action === "reject-driver") {
+    if (action === "approve-driver" || action === "reject-driver" || action === "suspend-driver") {
       try {
+        let reason = "";
+        if (action === "reject-driver" || action === "suspend-driver") {
+          const r = window.prompt(
+            lang === "ar"
+              ? "سبب الرفض / التعليق (إلزامي):"
+              : "Reason for rejection / suspension (required):",
+            "",
+          );
+          if (!r || !r.trim()) return;
+          reason = r.trim();
+        }
+        const status =
+          action === "approve-driver"
+            ? "approved"
+            : action === "suspend-driver"
+              ? "suspended"
+              : "rejected";
         await api(`/api/admin/drivers/${encodeURIComponent(id)}`, {
           method: "PATCH",
-          body: JSON.stringify({
-            status: action === "approve-driver" ? "approved" : "rejected",
-          }),
+          body: JSON.stringify({ status, reason }),
         });
         await loadDriversAdmin();
         toast("✅");
