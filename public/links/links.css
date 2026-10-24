@@ -33,7 +33,7 @@ html {
 .glow-2 {
   width: 250px;
   height: 250px;
-  background: #ff4500;
+  background: #337418;
   bottom: -10%;
   right: -10%;
   animation-delay: 2s;
@@ -163,7 +163,7 @@ p.subtitle {
   padding: 20px;
 }
 .admin-panel {
-  background: #111827;
+  background: #202020;
   border: 1px solid #337418;
   border-radius: 16px;
   padding: 30px;
@@ -172,7 +172,7 @@ p.subtitle {
   max-height: 85vh;
   overflow-y: auto;
   text-align: right;
-  box-shadow: 0 0 40px rgba(234, 88, 12, 0.2);
+  box-shadow: 0 0 40px rgba(93, 214, 44, 0.2);
 }
 .admin-panel h2 {
   color: #5DD62C;
@@ -215,10 +215,11 @@ p.subtitle {
 }
 .btn-primary {
   background: #337418;
-  color: white;
+  color: #F8F8F8;
 }
 .btn-primary:hover {
-  background: #c2410c;
+  background: #5DD62C;
+  color: #0F0F0F;
 }
 .btn-secondary {
   background: transparent;
