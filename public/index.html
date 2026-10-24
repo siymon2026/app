@@ -129,11 +129,31 @@
               <span id="deliveryLabel">رسوم التوصيل</span>
               <span id="deliveryValue">0.00</span>
             </div>
+            <div class="hint" id="roadEstimateHint" style="display: none; color: #5DD62C; font-weight: 700"></div>
+            <div class="totals-row" id="promoDiscountRow" style="display: none; color: #5DD62C">
+              <span id="promoDiscountLabel">الخصم</span>
+              <span id="promoDiscountValue">-0.00</span>
+            </div>
             <div class="hint" id="minOrderHint" style="display: none; color: #d97706"></div>
 
             <div class="totals">
               <span id="totalLabel">الإجمالي</span>
               <span id="totalValue">0.00</span>
+            </div>
+
+            <div class="field" style="margin-top:8px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <input id="promoCodeInput" type="text" placeholder="كود الخصم / قسيمة (مثلاً WELCOME10)" style="flex:1" />
+                <button class="btn ghost" id="applyPromoBtn" type="button" style="white-space:nowrap">تطبيق</button>
+              </div>
+              <div class="hint" id="promoHint"></div>
+            </div>
+
+            <div id="walletPayBox" style="display:none;margin:8px 0;padding:8px 10px;border-radius:10px;border:1px solid rgba(93,214,44,0.35);background:rgba(93,214,44,0.08)">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700">
+                <input type="checkbox" id="useWalletChk" />
+                <span>الدفع من محفظة SIYMON (الرصيد: <b id="walletBalSpan" style="color:#5DD62C">0.00 MAD</b>)</span>
+              </label>
             </div>
 
             <div class="form">
@@ -181,6 +201,24 @@
                   placeholder="بدون بصل، حار، ..."
                 ></textarea>
               </div>
+
+              <details style="margin:6px 0;padding:8px;border-radius:10px;border:1px solid rgba(128,128,128,0.2)">
+                <summary style="cursor:pointer;font-size:13px;font-weight:700" id="recipientSummaryLabel">مستلم آخر / تعليمات للسائق (اختياري)</summary>
+                <div style="display:grid;gap:8px;margin-top:8px">
+                  <div class="field">
+                    <label for="recipientName" id="recipientNameLabel">اسم المستلم (إن كان شخصاً آخر)</label>
+                    <input id="recipientName" type="text" placeholder="اسم المستلم" />
+                  </div>
+                  <div class="field">
+                    <label for="recipientPhone" id="recipientPhoneLabel">هاتف المستلم</label>
+                    <input id="recipientPhone" type="tel" placeholder="06/07xxxxxxxx" />
+                  </div>
+                  <div class="field">
+                    <label for="driverInstructions" id="driverInstructionsLabel">تعليمات التوصيل للسائق</label>
+                    <input id="driverInstructions" type="text" placeholder="مثلاً: الطابق الثاني، بجانب المسجد..." />
+                  </div>
+                </div>
+              </details>
 
               <button class="btn ghost" id="getAddrBtn" type="button">
                 <span id="locIcon"></span
@@ -284,6 +322,7 @@
           <h2 id="dName"></h2>
           <div class="sheet-price" id="dPrice"></div>
           <p id="dDesc"></p>
+          <div id="dOptionsHost" style="margin-top:10px;display:grid;gap:8px"></div>
         </div>
         <div class="sheet-bar">
           <div class="stepper"><button type="button" id="dMinus">−</button><span id="dQty">1</span><button type="button" id="dPlus">+</button></div>

@@ -806,17 +806,29 @@ function renderOrders(list) {
           <b>${total.toFixed(2)} ${escapeHtml(currency)}</b>
         </div>
 
-        ${["picked_up", "on_the_way"].includes(String(o.status || "").toLowerCase()) ? `<div class="trk" data-trk="${escapeHtml(o.id || "")}"></div>` : ""}
+        ${
+          o.deliveryCode && !["delivered", "done", "canceled", "rejected", "failed_delivery"].includes(String(o.status || "").toLowerCase())
+            ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(93,214,44,0.14);border:1px solid #5DD62C">
+                 <b>🔐 ${lang === "ar" ? "كود استلام الطلب (أعطه للسائق عند التسليم):" : "Delivery Code:"}</b>
+                 <span style="font-size:16px;font-weight:800;color:#5DD62C;margin-inline-start:6px">${escapeHtml(String(o.deliveryCode))}</span>
+               </div>`
+            : ""
+        }
+
+        ${["accepted", "picked_up", "on_the_way"].includes(String(o.status || "").toLowerCase()) ? `<div class="trk" data-trk="${escapeHtml(o.id || "")}"></div>` : ""}
         <div class="order-card-actions">
           ${(() => {
             const st = String(o.status || "new").toLowerCase();
-            const canCancel = !["delivered", "done", "canceled"].includes(st);
+            const canCancel = st === "new" || (st === "admin_accepted" && !o.storeAcceptedAt);
             const cancelDisabled = canCancel ? "" : "disabled";
+            const isActiveDelivery = ["accepted", "picked_up", "on_the_way"].includes(st);
             const contactNumber =
               String(o.driverPhone || "").trim() ||
               String((PUBLIC && PUBLIC.supportPhone) || "").trim();
             const contactDisabled = contactNumber ? "" : "disabled";
             return `
+                ${canCancel ? `<button class="btn ghost small" data-action="edit-order" data-id="${escapeHtml(o.id || "")}">✏️ ${escapeHtml(lang === "ar" ? "تعديل الطلب" : "Edit")}</button>` : ``}
+                ${isActiveDelivery ? `<button class="btn ghost small" data-action="share-live-loc" data-id="${escapeHtml(o.id || "")}">📍 ${escapeHtml(lang === "ar" ? "مشاركة موقعي المباشر" : "Share Live Location")}</button>` : ``}
                 ${o.driverPhone || o.driverName ? `<button class="btn ghost small" data-action="chat" data-id="${escapeHtml(o.id || "")}">${Number(o.chatUnread) > 0 ? `<i class="unread-dot" aria-label="unread"></i>` : ""}${escapeHtml(lang === "ar" ? "دردشة" : lang === "fr" ? "Discussion" : "Chat")}</button>` : ``}
                 ${["delivered", "done"].includes(st) ? `<button class="btn small" data-action="rate" data-id="${escapeHtml(o.id || "")}">${escapeHtml(o.customerRating && Number(o.customerRating.stars || 0) > 0 ? i18n[lang]?.editRating || (lang === "ar" ? "تعديل التقييم" : lang === "fr" ? "Modifier la note" : "Edit rating") : i18n[lang]?.rateOrder || (lang === "ar" ? "قيّم الطلب" : lang === "fr" ? "Noter la commande" : "Rate order"))}</button>` : ``}
                 ${o.canRateDriver ? `<button class="btn small" data-action="rate-driver" data-id="${escapeHtml(o.id || "")}">${escapeHtml(lang === "ar" ? "قيّم السائق" : lang === "fr" ? "Noter le livreur" : "Rate driver")}</button>` : ``}
@@ -1160,6 +1172,64 @@ el("ordersList").addEventListener("click", async (e) => {
       return;
     }
     window.location.href = "tel:" + phone;
+    return;
+  }
+
+  if (action === "edit-order") {
+    const newNotes = prompt(
+      lang === "ar"
+        ? "تعديل ملاحظات الطلب (قبل قبول المتجر):"
+        : "Edit order notes (before store acceptance):",
+      (order && order.customer && order.customer.notes) || "",
+    );
+    if (newNotes === null) return;
+    const newInst = prompt(
+      lang === "ar"
+        ? "تعديل تعليمات التوصيل للسائق:"
+        : "Edit driver delivery instructions:",
+      (order && order.customer && order.customer.driverInstructions) || "",
+    );
+    if (newInst === null) return;
+    try {
+      await api(`/api/customer/orders/${encodeURIComponent(id)}/edit`, {
+        method: "PATCH",
+        body: JSON.stringify({ notes: newNotes, driverInstructions: newInst }),
+      });
+      await loadMeAndOrders();
+    } catch (err) {
+      alert("❌ " + (err.message || err));
+    }
+    return;
+  }
+
+  if (action === "share-live-loc") {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await api(`/api/customer/orders/${encodeURIComponent(id)}/live-location`, {
+            method: "POST",
+            body: JSON.stringify({
+              enabled: true,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            }),
+          });
+          alert(
+            lang === "ar"
+              ? "✅ تمت مشاركة موقعك المباشر مع السائق بنجاح"
+              : "✅ Live location shared with your assigned driver",
+          );
+        } catch (err) {
+          alert("❌ " + (err.message || err));
+        }
+      },
+      () => alert(lang === "ar" ? "تعذر الوصول إلى GPS" : "GPS unavailable"),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
     return;
   }
 

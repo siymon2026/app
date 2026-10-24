@@ -1,6 +1,7 @@
-// Prisma schema (PostgreSQL)
-// الهدف: تجهيز انتقال تدريجي من JSON إلى PostgreSQL بدون كسر النسخة الحالية.
-// ملاحظة: السيرفر الحالي مازال يشتغل بـ JSON؛ هذا مجرد أساس للمرحلة 1.
+// Prisma schema (PostgreSQL) — SIYMON Multi-Business Delivery Platform
+// Preserves all existing models while adding multi-role, H3 dispatch, verification,
+// road-pricing, customer wallet, promotions, service zones, exception center,
+// settlements, refunds, complaints, and tamper-evident audit chain fields.
 
 generator client {
   provider = "prisma-client-js"
@@ -12,31 +13,44 @@ datasource db {
 }
 
 model Restaurant {
-  id                   String   @id
-  nameAr               String
-  nameEn               String
-  nameFr               String
-  phone                String?  
-  address              String?
-  isActive             Boolean  @default(true)
+  id                     String   @id
+  nameAr                 String
+  nameEn                 String
+  nameFr                 String
+  type                   String   @default("restaurant")
+  status                 String   @default("active")
+  phone                  String?
+  address                String?
+  lat                    Float?
+  lng                    Float?
+  isActive               Boolean  @default(true)
+  showPickupOnDriverMap  Boolean  @default(true)
+  minOrder               Float    @default(0)
+  deliveryFee            Float    @default(0)
+  freeDeliveryOver       Float?
+  avgDeliveryMin         Int      @default(30)
+  hours                  Json?
+  holidays               Json?
+  commissionPercent      Float    @default(10)
+  commissionFixed        Float    @default(0)
 
-  ownerId              String?
-  subscriptionPlan     String   @default("Basic")
-  subscriptionStatus   String   @default("active")
-  subscriptionRenewsAt DateTime?
-  subscriptionProvider String?
-  subscriptionMeta     Json?
+  ownerId                String?
+  subscriptionPlan       String   @default("Basic")
+  subscriptionStatus     String   @default("active")
+  subscriptionRenewsAt   DateTime?
+  subscriptionProvider   String?
+  subscriptionMeta       Json?
 
-  loginEmail           String?
-  loginPhone           String?
-  passwordHash         String?
+  loginEmail             String?
+  loginPhone             String?
+  passwordHash           String?
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
-  users                RestaurantUser[]
-  orders               Order[]
-  menuItems            MenuItem[]
+  users                  RestaurantUser[]
+  orders                 Order[]
+  menuItems              MenuItem[]
 }
 
 model RestaurantUser {
@@ -44,9 +58,11 @@ model RestaurantUser {
   restaurantId  String
   restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
+  name          String?
   email         String?
   phone         String?
-  role          String   // owner | manager | cashier
+  role          String   // owner | manager | cashier | preparer | viewer
+  permissions   Json?
   isActive      Boolean  @default(true)
   passwordHash  String
 
@@ -58,77 +74,137 @@ model RestaurantUser {
 
 model Admin {
   id           String   @id
+  name         String?
   email        String   @unique
   phone        String?
   passwordHash String
   role         String   @default("super_admin")
+  subRole      String   @default("system_admin") // system_admin | order_supervisor | driver_supervisor | accountant | support_agent
+  permissions  Json?
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Customer {
-  id           String   @id
-  firstName    String
-  lastName     String
-  email        String?  @unique
-  phone        String?
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String   @id
+  firstName          String
+  lastName           String
+  email              String?  @unique
+  phone              String?
+  phoneVerified      Boolean  @default(false)
+  phoneVerifiedAt    DateTime?
+  passwordHash       String
+  walletBalance      Float    @default(0)
+  loyaltyPoints      Int      @default(0)
+  addresses          Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  orders       Order[]
+  orders             Order[]
+  walletTransactions WalletTransaction[]
 }
 
 model Driver {
-  id           String   @id
-  email        String?  @unique
-  phone        String?
-  name         String
-  cardNumber   String?
-  passwordHash String
-  status       String   @default("pending")
-  walletBalance Float   @default(0)
-  walletHistory Json?
+  id                   String   @id
+  email                String?  @unique
+  phone                String?
+  name                 String
+  cardNumber           String?
+  vehicleType          String   @default("motorcycle")
+  vehiclePlate         String?
+  drivingLicenceNumber String?
+  passwordHash         String
+  status               String   @default("pending") // pending | approved | rejected | suspended
+  onlineStatus         String   @default("offline") // online | busy | offline
+  reviewedBy           String?
+  reviewedAt           DateTime?
+  reviewReason         String?
+  images               Json?
+  location             Json?
+  walletBalance        Float    @default(0)
+  walletHistory        Json?
 
   // optional: tie driver to a restaurant for SaaS
-  restaurantId String?
+  restaurantId         String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  orders       Order[]
+  orders               Order[]
   @@index([restaurantId])
+  @@index([status, onlineStatus])
 }
 
 model Order {
-  id           String   @id
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  id                 String   @id
+  restaurantId       String
+  restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
-  customerId   String?
-  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId         String?
+  customer           Customer? @relation(fields: [customerId], references: [id])
 
-  driverId     String?
-  driver       Driver?   @relation(fields: [driverId], references: [id])
+  driverId           String?
+  driver             Driver?   @relation(fields: [driverId], references: [id])
 
-  status       String   @default("new")
-  currency     String?
+  status             String   @default("new")
+  preparationStatus  String?  @default("pending")
+  delayReason        String?
+  cancelReason       String?
+  rejectReason       String?
+  currency           String?  @default("MAD")
+  paymentMethod      String   @default("cod")
+  paymentStatus      String   @default("unpaid")
 
-  subtotal     Float    @default(0)
-  deliveryFee  Float    @default(0)
-  total        Float    @default(0)
+  subtotal           Float    @default(0)
+  deliveryFee        Float    @default(0)
+  discount           Float    @default(0)
+  walletPaid         Float    @default(0)
+  cashDue            Float    @default(0)
+  total              Float    @default(0)
 
-  customerName String?
-  customerPhone String?
-  customerAddr String?
-  customerNotes String?
+  roadDistanceKm     Float?
+  estimatedMinutes   Int?
+  serviceZoneId      String?
+  promoCode          String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  customerName       String?
+  customerPhone      String?
+  customerAddr       String?
+  customerLat        Float?
+  customerLng        Float?
+  customerNotes      String?
+  recipientName      String?
+  recipientPhone     String?
+  driverInstructions String?
+  liveLocation       Json?
 
-  items        OrderItem[]
+  verification       Json?
+  financialSnapshot  Json?
+  paymentPlan        Json?
+  events             Json?
+  customerRating     Json?
+  driverFeedback     Json?
+
+  storeAcceptedAt    DateTime?
+  restaurantReadyAt  DateTime?
+  acceptedAt         DateTime?
+  pickedUpAt         DateTime?
+  onTheWayAt         DateTime?
+  deliveredAt        DateTime?
+  canceledAt         DateTime?
+  settledStoreAt     DateTime?
+  settledDriverAt    DateTime?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  items              OrderItem[]
 
   @@index([restaurantId, createdAt])
+  @@index([status])
+  @@index([customerId])
+  @@index([driverId])
 }
 
 model OrderItem {
@@ -140,25 +216,174 @@ model OrderItem {
   name     String
   qty      Int
   price    Float
+  size     String?
+  extras   Json?
 }
 
 model MenuItem {
-  id           String @id
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  id               String @id
+  restaurantId     String
+  restaurant       Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
-  cat          String?
-  catLabel     Json?
-  name         Json?
-  desc         Json?
-  img          String?
-  price        Float  @default(0)
-  isAvailable  Boolean @default(true)
+  cat              String?
+  catLabel         Json?
+  name             Json?
+  desc             Json?
+  img              String?
+  price            Float   @default(0)
+  salePrice        Float?
+  discountStartsAt DateTime?
+  discountEndsAt   DateTime?
+  availableFrom    String?
+  availableTo      String?
+  prepTimeMin      Int?
+  stock            Int?
+  sizes            Json?
+  extras           Json?
+  attrs            Json?
+  isAvailable      Boolean @default(true)
+  archived         Boolean @default(false)
 
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([restaurantId])
+}
+
+model WalletTransaction {
+  id             String   @id
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type           String   // topup | order_debit | refund | loyalty_redeem | admin_adjustment
+  amount         Float
+  balanceBefore  Float
+  balanceAfter   Float
+  orderId        String?
+  reason         String?
+  actorType      String?
+  actorId        String?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+model Promotion {
+  id             String   @id
+  code           String   @unique
+  discountType   String   // percent | fixed | free_delivery | first_order
+  value          Float
+  minOrder       Float    @default(0)
+  maxDiscount    Float?
+  storeId        String?
+  costBearer     String   @default("platform") // platform | store | split
+  storeSharePct  Float    @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  usageLimit     Int?
+  usedCount      Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ServiceZone {
+  id                String   @id
+  city              String   @default("Berrechid")
+  name              Json
+  active            Boolean  @default(true)
+  centerLat         Float
+  centerLng         Float
+  radiusKm          Float
+  maxRoadDistanceKm Float
+  polygon           Json?
+  pricing           Json
+  driverEarnings    Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ExceptionCase {
+  id          String   @id
+  category    String
+  severity    String   @default("medium")
+  status      String   @default("open") // open | in_review | resolved
+  title       String
+  description String?
+  orderId     String?
+  storeId     String?
+  driverId    String?
+  customerId  String?
+  meta        Json?
+  resolution  Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, category])
+  @@index([orderId])
+}
+
+model Complaint {
+  id           String   @id
+  orderId      String?
+  customerId   String
+  storeId      String?
+  driverId     String?
+  targetType   String   // store | driver | platform
+  category     String?
+  description  String
+  status       String   @default("routed_to_party") // routed_to_party | escalated_to_supervisor | resolved
+  partyReply   Json?
+  escalation   Json?
+  resolution   Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@index([restaurantId])
+  @@index([customerId])
+  @@index([storeId])
+}
+
+model Settlement {
+  id              String   @id
+  targetType      String   // store | driver
+  targetId        String
+  orderIds        Json
+  orderCount      Int
+  grossAmount     Float
+  commissionTotal Float    @default(0)
+  netPayout       Float
+  method          String   @default("manual_cash_or_bank")
+  reference       String?
+  notes           String?
+  actorId         String
+  createdAt       DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+model Refund {
+  id          String   @id
+  orderId     String   @unique
+  customerId  String?
+  amount      Float
+  destination String   @default("wallet") // wallet | original
+  reason      String
+  actorId     String
+  createdAt   DateTime @default(now())
+}
+
+model OtpChallenge {
+  id          String   @id
+  phone       String
+  purpose     String   // verify_phone | recover | login
+  codeHash    String
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(5)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([phone, createdAt])
 }
 
 model RefreshToken {
@@ -182,11 +407,17 @@ model AuditLog {
   actorType    String
   actorId      String?
   restaurantId String?
-  method       String
-  path         String
-  status       Int
-  ms           Int
+  action       String?
+  targetType   String?
+  targetId     String?
+  method       String?
+  path         String?
+  status       Int?
+  ms           Int?
   ip           String?
   ua           String?
   bodyKeys     Json?
+  meta         Json?
+  prevHash     String?
+  hash         String?
 }

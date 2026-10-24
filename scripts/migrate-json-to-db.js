@@ -91,6 +91,13 @@ async function upsertRestaurant(r) {
 
 async function run() {
   console.log('Starting migration...');
+  try {
+    const backup = require('../lib/backup');
+    const bkp = backup.createBackup({ label: 'pre_db_migration' });
+    console.log(`Created verified pre-migration backup: ${bkp.id}`);
+  } catch (e) {
+    console.warn('Backup warning:', e.message);
+  }
 
   // Restaurants
   const restaurants = readJson(path.join(DATA_DIR, 'restaurants.json'), { restaurants: [] }).restaurants || [];
@@ -364,6 +371,41 @@ async function run() {
     });
   }
   console.log(`Audit logs: ${logs.length}`);
+
+  // Service zones, promotions, exception cases, complaints, settlements, refunds
+  const zones = readJson(path.join(DATA_DIR, 'service_zones.json'), { zones: [] }).zones || [];
+  for (const z of zones) {
+    if (!z.id) continue;
+    await prisma.serviceZone.upsert({
+      where: { id: String(z.id) },
+      update: {
+        city: String(z.city || 'Berrechid'),
+        name: z.name || {},
+        active: z.active !== false,
+        centerLat: Number(z.centerLat || 33.2655),
+        centerLng: Number(z.centerLng || -7.5875),
+        radiusKm: Number(z.radiusKm || 8),
+        maxRoadDistanceKm: Number(z.maxRoadDistanceKm || 12),
+        polygon: z.polygon || null,
+        pricing: z.pricing || {},
+        driverEarnings: z.driverEarnings || {},
+      },
+      create: {
+        id: String(z.id),
+        city: String(z.city || 'Berrechid'),
+        name: z.name || {},
+        active: z.active !== false,
+        centerLat: Number(z.centerLat || 33.2655),
+        centerLng: Number(z.centerLng || -7.5875),
+        radiusKm: Number(z.radiusKm || 8),
+        maxRoadDistanceKm: Number(z.maxRoadDistanceKm || 12),
+        polygon: z.polygon || null,
+        pricing: z.pricing || {},
+        driverEarnings: z.driverEarnings || {},
+      },
+    });
+  }
+  console.log(`Service zones: ${zones.length}`);
 
   console.log('Migration complete.');
 }

@@ -202,6 +202,19 @@ test("platform routes: driver review/suspension, verification codes, wallet, zon
   assert.equal(health.status, 200);
   assert.equal(health.body.ok, true);
   assert.equal(health.body.storage.status, "healthy");
+
+  // 6. Role-scoped verification code isolation (customer, store, driver, admin)
+  const freshOrder = { id: "ord_sec_test", status: "accepted" };
+  const freshCodes = lifecycle.initOrderVerification(freshOrder);
+  const forCust = lifecycle.sanitizeOrderVerificationForRole(freshOrder, "customer");
+  const forStore = lifecycle.sanitizeOrderVerificationForRole(freshOrder, "store");
+  const forDrv = lifecycle.sanitizeOrderVerificationForRole(freshOrder, "driver");
+  assert.equal(forCust.deliveryCode, freshCodes.deliveryCode);
+  assert.equal(forCust.pickupCode, undefined);
+  assert.equal(forStore.pickupCode, freshCodes.pickupCode);
+  assert.equal(forStore.deliveryCode, undefined);
+  assert.equal(forDrv.pickupCode, undefined);
+  assert.equal(forDrv.deliveryCode, undefined);
 });
 
 test("H3 dispatch re-offers once to same driver on timeout when driver GPS is still fresh, and alerts supervisor on repeated rejections", () => {

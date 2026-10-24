@@ -1195,6 +1195,10 @@ async function doSignup() {
   const frontFile = el("idFront").files && el("idFront").files[0];
   const backFile = el("idBack").files && el("idBack").files[0];
   const profileFile = el("profilePhoto")?.files && el("profilePhoto")?.files[0];
+  const licenceFile = el("drivingLicence")?.files && el("drivingLicence")?.files[0];
+  const vehicleType = String(el("signupVehicleType")?.value || "motorcycle").trim();
+  const vehiclePlate = String(el("signupVehiclePlate")?.value || "").trim();
+  const drivingLicenceNumber = String(el("signupLicenceNumber")?.value || "").trim();
 
   if (!faceFile || !frontFile || !backFile) {
     el("authHint").textContent = tr.imagesRequired;
@@ -1204,23 +1208,28 @@ async function doSignup() {
   try {
     setBtnBusy(btn, true);
     el("authHint").textContent = "";
-    const [profilePhoto, faceWithBikeCard, idFront, idBack] = await Promise.all([
+    const [profilePhoto, faceWithBikeCard, idFront, idBack, drivingLicenceImage] = await Promise.all([
       fileToDataUrl(profileFile, { maxDim: 900, quality: 0.82 }),
       fileToDataUrl(faceFile, { maxDim: 1600, quality: 0.85 }),
       fileToDataUrl(frontFile, { maxDim: 1600, quality: 0.85 }),
       fileToDataUrl(backFile, { maxDim: 1600, quality: 0.85 }),
+      licenceFile ? fileToDataUrl(licenceFile, { maxDim: 1600, quality: 0.85 }) : Promise.resolve(""),
     ]);
 
     const payload = {
       name,
       phone,
       cardNumber,
+      vehicleType,
+      vehiclePlate,
+      drivingLicenceNumber,
       password,
       password2,
       profilePhoto,
       faceWithBikeCard,
       idFront,
       idBack,
+      ...(drivingLicenceImage ? { drivingLicenceImage } : {}),
     };
     if (email) payload.email = email;
 
@@ -1729,13 +1738,13 @@ function confirmAccept(id) {
   });
 }
 
-async function patchOrderStatus(id, status) {
+async function patchOrderStatus(id, status, extraBody) {
   if (busyOrders.has(id)) return;
   busyOrders.add(id);
   try {
     await api(`/api/driver/orders/${encodeURIComponent(id)}`, {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(Object.assign({ status }, extraBody || {})),
     });
     toast(t().okSaved, "ok");
     closeOrderSheet();
@@ -1753,13 +1762,45 @@ function advanceOrder(id, to) {
   const next = nextStepFor(order);
   // only the next step of the flow is ever offered from the UI
   if (!next || next.to !== to) return;
+  if (to === "picked_up") {
+    const alreadyVerified = !!(order && order.verificationStatus && order.verificationStatus.pickupVerified);
+    let pickupCode = "";
+    if (!alreadyVerified) {
+      const code = window.prompt(
+        lang === "ar"
+          ? "أدخل كود استلام الطلب من المتجر (4 أرقام):"
+          : lang === "fr"
+            ? "Entrez le code de retrait du magasin (4 chiffres) :"
+            : "Enter 4-digit Pickup Verification Code from store:",
+        "",
+      );
+      if (code === null || !String(code).trim()) return;
+      pickupCode = String(code).trim();
+    }
+    patchOrderStatus(id, "picked_up", pickupCode ? { pickupCode } : {});
+    return;
+  }
   if (to === "delivered") {
+    const alreadyVerified = !!(order && order.verificationStatus && order.verificationStatus.deliveryVerified);
+    let deliveryCode = "";
+    if (!alreadyVerified) {
+      const code = window.prompt(
+        lang === "ar"
+          ? "أدخل كود التسليم من الزبون (4 أرقام):"
+          : lang === "fr"
+            ? "Entrez le code de livraison du client (4 chiffres) :"
+            : "Enter 4-digit Delivery Verification Code from customer:",
+        "",
+      );
+      if (code === null || !String(code).trim()) return;
+      deliveryCode = String(code).trim();
+    }
     const tr = t();
     askConfirm({
       title: tr.confirmDeliverTitle,
       message: tr.confirmDeliverMsg,
       okText: tr.nextDelivered,
-      onConfirm: () => patchOrderStatus(id, "delivered"),
+      onConfirm: () => patchOrderStatus(id, "delivered", deliveryCode ? { deliveryCode } : {}),
     });
     return;
   }
@@ -1828,6 +1869,10 @@ async function startSheetMap(order, next) {
     if (rest) items.push({ kind: "tri", lat: rest.lat, lng: rest.lng, color: "#7c3aed",
       title: `${localizedText(rest.name) || tr.restaurant}${rest.address ? " — " + rest.address : ""}` });
     if (cust) items.push({ kind: "pin", lat: cust.lat, lng: cust.lng, title: tr.custMap });
+    const liveLoc = order?.customer?.liveLocation;
+    if (liveLoc && liveLoc.enabled && validLL(liveLoc.lat, liveLoc.lng)) {
+      items.push({ kind: "dot", lat: Number(liveLoc.lat), lng: Number(liveLoc.lng), r: 7, color: "#0ea5e9", title: "Live Customer GPS" });
+    }
     if (fix) {
       // Route to this order's store until pickup, then to its customer.
       const target = ["picked_up", "on_the_way"].includes(String(order.status)) ? cust : rest;

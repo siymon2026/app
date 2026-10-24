@@ -435,7 +435,26 @@
           return "<div>• <b>" + esc(s.email) + "</b> (" + esc(s.subRole) + ") — " + (s.isActive ? "نشط" : "معطل") + "</div>";
         }).join("") +
         "  </div>" +
+        "</div>" +
+        '<div class="panel-like" style="margin-top:12px">' +
+        '  <h4 style="margin:0 0 8px">سجل التدقيق غير القابل للتلاعب / Tamper-Evident Audit Logs</h4>' +
+        '  <input id="auditFilterInp" placeholder="بحث في السجل (action, actorId, targetId)..." style="max-width:340px;margin-bottom:8px" />' +
+        '  <div id="auditLogsList" style="max-height:180px;overflow-y:auto;font-size:12px;font-family:monospace">' +
+        ((h.recentAuditLogs || []).map(function (l) {
+          return '<div class="audit-row" style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06)">[' + esc(l.ts) + "] <b>" + esc(l.action) + "</b> by " + esc(l.actorType) + ":" + esc(l.actorId) + " → " + esc(l.targetType) + ":" + esc(l.targetId) + " <span class='muted'>hash:" + esc(String(l.hash || "").slice(0, 10)) + "…</span></div>";
+        }).join("") || '<div class="muted">لا توجد سجلات بعد</div>') +
+        "  </div>" +
         "</div>";
+
+      var audInp = document.getElementById("auditFilterInp");
+      if (audInp) {
+        audInp.addEventListener("input", function () {
+          var q = audInp.value.trim().toLowerCase();
+          box.querySelectorAll(".audit-row").forEach(function (r) {
+            r.style.display = !q || r.textContent.toLowerCase().includes(q) ? "" : "none";
+          });
+        });
+      }
 
       var bkpBtn = document.getElementById("createBackupBtn");
       if (bkpBtn) {

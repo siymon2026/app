@@ -163,6 +163,26 @@
           </div>
           <div class="grid2">
             <div class="field">
+              <label for="signupVehicleType" id="signupVehicleTypeLabel">نوع المركبة / Vehicle Type</label>
+              <select id="signupVehicleType">
+                <option value="motorcycle">دراجة نارية / Motorcycle</option>
+                <option value="scooter">سكوتر / Scooter</option>
+                <option value="bicycle">دراجة هوائية / Bicycle</option>
+                <option value="car">سيارة / Car</option>
+                <option value="van">مركبة نفعية / Van</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="signupVehiclePlate" id="signupVehiclePlateLabel">رقم اللوحة / Plate</label>
+              <input id="signupVehiclePlate" type="text" placeholder="12345-A-6" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="signupLicenceNumber" id="signupLicenceLabel">رقم رخصة القيادة / Driving Licence #</label>
+            <input id="signupLicenceNumber" type="text" placeholder="رقم رخصة السياقة" />
+          </div>
+          <div class="grid2">
+            <div class="field">
               <label for="signupPassword" id="signupPassLabel" data-i18n="password">كلمة السر</label>
               <input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••" />
             </div>
@@ -197,6 +217,12 @@
               <svg class="ic" aria-hidden="true"><use href="#i-id-card"/></svg>
               <span id="imgBackLabel" data-i18n="imgBackLabel">بطاقة التعريف (خلف)</span>
               <input id="idBack" type="file" accept="image/*" />
+            </label>
+            <label class="upload-tile" for="drivingLicence">
+              <img id="prevLicence" class="preview" alt="" />
+              <svg class="ic" aria-hidden="true"><use href="#i-id-card"/></svg>
+              <span id="imgLicenceLabel">رخصة السياقة / Driving Licence</span>
+              <input id="drivingLicence" type="file" accept="image/*" />
             </label>
           </div>
 

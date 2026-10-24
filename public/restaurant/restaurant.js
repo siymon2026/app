@@ -1664,6 +1664,15 @@ function showDetails(o) {
     <div class="panel-like" style="padding:10px; box-shadow:none; border:1px solid rgba(0,0,0,.06)">
       <div><b>${escapeHtml(driverLabel)}:</b> ${escapeHtml(driverName || "—")} ${driverPhone ? `<span class="muted">• ${escapeHtml(driverPhone)}</span>` : ""}</div>
       ${o.acceptedAt ? `<div class="muted" style="font-size:12px;margin-top:4px">${escapeHtml(fmtTime(o.acceptedAt))}</div>` : ""}
+      ${drv && drv.location && drv.location.lat ? `<div class="muted" style="font-size:12px;margin-top:4px">📍 GPS: ${Number(drv.location.lat).toFixed(4)}, ${Number(drv.location.lng).toFixed(4)}</div>` : ""}
+    </div>
+  `
+    : "";
+  const pickupCodeHtml = o.pickupCode
+    ? `
+    <div style="padding:8px 12px;border-radius:10px;background:rgba(93,214,44,0.14);border:1px solid #5DD62C;margin:8px 0">
+      <b>🔐 ${lang === "ar" ? "كود تسليم الطلب للسائق (Pickup Code):" : "Pickup Verification Code:"}</b>
+      <span style="color:#5DD62C;font-weight:900;font-size:16px;margin-inline-start:6px">${escapeHtml(String(o.pickupCode))}</span>
     </div>
   `
     : "";
@@ -1680,6 +1689,7 @@ function showDetails(o) {
   const actions = `
     <div class="row-actions" style="justify-content:center; flex-wrap:wrap">
       ${driverButtonHtml}
+      <button class="btn ghost small" id="detailDelayBtn" type="button">⏳ ${lang === "ar" ? "تأخير التحضير" : "Mark Delayed"}</button>
       <button class="btn ghost small" id="detailHtmlBtn" type="button">${escapeHtml(t.htmlPrint)}</button>
       <button class="btn ghost small" id="detailWifiBtn" type="button">${escapeHtml(t.wifiPrint)}</button>
       <button class="btn ghost small" id="detailBtBtn" type="button">${escapeHtml(t.btPrint)}</button>
@@ -1696,6 +1706,8 @@ function showDetails(o) {
           </div>
           <div class="${statusClass(o.status)}">${escapeHtml(statusLabel(o.status))}</div>
         </div>
+
+        ${pickupCodeHtml}
 
         <hr style="border:none;border-top:1px solid rgba(0,0,0,.08);margin:10px 0"/>
 
@@ -1777,6 +1789,27 @@ function showDetails(o) {
   el("driverTakenBtn")?.addEventListener("click", () =>
     confirmDriverTaken(o.id),
   );
+  el("detailDelayBtn")?.addEventListener("click", async () => {
+    const reason = prompt(
+      lang === "ar" ? "سبب تأخير التحضير:" : "Delay reason:",
+      "",
+    );
+    if (!reason) return;
+    try {
+      const updated = await api(
+        `/api/restaurant/orders/${encodeURIComponent(o.id)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ action: "delay", delayReason: reason }),
+        },
+      );
+      toast("✅ " + (lang === "ar" ? "تم تسجيل سبب التأخير" : "Delay recorded"));
+      showDetails(updated);
+      render();
+    } catch (e) {
+      toast(e.message);
+    }
+  });
 
   // init editor
   initReceiptEditor(o);
