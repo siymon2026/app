@@ -1,66 +1,297 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>الدعم الفني - siymon</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-        background: #f9f9f9;
-      }
-      .container {
-        max-width: 600px;
-        margin: auto;
-        background: #fff;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
-      h1 {
-        color: #d32f2f;
-      }
-      .contact-box {
-        background: #f1f8e9;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-      }
-      p {
-        font-size: 1.1em;
-      }
-    </style>
-    <link rel="stylesheet" href="/subnav.css?v=36" />
-    <link rel="stylesheet" href="/offline.css?v=36" />
-    <script src="/offline.js?v=36"></script>
-  <script src="/subnav.js?v=36" defer></script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0F0F0F" />
+  <title>SIYMON | الدعم والشكاوى</title>
+  <link rel="stylesheet" href="/brand.css" />
+  <style>
+    :root {
+      --bg: #0F0F0F;
+      --surface: #202020;
+      --text: #F8F8F8;
+      --muted: rgba(248, 248, 248, 0.72);
+      --brand: #5DD62C;
+      --brand-deep: #337418;
+      --border: rgba(248, 248, 248, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px;
+      line-height: 1.65;
+    }
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+    h1 { margin: 0 0 8px; font-size: 22px; color: var(--brand); }
+    h2 { margin: 0 0 10px; font-size: 17px; color: var(--text); }
+    p, li { color: var(--muted); }
+    a { color: var(--brand); text-decoration: none; font-weight: 700; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--brand);
+      background: var(--brand);
+      color: #0F0F0F;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .field input, .field select, .field textarea {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #141414;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+    }
+    .complaint-item {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #161616;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(93, 214, 44, 0.15);
+      color: var(--brand);
+    }
+    .status-msg {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  </style>
 </head>
-  <body data-nav="user">
-    <div class="container">
-      <h1>الدعم الفني لتطبيق siymon</h1>
-      <p>
-        نحن هنا لمساعدتك! إذا واجهتك أي مشكلة أثناء استخدام التطبيق أو في
-        طلباتك، لا تتردد في التواصل معنا.
-      </p>
-
-      <div class="contact-box">
-        <h3>كيفية التواصل معنا:</h3>
-        <p>📧 <strong>البريد الإلكتروني:</strong> support@siymon7.com</p>
-        <p>📞 <strong>رقم الهاتف (برشيد):</strong> +212617139424</p>
-        <p>
-          💬 أو يمكنك استخدام ميزة "الشات" المباشر مع الدعم الفني من داخل
-          التطبيق.
-        </p>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🛠️ مركز الدعم والشكاوى — SIYMON</h1>
+      <p>نحن هنا لمساعدتك في متابعة طلباتك، حل أي مشكلة متعلقة بالتوصيل أو المتجر أو المحفظة، وتصعيد الشكاوى مباشرة إلى المشرفين في برشيد.</p>
+      <div class="btn-row">
+        <a class="btn" href="/chat/">💬 محادثة فورية مع الدعم</a>
+        <a class="btn secondary" href="/orders/">📦 متابعة طلباتي</a>
+        <a class="btn secondary" href="/">🏠 العودة للرئيسية</a>
       </div>
-
-      <p style="margin-top: 30px; font-size: 0.9em; color: #777">
-        سيتم الرد على جميع استفساراتكم في أقرب وقت ممكن.
-      </p>
     </div>
-  </body>
+
+    <div class="card">
+      <h2>📨 تقديم شكوى أو بلاغ جديد</h2>
+      <p style="font-size:13px;margin-top:0">تُوجَّه الشكوى أولاً إلى الجهة المعنية (المتجر أو السائق)، ويمكنك تصعيدها في أي وقت إلى مشرف المنصة.</p>
+      <form id="supportComplaintForm">
+        <div class="field">
+          <label for="scOrderId">رقم الطلب (اختياري)</label>
+          <input id="scOrderId" type="text" placeholder="مثال: ord_12345" />
+        </div>
+        <div class="field">
+          <label for="scTarget">الجهة المعنية بالشكوى</label>
+          <select id="scTarget">
+            <option value="store">المتجر / المطعم (جودة أو تحضير الطلب)</option>
+            <option value="driver">السائق (التوصيل أو التأخير)</option>
+            <option value="supervisor">مشرف المنصة مباشرة (الدفع / المحفظة / استرداد)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="scCategory">تصنيف المشكلة</label>
+          <select id="scCategory">
+            <option value="late_delivery">تأخر في التحضير أو التوصيل</option>
+            <option value="missing_or_wrong_item">صنف ناقص أو غير مطابق</option>
+            <option value="payment_or_wallet">مشكلة في الدفع أو المحفظة</option>
+            <option value="behavior">سلوك أو تواصل</option>
+            <option value="other">أخرى</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="scMessage">تفاصيل الشكوى</label>
+          <textarea id="scMessage" rows="3" required placeholder="اشرح المشكلة بالتفصيل ليتمكن فريق الدعم من معالجتها بسرعة..."></textarea>
+        </div>
+        <button type="submit" class="btn">إرسال الشكوى</button>
+        <div id="scStatus" class="status-msg"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">📋 سجل الشكاوى الخاصة بي</h2>
+        <button type="button" id="scRefreshBtn" class="btn secondary" style="padding:6px 12px;font-size:12px">تحديث</button>
+      </div>
+      <div id="scList" style="margin-top:12px">
+        <p style="font-size:13px">سجّل الدخول في تطبيق العميل لعرض ومتابعة شكاويك هنا.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📞 قنوات التواصل السريع</h2>
+      <ul>
+        <li>المحادثة المباشرة: <a href="/chat/">افتح صفحة الدردشة</a></li>
+        <li>البريد الإلكتروني: <a href="mailto:support@siymon.ma">support@siymon.ma</a></li>
+        <li>المدينة المخدومة حالياً: برشيد (Berrechid)</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var TOKEN_KEY = "siymon_customer_token_v1";
+      function getToken() {
+        try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (_) { return ""; }
+      }
+      function authHeaders() {
+        var t = getToken();
+        var h = { "Content-Type": "application/json" };
+        if (t) h["Authorization"] = "Bearer " + t;
+        return h;
+      }
+      var form = document.getElementById("supportComplaintForm");
+      var statusEl = document.getElementById("scStatus");
+      var listEl = document.getElementById("scList");
+      var refreshBtn = document.getElementById("scRefreshBtn");
+
+      async function loadComplaints() {
+        if (!getToken()) {
+          listEl.innerHTML = '<p style="font-size:13px">يرجى تسجيل الدخول في الصفحة الرئيسية لعرض شكاويك أو تقديم شكوى مرتبطة بحسابك.</p>';
+          return;
+        }
+        try {
+          var res = await fetch("/api/customer/complaints", { headers: authHeaders() });
+          var data = await res.json();
+          if (!res.ok || !Array.isArray(data.complaints)) {
+            listEl.innerHTML = '<p style="font-size:13px">تعذر تحميل الشكاوى حالياً.</p>';
+            return;
+          }
+          if (!data.complaints.length) {
+            listEl.innerHTML = '<p style="font-size:13px">لا توجد شكاوى مسجلة حتى الآن.</p>';
+            return;
+          }
+          listEl.innerHTML = "";
+          data.complaints.forEach(function (c) {
+            var row = document.createElement("div");
+            row.className = "complaint-item";
+            var info = document.createElement("div");
+            info.innerHTML =
+              '<div><strong>#' + (c.id || "") + '</strong> ' +
+              (c.orderId ? '· طلب #' + c.orderId : '') +
+              ' <span class="badge">' + (c.status || "open") + '</span>' +
+              (c.assignedLevel ? ' <span class="badge">الجهة: ' + c.assignedLevel + '</span>' : '') +
+              '</div>' +
+              '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + (c.message || c.subject || "") + '</div>';
+            row.appendChild(info);
+            if (c.assignedLevel !== "supervisor" && c.status !== "resolved") {
+              var escBtn = document.createElement("button");
+              escBtn.type = "button";
+              escBtn.className = "btn secondary";
+              escBtn.style.cssText = "padding:6px 10px;font-size:12px";
+              escBtn.textContent = "⬆️ تصعيد للمشرف";
+              escBtn.addEventListener("click", async function () {
+                escBtn.disabled = true;
+                try {
+                  await fetch("/api/customer/complaints/" + encodeURIComponent(c.id) + "/escalate", {
+                    method: "POST",
+                    headers: authHeaders(),
+                    body: JSON.stringify({ reason: "Customer escalated from support portal" })
+                  });
+                  loadComplaints();
+                } catch (_) {
+                  escBtn.disabled = false;
+                }
+              });
+              row.appendChild(escBtn);
+            }
+            listEl.appendChild(row);
+          });
+        } catch (_) {
+          listEl.innerHTML = '<p style="font-size:13px">تعذر الاتصال بالخادم.</p>';
+        }
+      }
+
+      if (form) {
+        form.addEventListener("submit", async function (ev) {
+          ev.preventDefault();
+          if (!getToken()) {
+            statusEl.style.color = "#ff6b6b";
+            statusEl.textContent = "يرجى تسجيل الدخول أولاً من الصفحة الرئيسية لتقديم شكوى.";
+            return;
+          }
+          statusEl.style.color = "#5DD62C";
+          statusEl.textContent = "جارٍ الإرسال...";
+          try {
+            var payload = {
+              orderId: document.getElementById("scOrderId").value.trim() || null,
+              targetType: document.getElementById("scTarget").value,
+              category: document.getElementById("scCategory").value,
+              message: document.getElementById("scMessage").value.trim()
+            };
+            var res = await fetch("/api/customer/complaints", {
+              method: "POST",
+              headers: authHeaders(),
+              body: JSON.stringify(payload)
+            });
+            var data = await res.json();
+            if (!res.ok) {
+              statusEl.style.color = "#ff6b6b";
+              statusEl.textContent = data.error || "تعذر إرسال الشكوى.";
+              return;
+            }
+            statusEl.style.color = "#5DD62C";
+            statusEl.textContent = "تم استلام شكواك بنجاح ✅ رقم المتابعة: " + (data.complaint && data.complaint.id ? data.complaint.id : "");
+            document.getElementById("scMessage").value = "";
+            loadComplaints();
+          } catch (_) {
+            statusEl.style.color = "#ff6b6b";
+            statusEl.textContent = "تعذر الاتصال بالخادم.";
+          }
+        });
+      }
+
+      if (refreshBtn) refreshBtn.addEventListener("click", loadComplaints);
+      loadComplaints();
+    })();
+  </script>
+</body>
 </html>
