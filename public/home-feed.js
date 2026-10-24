@@ -3,19 +3,19 @@
    textForLang, openDetail, renderAll, updateOpenStatus, renderCart; home-v2: siymonSelectRestaurant. */
 (function () {
   "use strict";
-  var HOME = null, HOME_ERR = false, mode = "feed", activeCat = "";
+  var HOME = null, HOME_ERR = false, mode = "feed", activeCat = "", openOnly = false;
   var $ = function (id) { return document.getElementById(id); };
   var main = document.querySelector("main.wrap");
   if (!main) return;
 
   var T = {
-    ar: { all: "الكل", back: "الرئيسية", open: "مفتوح", closed: "مغلق", paused: "متوقف مؤقتاً", free: "توصيل مجاني", min: "الحد الأدنى", mins: "د",
+    ar: { all: "الكل", openNowFilter: "مفتوح الآن فقط", opensAt: "يفتح ", back: "الرئيسية", open: "مفتوح", closed: "مغلق", paused: "متوقف مؤقتاً", free: "توصيل مجاني", min: "الحد الأدنى", mins: "د",
       none: "لا توجد مطاعم أو متاجر منشورة الآن.", noRes: "لا توجد نتائج مطابقة.", err: "تعذر تحميل الصفحة الرئيسية.", retry: "إعادة المحاولة",
       stores: "المتاجر", dishes: "الأطباق والمنتجات", catRes: "نتائج التصنيف", sr: "بحث", items: "منتج" },
-    fr: { all: "Tout", back: "Accueil", open: "Ouvert", closed: "Fermé", paused: "En pause", free: "Livraison gratuite", min: "Minimum", mins: "min",
+    fr: { all: "Tout", openNowFilter: "Ouvert maintenant", opensAt: "Ouvre à ", back: "Accueil", open: "Ouvert", closed: "Fermé", paused: "Temporairement indisponible", free: "Livraison gratuite", min: "Minimum", mins: "min",
       none: "Aucun restaurant ou magasin publié.", noRes: "Aucun résultat.", err: "Impossible de charger l’accueil.", retry: "Réessayer",
       stores: "Magasins", dishes: "Plats et produits", catRes: "Résultats", sr: "Rechercher", items: "articles" },
-    en: { all: "All", back: "Home", open: "Open", closed: "Closed", paused: "Paused", free: "Free delivery", min: "Min", mins: "min",
+    en: { all: "All", openNowFilter: "Open Now Only", opensAt: "Opens at ", back: "Home", open: "Open", closed: "Closed", paused: "Temporarily Unavailable", free: "Free delivery", min: "Min", mins: "min",
       none: "No restaurants or shops are published right now.", noRes: "No matching results.", err: "Couldn’t load the home page.", retry: "Retry",
       stores: "Stores", dishes: "Dishes & products", catRes: "Results", sr: "Search", items: "items" }
   };
@@ -72,7 +72,12 @@
     if (Number(s.minOrder) > 0) m.appendChild(h("span", null, t("min") + " " + money(s.minOrder)));
     return m;
   }
-  function stateLabel(s) { return s.status === "paused" ? t("paused") : s.isOpen ? t("open") : t("closed"); }
+  function stateLabel(s) {
+    if (s.status === "paused") return t("paused");
+    if (s.isOpen) return t("open");
+    if (s.opensAt) return t("closed") + " · " + t("opensAt") + s.opensAt;
+    return t("closed");
+  }
   function storeCard(s) {
     var name = tx(s.name) || String(s.id);
     var c = h("button", "fh-scard" + (s.isOpen ? "" : " closed")); c.type = "button";
@@ -119,7 +124,13 @@
   }
 
   /* ---------- render ---------- */
-  function visibleStores() { return (RESTAURANTS || []).filter(function (r) { return r && r.isActive !== false; }); }
+  function visibleStores() {
+    return (RESTAURANTS || []).filter(function (r) {
+      if (!r || r.isActive === false) return false;
+      if (openOnly && !r.isOpen) return false;
+      return true;
+    });
+  }
   function render() {
     var host = $("feedHome");
     if (!host) { host = h("div"); host.id = "feedHome"; var anchor = $("restTitle"); main.insertBefore(host, anchor || null); }
@@ -127,27 +138,30 @@
     var q = (($("searchInput") || {}).value || "").trim().toLowerCase();
     if (HOME_ERR && !HOME) { host.appendChild(note(t("err"), true)); return; }
     if (!HOME) { for (var i = 0; i < 3; i++) host.appendChild(h("div", "fh-skel")); return; }
+    var allPublished = (RESTAURANTS || []).filter(function (r) { return r && r.isActive !== false; });
+    if (!allPublished.length) { host.appendChild(note(t("none"))); return; }
     var stores = visibleStores();
-    if (!stores.length) { host.appendChild(note(t("none"))); return; }
 
     if (q) { renderSearch(host, q, stores); return; }
 
     var cats = (HOME.categories || []).filter(function (c) { return c.kind !== "dish"; });
-    if (cats.length) {
-      var row = h("div", "fh-row fh-cats"); row.setAttribute("aria-label", "Categories");
-      var all = h("button", "fh-chip", t("all")); all.type = "button"; all.setAttribute("aria-pressed", activeCat ? "false" : "true");
-      all.addEventListener("click", function () { activeCat = ""; render(); }); row.appendChild(all);
-      cats.forEach(function (c) {
-        var b = h("button", "fh-chip"); b.type = "button"; b.setAttribute("aria-pressed", activeCat === c.id ? "true" : "false");
-        if (c.icon) b.appendChild(img(c.icon, null, "", ""));
-        b.appendChild(document.createTextNode(tx(c.name))); b.addEventListener("click", function () { activeCat = activeCat === c.id ? "" : c.id; render(); });
-        row.appendChild(b);
-      });
-      host.appendChild(row);
-    }
-    if (activeCat) {
-      var res = stores.filter(function (s) { return (s.categoryIds || []).indexOf(activeCat) >= 0; });
-      var sec = section(t("catRes"), "fhStores"); var list = h("div", "fh-list");
+    var row = h("div", "fh-row fh-cats"); row.setAttribute("aria-label", "Categories");
+    var all = h("button", "fh-chip", t("all")); all.type = "button"; all.setAttribute("aria-pressed", !activeCat && !openOnly ? "true" : "false");
+    all.addEventListener("click", function () { activeCat = ""; openOnly = false; render(); }); row.appendChild(all);
+    var openChip = h("button", "fh-chip", "🟢 " + t("openNowFilter")); openChip.type = "button";
+    openChip.setAttribute("aria-pressed", openOnly ? "true" : "false");
+    openChip.addEventListener("click", function () { openOnly = !openOnly; render(); });
+    row.appendChild(openChip);
+    cats.forEach(function (c) {
+      var b = h("button", "fh-chip"); b.type = "button"; b.setAttribute("aria-pressed", activeCat === c.id ? "true" : "false");
+      if (c.icon) b.appendChild(img(c.icon, null, "", ""));
+      b.appendChild(document.createTextNode(tx(c.name))); b.addEventListener("click", function () { activeCat = activeCat === c.id ? "" : c.id; render(); });
+      row.appendChild(b);
+    });
+    host.appendChild(row);
+    if (activeCat || openOnly) {
+      var res = stores.filter(function (s) { return !activeCat || (s.categoryIds || []).indexOf(activeCat) >= 0; });
+      var sec = section(activeCat ? t("catRes") : t("openNowFilter"), "fhStores"); var list = h("div", "fh-list");
       res.forEach(function (s) { list.appendChild(storeCard(s)); });
       sec.appendChild(res.length ? list : note(t("noRes"))); host.appendChild(sec); return;
     }

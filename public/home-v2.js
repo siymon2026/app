@@ -538,7 +538,15 @@
       var info = h("div", "rcard-info");
       info.appendChild(h("b", "rcard-name", name));
       if (r.address) info.appendChild(h("span", "rcard-addr", r.address));
-      var st = h("span", "rcard-st " + (isOpenNow ? "open" : "closed"), isOpenNow ? t("open") : t("closed"));
+      var storeIsOpen = isOpenNow && r.isOpen !== false && r.status !== "paused";
+      var stText = r.status === "paused"
+        ? (lang === "ar" ? "متوقف مؤقتاً" : "Paused")
+        : storeIsOpen
+          ? t("open")
+          : r.opensAt
+            ? t("closed") + " · " + r.opensAt
+            : t("closed");
+      var st = h("span", "rcard-st " + (storeIsOpen ? "open" : "closed"), stText);
       info.appendChild(st);
       card.appendChild(cover); card.appendChild(logo); card.appendChild(info);
       var go = function () { selectRestaurant(r.id); };
