@@ -215,6 +215,45 @@ test("platform routes: driver review/suspension, verification codes, wallet, zon
   assert.equal(forStore.deliveryCode, undefined);
   assert.equal(forDrv.pickupCode, undefined);
   assert.equal(forDrv.deliveryCode, undefined);
+
+  // 7. Private driver document upload & supervisor audited document access
+  const docUpload = await call("POST", "/api/driver/documents", {
+    headers: { "x-driver": "drv_1" },
+    body: {
+      nationalIdNumber: "BH123456",
+      licenseNumber: "LIC98765",
+      vehicleType: "motorcycle",
+      vehiclePlate: "12345-A-40",
+      nationalIdDoc: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    },
+  });
+  assert.equal(docUpload.status, 200);
+  assert.equal(docUpload.body.hasNationalIdDoc, true);
+
+  const docView = await call("GET", "/api/admin/drivers/drv_1/documents", {
+    headers: { "x-admin": "1" },
+    query: { reason: "Verify driver ID" },
+  });
+  assert.equal(docView.status, 200);
+  assert.equal(docView.body.driver.nationalIdNumber, "BH123456");
+  assert.equal(
+    state.auditLogs.some((l) => l.action === "driver_documents_accessed" && l.targetId === "drv_1"),
+    true,
+  );
+
+  // 8. Business suspension safely handles active pre-pickup vs in-transit orders
+  state.orders.push(
+    { id: "ord_pre_pickup", restaurantId: "rest_1", customerId: "cust_1", status: "preparing" },
+    { id: "ord_in_transit", restaurantId: "rest_1", customerId: "cust_1", driverId: "drv_1", status: "on_the_way" },
+  );
+  const bizSusp = await call("POST", "/api/admin/businesses/rest_1/status", {
+    headers: { "x-admin": "1" },
+    body: { status: "suspended", reason: "Health inspection pause" },
+  });
+  assert.equal(bizSusp.status, 200);
+  assert.equal(bizSusp.body.business.onboardingStatus, "suspended");
+  assert.deepEqual(bizSusp.body.activeOrderHandling.flaggedPrePickupOrders, ["ord_pre_pickup"]);
+  assert.deepEqual(bizSusp.body.activeOrderHandling.continuingInTransitOrders, ["ord_in_transit"]);
 });
 
 test("H3 dispatch re-offers once to same driver on timeout when driver GPS is still fresh, and alerts supervisor on repeated rejections", () => {

@@ -330,6 +330,7 @@ app.use(
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false, // إلغاء حظر النوافذ المنبثقة تماماً
+    frameguard: false,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" }, // السماح لجوجل بمعرفة مصدر الطلب
   }),
 );
@@ -351,7 +352,7 @@ app.use(
       defaultSrc: ["'self'"],
       baseUri: ["'self'"],
       objectSrc: ["'none'"],
-      frameAncestors: ["'none'"],
+      frameAncestors: ["'self'", "https://*.e2b.app", "https://*.arena.ai", "https://arena.ai"],
       // Google Sign-In (GIS) requires loading scripts/iframes from Google
       scriptSrc: [
         "'self'",
@@ -8502,7 +8503,7 @@ registerPlatformRoutes(app, {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(Number(PORT), "0.0.0.0", () => {
     logger.info("siymon server started", {
       port: Number(PORT),
       env: process.env.NODE_ENV || "",

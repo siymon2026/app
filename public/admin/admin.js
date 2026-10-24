@@ -2159,9 +2159,12 @@ function openDriverView(driver) {
 
   showDriverView(true);
 
-  // Load private images via authenticated fetch (Bearer token)
+  // Load private images via authenticated fetch (Bearer token) + audit document view
   (async () => {
     try {
+      await fetch(`/api/admin/drivers/${encodeURIComponent(String(driver.id || ""))}/documents`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
       const load = async (kind, imgId) => {
         const img = document.getElementById(imgId);
         if (!img) return;

@@ -1283,9 +1283,24 @@ function buildOrderPayload() {
   if (!name) return { error: i18n[lang].validations.needName };
   if (!phone) return { error: i18n[lang].validations.needPhone };
   if (!addr) return { error: i18n[lang].validations.needAddress };
-  if (SERVICE_AREA?.enforce) {
-    if (!(exactLat && exactLng)) return { error: areaMsg("needLocation") };
-    if (areaInside === false) return { error: areaMsg("outside") };
+  if (!(Number.isFinite(Number(exactLat)) && Number.isFinite(Number(exactLng)) && Number(exactLat) !== 0 && Number(exactLng) !== 0)) {
+    try {
+      const savedList = JSON.parse(localStorage.getItem("siymon_addresses_v2") || "[]");
+      const defAddr = Array.isArray(savedList)
+        ? savedList.find((a) => a && a.isDefault && a.lat != null && a.lng != null) ||
+          savedList.find((a) => a && a.lat != null && a.lng != null)
+        : null;
+      if (defAddr) {
+        exactLat = Number(defAddr.lat);
+        exactLng = Number(defAddr.lng);
+      }
+    } catch (_e) {}
+  }
+  if (!(Number.isFinite(Number(exactLat)) && Number.isFinite(Number(exactLng)) && Number(exactLat) !== 0 && Number(exactLng) !== 0)) {
+    return { error: areaMsg("needLocation") };
+  }
+  if (SERVICE_AREA?.enforce && areaInside === false) {
+    return { error: areaMsg("outside") };
   }
 
   const items = [];

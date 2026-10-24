@@ -60,6 +60,7 @@ const ASSETS = [
   "/store/store.css",
   "/store/store.js",
   "/support/index.html",
+  "/support/support.js",
 
   "/notifications/index.html",
   "/notifications/notifications.js?v=36",
