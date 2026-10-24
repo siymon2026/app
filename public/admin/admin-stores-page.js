@@ -272,7 +272,32 @@
       var stats = h("div", { class: "sp-dstats" },
         kpi(money(s.sales), L("إجمالي المبيعات", "Total sales", "Ventes totales")), kpi(num(s.orders), L("طلبات مكتملة", "Completed orders", "Commandes livrées")),
         kpi(num(st.productsTotal), L("المنتجات", "Products", "Produits")), kpi(num(st.activeOrders), L("طلبات نشطة", "Active orders", "Commandes actives")));
+      var approveBtn = h("button", { class: "sp-btn", type: "button", onclick: function () {
+        api("/api/admin/businesses/" + encodeURIComponent(s.id) + "/status", {
+          method: "POST",
+          body: JSON.stringify({ status: "approved", reason: "Approved by supervisor" })
+        }).then(function () {
+          say("✅ " + L("تم تفعيل المتجر", "Store approved/activated", "Boutique activée"));
+          dlg.close();
+          load();
+        }).catch(function (e2) { say("❌ " + ((e2 && e2.message) || "Error")); });
+      } }, L("✅ تفعيل المتجر", "✅ Approve / Activate", "✅ Activer"));
+      var suspendBtn = h("button", { class: "sp-btn", type: "button", onclick: function () {
+        var reason = window.prompt(L("أدخل سبب إيقاف / تعليق المتجر:", "Enter reason for suspending this store:", "Raison de la suspension :"));
+        if (!reason || reason.trim().length < 3) return;
+        api("/api/admin/businesses/" + encodeURIComponent(s.id) + "/status", {
+          method: "POST",
+          body: JSON.stringify({ status: "suspended", reason: reason.trim() })
+        }).then(function (resp) {
+          var flagged = resp && resp.activeOrderHandling && resp.activeOrderHandling.flaggedPrePickupOrders ? resp.activeOrderHandling.flaggedPrePickupOrders.length : 0;
+          say("⛔ " + L("تم تعليق المتجر", "Store suspended", "Boutique suspendue") + (flagged ? " (" + flagged + " active orders flagged)" : ""));
+          dlg.close();
+          load();
+        }).catch(function (e2) { say("❌ " + ((e2 && e2.message) || "Error")); });
+      } }, L("⛔ تعليق المتجر", "⛔ Suspend Store", "⛔ Suspendre"));
       body.replaceChildren(info, stats, h("div", { class: "sp-dact" },
+        approveBtn,
+        suspendBtn,
         h("button", { class: "sp-btn", type: "button", onclick: function () { dlg.close(); editStore(s); } }, L("تعديل معلومات المتجر", "Edit Store Info", "Modifier")),
         h("button", { class: "sp-btn green", type: "button", onclick: function (e) { enterDashboard(s, e.currentTarget); } }, L("فتح لوحة المتجر", "Open store dashboard", "Ouvrir le tableau de bord"))));
     }).catch(function (e) { body.replaceChildren(h("p", { class: "sp-err", role: "alert" }, (e && e.message) || "Error")); });
