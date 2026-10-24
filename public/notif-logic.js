@@ -16,7 +16,7 @@
   var PROFILE_KEY = "siymon_customer_profile_v1";
   var MAX_READ_IDS = 400;
   var ORDER_ID_RE = /#([A-Za-z0-9]{3,}-[A-Za-z0-9]{3,})/;
-  var ROUTES = /^\/(?:(?:orders|chat|support|policy|links|notifications)\/?)?(?:[?#].*)?$/;
+  var ROUTES = /^\/(?:(?:orders|stores|store|chat|support|policy|links|notifications)\/?)?(?:[?#].*)?$/;
 
   /* ---------------- classification ---------------- */
   function orderIdOf(n) {
@@ -30,7 +30,7 @@
   function classify(n) {
     var t = String((n && n.type) || "");
     if (t === "order_status" || (n && n.orderId)) return "orders";
-    if (t === "broadcast") return "offers";
+    if (t === "broadcast" || t === "promo") return "offers";
     return "system";
   }
 
@@ -45,10 +45,10 @@
   function iconKind(n) {
     var stage = String((n && n.stage) || "");
     if (stage === "admin_accepted") return "accepted";
-    if (stage === "restaurant_ready") return "cooking";
-    if (stage === "accepted" || stage === "picked_up" || stage === "on_the_way") return "delivery";
-    if (stage === "delivered" || stage === "done") return "accepted";
-    if (stage === "canceled") return "canceled";
+    if (stage === "preparing" || stage === "restaurant_ready" || stage === "ready_for_pickup" || stage === "delayed") return "cooking";
+    if (stage === "accepted" || stage === "driver_assigned" || stage === "picked_up" || stage === "pickup_verified" || stage === "on_the_way" || stage === "delivery_verified") return "delivery";
+    if (stage === "delivered" || stage === "done" || stage === "refund_completed") return "accepted";
+    if (stage === "canceled" || stage === "cancelled_by_customer" || stage === "cancelled_by_supervisor" || stage === "rejected_by_store" || stage === "failed_delivery") return "canceled";
     var c = classify(n);
     if (c === "orders") return "order";
     if (c === "offers") return "offer";

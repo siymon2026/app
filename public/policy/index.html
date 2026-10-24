@@ -3,121 +3,134 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سياسة الخصوصية - siymon</title>
+    <meta name="theme-color" content="#0F0F0F" />
+    <title>سياسة الخصوصية وشروط الاستخدام — SIYMON</title>
+    <link rel="stylesheet" href="/brand.css" />
     <style>
+      :root {
+        --bg: #0F0F0F;
+        --surface: #202020;
+        --text: #F8F8F8;
+        --muted: rgba(248, 248, 248, 0.78);
+        --brand: #5DD62C;
+        --brand-deep: #337418;
+        --border: rgba(248, 248, 248, 0.12);
+      }
+      * { box-sizing: border-box; }
       body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
+        font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+        line-height: 1.7;
+        color: var(--text);
         margin: 0;
         padding: 20px;
-        background: #f9f9f9;
+        background: var(--bg);
       }
       .container {
-        max-width: 800px;
+        max-width: 820px;
         margin: auto;
-        background: #fff;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: var(--surface);
+        padding: 28px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
       }
       h1 {
-        color: #d32f2f;
+        color: var(--brand);
         text-align: center;
+        margin-top: 0;
       }
       h2 {
-        color: #1976d2;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 5px;
-        margin-top: 25px;
+        color: var(--brand);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 6px;
+        margin-top: 26px;
+        font-size: 18px;
       }
-      p,
-      li {
-        margin-bottom: 15px;
+      p, li {
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+      strong { color: var(--text); }
+      a { color: var(--brand); text-decoration: none; font-weight: 700; }
+      .top-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--brand);
+        color: #0F0F0F;
+        font-weight: 800;
+        font-size: 13px;
       }
       .footer {
         text-align: center;
-        margin-top: 40px;
+        margin-top: 36px;
         font-size: 0.9em;
-        color: #777;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
       }
     </style>
     <link rel="stylesheet" href="/subnav.css?v=36" />
     <link rel="stylesheet" href="/offline.css?v=36" />
     <script src="/offline.js?v=36"></script>
-  <script src="/subnav.js?v=36" defer></script>
-</head>
+    <script src="/subnav.js?v=36" defer></script>
+  </head>
   <body data-nav="user">
     <div class="container">
-      <h1>سياسة الخصوصية لتطبيق siymon</h1>
-      <p>تاريخ التحديث: 12 مايو 2026</p>
+      <div class="top-actions">
+        <a class="btn-back" href="/">🏠 العودة للرئيسية</a>
+        <a href="/support/">🛠️ مركز الدعم والشكاوى</a>
+      </div>
+
+      <h1>سياسة الخصوصية وحماية البيانات — SIYMON</h1>
+      <p>تاريخ التحديث: أكتوبر 2026 · النطاق: مدينة <strong>برشيد، المغرب</strong> والمدن المخدومة</p>
 
       <p>
-        مرحباً بكم في <strong>siymon</strong>. نحن نولي خصوصيتكم أهمية قصوى.
-        تشرح هذه السياسة كيف نقوم بجمع واستخدام وحماية معلوماتكم عند استخدام
-        تطبيقنا المخصص لخدمات توصيل الطعام في مدينة
-        <strong>برشيد، المغرب</strong>.
+        مرحباً بكم في منصة <strong>SIYMON</strong> للتوصيل متعدد الأنشطة (المطاعم، المتاجر، الصيدليات، والمخابز).
+        توضح هذه السياسة قواعد جمع البيانات، الخصوصية الجغرافية، التحقق المزدوج بالرموز، وحماية المحفظة الإلكترونية.
       </p>
 
       <h2>1. المعلومات التي نجمعها</h2>
       <ul>
         <li>
-          <strong>المعلومات الشخصية:</strong> نجمع اسمك الكامل ورقم هاتفك
-          وعنوانك لتسهيل عملية الطلب والتوصيل.
+          <strong>المعلومات الشخصية:</strong> الاسم، رقم الهاتف، العنوان النصي، وإحداثيات دبوس الخريطة لتسليم الطلبات بدقة.
         </li>
         <li>
-          <strong>الموقع الجغرافي (GPS):</strong> يطلب التطبيق الوصول إلى موقعك
-          الجغرافي بدقة لمساعدة السائقين في الوصول إلى عنوانك بسرعة داخل مدينة
-          برشيد.
+          <strong>الموقع الجغرافي (GPS):</strong> يُستخدم لتحديد نطاق الخدمة في برشيد، حساب تكلفة التوصيل الفعلية حسب مسافة الطريق، وتوجيه السائق المعين للطلب.
         </li>
         <li>
-          <strong>بيانات الجهاز:</strong> نجمع معلومات تقنية بسيطة (مثل نوع
-          الجهاز ونظام التشغيل) لتحسين أداء التطبيق وحل المشكلات الفنية.
+          <strong>وثائق السائقين والمتاجر:</strong> تُحفظ وثائق الهوية ورخص القيادة في تخزين خاص ومؤمّن ولا يُسمح بالاطلاع عليها إلا للمشرفين المخولين مع تسجيل كل عملية وصول في سجل التدقيق غير القابل للتلاعب.
         </li>
       </ul>
 
-      <h2>2. كيف نستخدم معلوماتك</h2>
-      <p>نستخدم البيانات التي نجمعها للأغراض التالية:</p>
+      <h2>2. خصوصية الموقع الجغرافي (Location Privacy)</h2>
       <ul>
-        <li>معالجة طلبات الطعام الخاصة بك وتأكيدها وتوصيلها.</li>
-        <li>تمكين السائق من التواصل معك لضمان وصول الطلب.</li>
-        <li>الامتثال للمتطلبات القانونية والتنظيمية.</li>
+        <li>لا يظهر عنوان العميل الدقيق أو رقم هاتفه لأي سائق أثناء مرحلة العرض، ولا يُكشف إلا للسائق المعين فعلياً للطلب.</li>
+        <li>يرى العميل موقع السائق المعين فقط بعد قبول السائق للطلب وحتى اكتمال التسليم أو الإلغاء.</li>
+        <li>مشاركة الموقع المباشر من العميل اختيارية تماماً وتنتهي تلقائياً فور تسليم الطلب أو إلغائه.</li>
       </ul>
 
-      <h2>3. مشاركة البيانات</h2>
-      <p>
-        نحن لا نبيع بياناتك لأطراف ثالثة. يتم مشاركة معلوماتك بحدود ضيقة جداً
-        مع:
-      </p>
+      <h2>3. التحقق من الاستلام والتسليم وحماية المحفظة</h2>
       <ul>
-        <li><strong>المطعم:</strong> لتجهيز وجبتك.</li>
-        <li>
-          <strong>السائق:</strong> (الاسم، الهاتف، والموقع) لضمان التوصيل.
-        </li>
+        <li>يتم تأكيد استلام السائق للطلب من المتجر عبر <strong>رمز استلام (Pickup Code)</strong> مستقل، وتأكيد تسليمه للعميل عبر <strong>رمز تسليم (Delivery Code)</strong> خاص بالعميل.</li>
+        <li>تخضع جميع حركات محفظة <strong>SIYMON</strong> لدفتر أستاذ مالي غير قابل للتعديل مع حماية ضد الخصم المزدوج.</li>
       </ul>
 
-      <h2>4. أمن البيانات</h2>
+      <h2>4. حقوقك وحذف الحساب</h2>
       <p>
-        نحن نستخدم تقنيات تشفير ومعايير أمنية متقدمة لحماية بياناتك من الوصول
-        غير المصرح به.
+        يمكنك في أي وقت تعديل بياناتك، تسجيل الخروج من جميع الأجهزة، أو حذف حسابك نهائياً من خلال إعدادات الحساب في التطبيق أو التواصل مع <a href="/support/">مركز الدعم</a>.
       </p>
-
-      <h2>5. حقوقك وحذف الحساب</h2>
-      <p>
-        يمكنك في أي وقت طلب تعديل بياناتك، أو طلب
-        <strong>حذف حسابك وجميع بياناتك المرتبطة به بالكامل</strong> من خلال
-        التواصل مع الدعم الفني داخل التطبيق أو عبر البريد الإلكتروني.
-      </p>
-
-      <h2>6. التواصل معنا</h2>
-      <p>
-        إذا كان لديك أي استفسار حول سياسة الخصوصية أو طلب لحذف البيانات، يمكنك
-        التواصل معنا عبر:
-      </p>
-      <p>البريد الإلكتروني: support@siymon7.com</p>
 
       <div class="footer">
-        <p>&copy; 2026 siymon - جميع الحقوق محفوظة</p>
+        <p>&copy; 2026 SIYMON — جميع الحقوق محفوظة</p>
       </div>
     </div>
   </body>
